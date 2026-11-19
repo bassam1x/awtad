@@ -116,9 +116,9 @@ function Apply({ p, onClose, done }) {
       <Field label={t('رسالة قصيرة للشركة')}><textarea id="ap-msg" rows="3" className="inp" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('عرّف بنفسك ولماذا هذه الفرصة مناسبة لك')} /></Field>
       <label className="lbl">{t('اختر مشروعين من معرض أعمالك (')}{pick.length}/2)</label>
       <div className="mb-4 grid gap-2">
-        {opts.map((t, i) => (
-          <button key={i + t} type="button" onClick={() => tog(t)} className={`btn justify-start ${pick.includes(t) ? 'border-brand bg-soft' : ''}`}>
-            {pick.includes(t) ? <CheckSquare size={16} /> : <Square size={16} />}{t}
+        {opts.map((o, i) => (
+          <button key={i + o} type="button" onClick={() => tog(o)} className={`btn justify-start ${pick.includes(o) ? 'border-brand bg-soft' : ''}`}>
+            {pick.includes(o) ? <CheckSquare size={16} /> : <Square size={16} />}{o}
           </button>
         ))}
         {!opts.length && <span className="text-mute">{t('أضف مشاريع من صفحة «ملفي المهني» لتظهر هنا.')}</span>}

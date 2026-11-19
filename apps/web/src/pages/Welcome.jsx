@@ -45,10 +45,10 @@ export default function Welcome() {
           </p>
 
           <section className="mt-10 grid gap-4 sm:grid-cols-2" aria-label={t('مميزات المنصة')}>
-            {features.map(([I, t, d]) => (
-              <div key={t} className="card p-5">
+            {features.map(([I, title, d]) => (
+              <div key={title} className="card p-5">
                 <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-soft text-brand"><I size={20} /></span>
-                <h2 className="font-bold">{t}</h2>
+                <h2 className="font-bold">{title}</h2>
                 <p className="mt-1 text-sm text-mute">{d}</p>
               </div>
             ))}
@@ -57,10 +57,10 @@ export default function Welcome() {
           <section className="mt-12">
             <h2 className="mb-4 text-xl font-bold">{t('كيف تعمل المنصة؟')}</h2>
             <ol className="grid gap-4 sm:grid-cols-3">
-              {steps.map(([I, t, d], i) => (
-                <li key={t} className="card p-5">
+              {steps.map(([I, title, d], i) => (
+                <li key={title} className="card p-5">
                   <div className="mb-2 flex items-center gap-2 text-brand"><I size={20} /><span className="text-sm font-semibold text-mute">{t('الخطوة')} {i + 1}</span></div>
-                  <div className="font-bold">{t}</div>
+                  <div className="font-bold">{title}</div>
                   <p className="mt-1 text-sm text-mute">{d}</p>
                 </li>
               ))}

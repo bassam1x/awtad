@@ -163,7 +163,7 @@ export function Applicants() {
           {mine?.map((p) => <option key={p.id} value={p.id}>{p.title} ({p.applicants})</option>)}
         </select>
       </div>
-      {loading ? <Spinner /> : apps.length ? (
+      {loading ? <Spinner /> : apps?.length ? (
         <div className="grid gap-3">
           {apps.map((a) => (
             <div key={a.id} className="card p-4">
