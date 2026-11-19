@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* هوية مهارة: كحلي للنص، أزرق للأفعال، أخضر للإنجاز والمال */
+:root {
+  --bg: 248 250 252; --card: 255 255 255; --line: 226 232 240; --ink: 15 23 42; --mute: 100 116 139;
+  --brand: 37 99 235; --good: 5 150 105; --soft: 239 246 255; --goodsoft: 236 253 245;
+  --warn: 180 83 9; --warnsoft: 254 243 199; --bad: 185 28 28; --badsoft: 254 226 226;
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  --bg: 11 18 32; --card: 17 26 46; --line: 34 48 77; --ink: 230 237 247; --mute: 148 163 184;
+  --brand: 96 165 250; --good: 52 211 153; --soft: 22 38 74; --goodsoft: 15 42 36;
+  --warn: 251 191 36; --warnsoft: 51 39 11; --bad: 248 113 113; --badsoft: 58 21 24;
+  color-scheme: dark;
+}
+html, body, #root { height: 100%; }
+body { @apply bg-app text-ink font-sans antialiased; font-size: 15px; line-height: 1.7; }
+
+@layer components {
+  .card { @apply bg-card border border-line rounded-2xl shadow-card; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold border border-line bg-card text-ink cursor-pointer transition hover:bg-app disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-p { @apply bg-brand border-brand text-white hover:bg-brand/90; }
+  :root[data-theme='dark'] .btn-p { @apply text-slate-900; }
+  .btn-g { @apply bg-good border-good text-white hover:bg-good/90; }
+  :root[data-theme='dark'] .btn-g { @apply text-slate-900; }
+  .btn-d { @apply text-bad; }
+  .btn-sm { @apply px-3 py-1 text-xs; }
+  .inp { @apply w-full rounded-xl border border-line bg-app px-3 py-2 text-ink placeholder:text-mute/70; }
+  .lbl { @apply block text-[13px] font-semibold text-mute mb-1; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-line bg-app px-2.5 py-0.5 text-xs text-mute whitespace-nowrap; }
+  .chip-b { @apply bg-soft text-brand border-transparent; }
+  .chip-g { @apply bg-goodsoft text-good border-transparent; }
+  .chip-w { @apply bg-warnsoft text-warn border-transparent; }
+  .chip-r { @apply bg-badsoft text-bad border-transparent; }
+  .money { @apply text-good font-bold; }
+  .nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-mute hover:bg-app hover:text-ink transition; }
+  .nav-link.active { @apply bg-soft text-brand; }
+}
+:focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

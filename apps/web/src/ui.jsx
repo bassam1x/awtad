@@ -1,0 +1,169 @@
+import { useEffect } from 'react';
+import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+
+export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
+export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString('ar-IQ', { year: 'numeric', month: 'short', day: 'numeric' }) : '');
+
+/* ---------- Brand ---------- */
+export function LogoMark({ size = 36 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#2563EB" /><stop offset="1" stopColor="#0EA5A4" /></linearGradient></defs>
+      <rect width="64" height="64" rx="16" fill="url(#mg)" />
+      <rect x="13" y="38" width="9" height="13" rx="4.5" fill="#fff" opacity=".7" />
+      <rect x="27.5" y="28" width="9" height="23" rx="4.5" fill="#fff" opacity=".85" />
+      <rect x="42" y="18" width="9" height="33" rx="4.5" fill="#fff" />
+      <circle cx="46.5" cy="11" r="3.6" fill="#10B981" />
+    </svg>
+  );
+}
+export function Logo({ size = 36, text = true }) {
+  return (
+    <span className="inline-flex items-center gap-2.5">
+      <LogoMark size={size} />
+      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>مهارة</span>}
+    </span>
+  );
+}
+
+/* ---------- Basic ---------- */
+const COLORS = ['#2563EB', '#0EA5A4', '#7C3AED', '#D97706', '#DB2777', '#059669', '#475569'];
+const colorOf = (id) => COLORS[Math.abs(Number(id) || 0) % COLORS.length];
+export function Avatar({ u, size = 40, square }) {
+  if (!u) return null;
+  const name = u.name || u.company_name || u.student_name || '؟';
+  const img = u.avatar || u.company_avatar || u.student_avatar || u.other_avatar;
+  const r = square ? Math.round(size * 0.24) : size / 2;
+  if (img) return <img src={img} alt={name} width={size} height={size} className="shrink-0 border border-line object-cover" style={{ width: size, height: size, borderRadius: r }} />;
+  return (
+    <div aria-label={name} className="shrink-0 flex items-center justify-center font-bold text-white" style={{ width: size, height: size, borderRadius: r, background: colorOf(u.id || u.company_id || u.other_id), fontSize: size * 0.4 }}>
+      {name.trim()[0]}
+    </div>
+  );
+}
+export function Stars({ v, onChange, size = 16 }) {
+  return (
+    <span className="inline-flex gap-0.5 text-amber-500" dir="ltr">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} onClick={onChange ? () => onChange(i) : undefined} className={onChange ? 'cursor-pointer' : ''} style={{ opacity: i <= Math.round(v) ? 1 : 0.28 }}>
+          <Star size={size} fill="currentColor" />
+        </span>
+      ))}
+    </span>
+  );
+}
+export function StatusChip({ status }) {
+  if (status === 'pending') return <span className="chip chip-w"><Clock size={13} />قيد المراجعة</span>;
+  if (status === 'accepted') return <span className="chip chip-g"><CheckCircle2 size={13} />مقبول</span>;
+  if (status === 'rejected') return <span className="chip chip-r"><XCircle size={13} />مرفوض</span>;
+  return null;
+}
+export function Spinner() { return <div className="flex justify-center py-16 text-mute"><Loader2 className="animate-spin" /></div>; }
+export function Empty({ children }) { return <div className="card p-10 text-center text-mute">{children}</div>; }
+export function ErrorBox({ children }) { return <div className="card p-6 text-center text-bad">{children}</div>; }
+export function PageHeader({ title, sub, children }) {
+  return (
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="text-2xl font-bold">{title}</h1>
+        {sub && <p className="mt-1 text-mute">{sub}</p>}
+      </div>
+      {children && <div className="flex flex-wrap gap-2">{children}</div>}
+    </div>
+  );
+}
+export function StatCard({ icon: I, label, value, tone = 'b', hint }) {
+  const t = { b: 'bg-soft text-brand', g: 'bg-goodsoft text-good', w: 'bg-warnsoft text-warn', r: 'bg-badsoft text-bad' }[tone];
+  return (
+    <div className="card p-4 flex items-center gap-3">
+      <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${t}`}><I size={20} /></span>
+      <div className="min-w-0"><div className="text-2xl font-bold leading-tight">{value}</div><div className="text-sm text-mute">{label}</div>{hint}</div>
+    </div>
+  );
+}
+export function Field({ label, children, hint }) {
+  return <div className="mb-3"><label className="lbl">{label}</label>{children}{hint && <div className="mt-1 text-xs text-mute">{hint}</div>}</div>;
+}
+export function Modal({ title, onClose, children, wide }) {
+  useEffect(() => {
+    const f = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', f);
+    return () => document.removeEventListener('keydown', f);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6" onClick={onClose}>
+      <div role="dialog" aria-modal="true" className={`card w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h3 className="text-lg font-bold">{title}</h3>
+          <button className="btn btn-sm" onClick={onClose} aria-label="إغلاق"><X size={16} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- image upload (resized client-side) ---------- */
+export function fileToAvatar(file, max = 256) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) return reject(new Error('اختر ملف صورة'));
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85));
+    };
+    img.onerror = () => reject(new Error('تعذّر قراءة الصورة'));
+    img.src = url;
+  });
+}
+export function AvatarUpload({ value, onChange, label = 'رفع صورة', name = '؟', square }) {
+  const pick = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { onChange(await fileToAvatar(f)); } catch { /* ignored */ }
+    e.target.value = '';
+  };
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar u={{ id: 1, name, avatar: value }} size={64} square={square} />
+      <label className="btn cursor-pointer"><Upload size={16} />{label}<input type="file" accept="image/*" hidden onChange={pick} /></label>
+      {value && <button type="button" className="btn btn-d btn-sm" onClick={() => onChange(null)}>إزالة</button>}
+    </div>
+  );
+}
+
+/* ---------- posting helpers ---------- */
+export const postingChips = (p) => (p.kind === 'job' ? [p.type, p.shift, `${p.hours} ساعات يومياً`] : ['مشروع تعاوني', `${p.days} أيام للتسليم`]);
+
+/* ---------- dashboard pieces ---------- */
+export function Banner({ title, sub, children }) {
+  return (
+    <div className="mb-6 overflow-hidden rounded-2xl p-6 text-white shadow-card sm:p-8" style={{ background: 'linear-gradient(120deg,#1D4ED8 0%,#2563EB 45%,#0EA5A4 100%)' }}>
+      <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
+      {sub && <p className="mt-1 max-w-xl text-white/85">{sub}</p>}
+      {children && <div className="mt-4 flex flex-wrap gap-2">{children}</div>}
+    </div>
+  );
+}
+export function BarList({ title, rows, color = 'bg-brand' }) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  return (
+    <div className="card p-5">
+      <h2 className="mb-4 font-bold">{title}</h2>
+      <div className="grid gap-3">
+        {rows.map((r) => (
+          <div key={r.label}>
+            <div className="mb-1 flex justify-between text-sm"><span>{r.label}</span><b>{r.value}</b></div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-app"><div className={`h-full rounded-full ${r.color || color}`} style={{ width: `${(r.value / max) * 100}%` }} /></div>
+          </div>
+        ))}
+        {!rows.length && <span className="text-sm text-mute">لا بيانات بعد.</span>}
+      </div>
+    </div>
+  );
+}

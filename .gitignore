@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+*.log
+*.err
+apps/api/data/
+.claude/
+.DS_Store
