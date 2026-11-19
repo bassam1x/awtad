@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Check, PackageCheck, BadgeDollarSign, Send } from 'lucide-react';
@@ -5,7 +6,7 @@ import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt } from '../ui.jsx';
 
-const STEPS = ['قيد التنفيذ', 'تم التسليم', 'تم استلام المبلغ'];
+const STEPS = [t('قيد التنفيذ'), t('تم التسليم'), t('تم استلام المبلغ')];
 
 export default function Workspace() {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ export default function Workspace() {
   const cur = convs.find((c) => String(c.id) === appId) || (appId ? null : convs[0]);
   return (
     <div>
-      <PageHeader title="مساحة العمل" sub="محادثاتك مع الشركات والمبدعين بعد قبول الطلبات، ومتابعة تسليم المشاريع." />
+      <PageHeader title={t('مساحة العمل')} sub={t('محادثاتك مع الشركات والمبدعين بعد قبول الطلبات، ومتابعة تسليم المشاريع.')} />
       <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
         <div className="card h-fit p-2">
           {convs.map((c) => (
@@ -25,9 +26,9 @@ export default function Workspace() {
               <div className="min-w-0"><div className="truncate font-semibold">{c.other_name}</div><div className="truncate text-xs text-mute">{c.title}</div></div>
             </Link>
           ))}
-          {!convs.length && <div className="p-4 text-sm text-mute">تظهر المحادثات هنا بعد قبول أي طلب.</div>}
+          {!convs.length && <div className="p-4 text-sm text-mute">{t('تظهر المحادثات هنا بعد قبول أي طلب.')}</div>}
         </div>
-        {cur ? <Chat key={cur.id} id={cur.id} /> : <Empty>اختر محادثة من القائمة.</Empty>}
+        {cur ? <Chat key={cur.id} id={cur.id} /> : <Empty>{t('اختر محادثة من القائمة.')}</Empty>}
       </div>
     </div>
   );
@@ -51,13 +52,13 @@ function Chat({ id }) {
     if (!text.trim()) return;
     try { await api.post(`/applications/${id}/messages`, { text }); setText(''); load(); } catch (e) { toast(e.message, 'err'); }
   };
-  const deliver = async () => { try { await api.post(`/applications/${id}/deliver`); toast('تم تسليم العمل'); reloadApp(); load(); } catch (e) { toast(e.message, 'err'); } };
+  const deliver = async () => { try { await api.post(`/applications/${id}/deliver`); toast(t('تم تسليم العمل')); reloadApp(); load(); } catch (e) { toast(e.message, 'err'); } };
   const who = (sid) => (sid === a.student_id ? a.student : a.company);
   return (
     <div className="card flex min-h-[520px] min-w-0 flex-col p-4">
       <div className="mb-3 flex items-center gap-3 border-b border-line pb-3">
-        <div className="flex"><Avatar u={a.company} size={40} square /><span className="-mr-2"><Avatar u={a.student} size={40} /></span></div>
-        <div className="min-w-0"><div className="truncate font-bold">{a.posting_title}</div><div className="text-sm text-mute">{a.company.name} و{a.student.name}</div></div>
+        <div className="flex"><Avatar u={a.company} size={40} square /><span className="-me-2"><Avatar u={a.student} size={40} /></span></div>
+        <div className="min-w-0"><div className="truncate font-bold">{a.posting_title}</div><div className="text-sm text-mute">{a.company.name} {t('و')}{a.student.name}</div></div>
       </div>
       {a.kind === 'project' && (
         <div className="mb-4">
@@ -70,28 +71,28 @@ function Chat({ id }) {
               </div>
             ))}
           </div>
-          {a.stage === 'progress' && isS && <button className="btn btn-p" onClick={deliver}><PackageCheck size={16} />تسليم العمل</button>}
-          {a.stage === 'progress' && !isS && <span className="chip">بانتظار تسليم المبدع</span>}
-          {a.stage === 'delivered' && isS && <span className="chip chip-w">بانتظار اعتماد الشركة</span>}
-          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />اعتماد التسليم وتحويل {fmt(a.pay)} {a.cur}</button>}
-          {a.stage === 'paid' && <span className="chip chip-g">اكتمل المشروع وحُوّل المبلغ إلى المحفظة</span>}
+          {a.stage === 'progress' && isS && <button className="btn btn-p" onClick={deliver}><PackageCheck size={16} />{t('تسليم العمل')}</button>}
+          {a.stage === 'progress' && !isS && <span className="chip">{t('بانتظار تسليم المبدع')}</span>}
+          {a.stage === 'delivered' && isS && <span className="chip chip-w">{t('بانتظار اعتماد الشركة')}</span>}
+          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />{t('اعتماد التسليم وتحويل')} {fmt(a.pay)} {t(a.cur)}</button>}
+          {a.stage === 'paid' && <span className="chip chip-g">{t('اكتمل المشروع وحُوّل المبلغ إلى المحفظة')}</span>}
         </div>
       )}
       <div ref={box} className="grid max-h-[380px] flex-1 content-start gap-2 overflow-y-auto pb-2">
         {msgs.map((m) => {
-          if (!m.sender_id) return <div key={m.id} className="py-1 text-center text-xs text-mute">{m.text}</div>;
+          if (!m.sender_id) return <div key={m.id} className="py-1 text-center text-xs text-mute">{t(m.text)}</div>;
           const mine = m.sender_id === user.id;
           return (
             <div key={m.id} className={`flex items-end gap-2 ${mine ? 'flex-row' : 'flex-row-reverse'} justify-end`}>
-              <div className={`max-w-[75%] rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{m.text}</div>
+              <div className={`max-w-[75%] rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{t(m.text)}</div>
               <Avatar u={who(m.sender_id)} size={28} square={who(m.sender_id)?.role === 'company'} />
             </div>
           );
         })}
       </div>
       <div className="flex gap-2 border-t border-line pt-3">
-        <input id="chat-in" className="inp" placeholder="اكتب رسالة..." value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} />
-        <button className="btn btn-p" onClick={send} aria-label="إرسال"><Send size={16} /></button>
+        <input id="chat-in" className="inp" placeholder={t('اكتب رسالة...')} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} />
+        <button className="btn btn-p" onClick={send} aria-label={t('إرسال')}><Send size={16} /></button>
       </div>
       {approve && <Approve a={a} onClose={() => setApprove(false)} done={() => { setApprove(false); reloadApp(); load(); }} />}
     </div>
@@ -103,14 +104,14 @@ function Approve({ a, onClose, done }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const go = async () => {
-    try { await api.post(`/applications/${a.id}/approve`, { rating, comment }); toast('تم تحويل المبلغ إلى المحفظة'); done(); } catch (e) { toast(e.message, 'err'); }
+    try { await api.post(`/applications/${a.id}/approve`, { rating, comment }); toast(t('تم تحويل المبلغ إلى المحفظة')); done(); } catch (e) { toast(e.message, 'err'); }
   };
   return (
-    <Modal title="اعتماد التسليم والدفع" onClose={onClose}>
-      <p className="mb-3">سيُحوَّل <b className="money">{fmt(a.pay)} {a.cur}</b> إلى محفظة المبدع ويُضاف العمل مع تقييمك إلى ملفه.</p>
-      <Field label="التقييم"><Stars v={rating} onChange={setRating} size={26} /></Field>
-      <Field label="تعليقك"><textarea id="ap-comment" rows="3" className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="كيف كان التعامل والتسليم؟" /></Field>
-      <button className="btn btn-g w-full" onClick={go}>اعتماد وتحويل المبلغ</button>
+    <Modal title={t('اعتماد التسليم والدفع')} onClose={onClose}>
+      <p className="mb-3">{t('سيُحوَّل')} <b className="money">{fmt(a.pay)} {t(a.cur)}</b> {t('إلى محفظة المبدع ويُضاف العمل مع تقييمك إلى ملفه.')}</p>
+      <Field label={t('التقييم')}><Stars v={rating} onChange={setRating} size={26} /></Field>
+      <Field label={t('تعليقك')}><textarea id="ap-comment" rows="3" className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('كيف كان التعامل والتسليم؟')} /></Field>
+      <button className="btn btn-g w-full" onClick={go}>{t('اعتماد وتحويل المبلغ')}</button>
     </Modal>
   );
 }

@@ -1,9 +1,10 @@
+import { locale, t } from './i18n/index.js';
 import { useEffect } from 'react';
 import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
-export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString('ar-IQ', { year: 'numeric', month: 'short', day: 'numeric' }) : '');
+export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 
 /* ---------- Brand ---------- */
 export function LogoMark({ size = 36 }) {
@@ -22,7 +23,7 @@ export function Logo({ size = 36, text = true }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={size} />
-      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>مهارة</span>}
+      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>{t('مهارة')}</span>}
     </span>
   );
 }
@@ -32,7 +33,7 @@ const COLORS = ['#2563EB', '#0EA5A4', '#7C3AED', '#D97706', '#DB2777', '#059669'
 const colorOf = (id) => COLORS[Math.abs(Number(id) || 0) % COLORS.length];
 export function Avatar({ u, size = 40, square }) {
   if (!u) return null;
-  const name = u.name || u.company_name || u.student_name || '؟';
+  const name = u.name || u.company_name || u.student_name || t('؟');
   const img = u.avatar || u.company_avatar || u.student_avatar || u.other_avatar;
   const r = square ? Math.round(size * 0.24) : size / 2;
   if (img) return <img src={img} alt={name} width={size} height={size} className="shrink-0 border border-line object-cover" style={{ width: size, height: size, borderRadius: r }} />;
@@ -54,9 +55,9 @@ export function Stars({ v, onChange, size = 16 }) {
   );
 }
 export function StatusChip({ status }) {
-  if (status === 'pending') return <span className="chip chip-w"><Clock size={13} />قيد المراجعة</span>;
-  if (status === 'accepted') return <span className="chip chip-g"><CheckCircle2 size={13} />مقبول</span>;
-  if (status === 'rejected') return <span className="chip chip-r"><XCircle size={13} />مرفوض</span>;
+  if (status === 'pending') return <span className="chip chip-w"><Clock size={13} />{t('قيد المراجعة')}</span>;
+  if (status === 'accepted') return <span className="chip chip-g"><CheckCircle2 size={13} />{t('مقبول')}</span>;
+  if (status === 'rejected') return <span className="chip chip-r"><XCircle size={13} />{t('مرفوض')}</span>;
   return null;
 }
 export function Spinner() { return <div className="flex justify-center py-16 text-mute"><Loader2 className="animate-spin" /></div>; }
@@ -96,7 +97,7 @@ export function Modal({ title, onClose, children, wide }) {
       <div role="dialog" aria-modal="true" className={`card w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold">{title}</h3>
-          <button className="btn btn-sm" onClick={onClose} aria-label="إغلاق"><X size={16} /></button>
+          <button className="btn btn-sm" onClick={onClose} aria-label={t('إغلاق')}><X size={16} /></button>
         </div>
         {children}
       </div>
@@ -107,7 +108,7 @@ export function Modal({ title, onClose, children, wide }) {
 /* ---------- image upload (resized client-side) ---------- */
 export function fileToAvatar(file, max = 256) {
   return new Promise((resolve, reject) => {
-    if (!file.type.startsWith('image/')) return reject(new Error('اختر ملف صورة'));
+    if (!file.type.startsWith('image/')) return reject(new Error(t('اختر ملف صورة')));
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
@@ -118,11 +119,11 @@ export function fileToAvatar(file, max = 256) {
       URL.revokeObjectURL(url);
       resolve(c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85));
     };
-    img.onerror = () => reject(new Error('تعذّر قراءة الصورة'));
+    img.onerror = () => reject(new Error(t('تعذّر قراءة الصورة')));
     img.src = url;
   });
 }
-export function AvatarUpload({ value, onChange, label = 'رفع صورة', name = '؟', square }) {
+export function AvatarUpload({ value, onChange, label = t('رفع صورة'), name = t('؟'), square }) {
   const pick = async (e) => {
     const f = e.target.files[0]; if (!f) return;
     try { onChange(await fileToAvatar(f)); } catch { /* ignored */ }
@@ -138,7 +139,7 @@ export function AvatarUpload({ value, onChange, label = 'رفع صورة', name 
 }
 
 /* ---------- posting helpers ---------- */
-export const postingChips = (p) => (p.kind === 'job' ? [p.type, p.shift, `${p.hours} ساعات يومياً`] : ['مشروع تعاوني', `${p.days} أيام للتسليم`]);
+export const postingChips = (p) => (p.kind === 'job' ? [t(p.type), t(p.shift), t('{n} ساعات يومياً', { n: p.hours })] : [t('مشروع تعاوني'), t('{n} أيام للتسليم', { n: p.days })]);
 
 /* ---------- dashboard pieces ---------- */
 export function Banner({ title, sub, children }) {
@@ -162,7 +163,7 @@ export function BarList({ title, rows, color = 'bg-brand' }) {
             <div className="h-2.5 overflow-hidden rounded-full bg-app"><div className={`h-full rounded-full ${r.color || color}`} style={{ width: `${(r.value / max) * 100}%` }} /></div>
           </div>
         ))}
-        {!rows.length && <span className="text-sm text-mute">لا بيانات بعد.</span>}
+        {!rows.length && <span className="text-sm text-mute">{t('لا بيانات بعد.')}</span>}
       </div>
     </div>
   );

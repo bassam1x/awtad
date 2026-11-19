@@ -1,10 +1,11 @@
+import { t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, GraduationCap, ArrowRight } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useToast } from '../context.jsx';
 import { AvatarUpload, Field, Logo, SPECS } from '../ui.jsx';
-import { ThemeButton } from '../Layout.jsx';
+import { LangSwitch, ThemeButton } from '../Layout.jsx';
 
 /* ---------- Google ---------- */
 let gsiPromise;
@@ -29,13 +30,13 @@ export function GoogleButton({ onCredential }) {
     loadGsi().then(() => {
       window.google.accounts.id.initialize({ client_id: cid, callback: (r) => onCredential(r.credential), ux_mode: 'popup' });
       window.google.accounts.id.renderButton(ref.current, { theme: 'outline', size: 'large', text: 'continue_with', locale: 'ar', width: ref.current.offsetWidth || 320 });
-    }).catch(() => toast('تعذّر تحميل خدمة Google', 'err'));
+    }).catch(() => toast(t('تعذّر تحميل خدمة Google'), 'err'));
   }, [cid, onCredential, toast]);
   if (cid === null) return <div className="h-11" />;
   if (!cid) {
     return (
-      <button type="button" className="btn w-full py-2.5" onClick={() => toast('تسجيل Google غير مفعّل بعد. يفعّله مدير المنصة من صفحة الإعدادات.', 'err')}>
-        <GoogleIcon />المتابعة عبر Google
+      <button type="button" className="btn w-full py-2.5" onClick={() => toast(t('تسجيل Google غير مفعّل بعد. يفعّله مدير المنصة من صفحة الإعدادات.'), 'err')}>
+        <GoogleIcon />{t('المتابعة عبر Google')}
       </button>
     );
   }
@@ -71,11 +72,11 @@ export function LoginForm() {
   if (pendingGoogle) {
     return (
       <div>
-        <p className="mb-3">أهلاً {pendingGoogle.name}، اختر نوع حسابك لإكمال التسجيل:</p>
+        <p className="mb-3">{t('أهلاً')} {pendingGoogle.name}{t('، اختر نوع حسابك لإكمال التسجيل:')}</p>
         <div className="grid gap-2">
-          <button className="btn btn-p py-3" onClick={() => google(pendingGoogle.credential, 'student')}><GraduationCap size={18} />أنا طالب / خريج / مبرمج</button>
-          <button className="btn py-3" onClick={() => google(pendingGoogle.credential, 'company')}><Building2 size={18} />أنا صاحب شركة / عمل</button>
-          <button className="btn btn-sm" onClick={() => setPendingGoogle(null)}>رجوع</button>
+          <button className="btn btn-p py-3" onClick={() => google(pendingGoogle.credential, 'student')}><GraduationCap size={18} />{t('أنا طالب / خريج / مبرمج')}</button>
+          <button className="btn py-3" onClick={() => google(pendingGoogle.credential, 'company')}><Building2 size={18} />{t('أنا صاحب شركة / عمل')}</button>
+          <button className="btn btn-sm" onClick={() => setPendingGoogle(null)}>{t('رجوع')}</button>
         </div>
       </div>
     );
@@ -83,11 +84,11 @@ export function LoginForm() {
   return (
     <div>
       <form onSubmit={submit}>
-        <Field label="البريد الإلكتروني"><input id="login-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
-        <Field label="كلمة المرور"><input id="login-pass" type="password" autoComplete="current-password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
-        <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? 'جارٍ الدخول…' : 'تسجيل الدخول'}</button>
+        <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
+        <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
+        <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الدخول…') : t('تسجيل الدخول')}</button>
       </form>
-      <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />أو<span className="h-px flex-1 bg-line" /></div>
+      <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
       <GoogleButton onCredential={(c) => google(c)} />
     </div>
   );
@@ -98,23 +99,23 @@ function Shell({ title, sub, children, back = true }) {
     <div className="flex min-h-full flex-col items-center px-4 py-8">
       <div className="mb-6 flex w-full max-w-md items-center justify-between">
         <Link to="/"><Logo size={36} /></Link>
-        <ThemeButton />
+        <div className="flex gap-2"><ThemeButton /><LangSwitch /></div>
       </div>
       <div className="card w-full max-w-md p-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="mb-5 mt-1 text-mute">{sub}</p>
         {children}
       </div>
-      {back && <Link to="/" className="mt-4 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><ArrowRight size={14} />العودة للصفحة الرئيسية</Link>}
+      {back && <Link to="/" className="mt-4 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><ArrowRight size={14} className="ltr:rotate-180" />{t('العودة للصفحة الرئيسية')}</Link>}
     </div>
   );
 }
 
 export function LoginPage() {
   return (
-    <Shell title="تسجيل الدخول" sub="أهلاً بعودتك إلى مهارة.">
+    <Shell title={t('تسجيل الدخول')} sub={t('أهلاً بعودتك إلى مهارة.')}>
       <LoginForm />
-      <p className="mt-5 text-center text-sm text-mute">ليس لديك حساب؟ <Link className="font-semibold text-brand" to="/register">إنشاء حساب جديد</Link></p>
+      <p className="mt-5 text-center text-sm text-mute">{t('ليس لديك حساب؟')} <Link className="font-semibold text-brand" to="/register">{t('إنشاء حساب جديد')}</Link></p>
     </Shell>
   );
 }
@@ -136,40 +137,40 @@ export function RegisterPage() {
     try { login(await api.post('/auth/google', { credential, role })); nav('/app'); } catch (err) { toast(err.message, 'err'); }
   };
   return (
-    <Shell title="إنشاء حساب جديد" sub="اختر نوع حسابك وابدأ خلال دقيقة.">
+    <Shell title={t('إنشاء حساب جديد')} sub={t('اختر نوع حسابك وابدأ خلال دقيقة.')}>
       <div className="mb-5 grid grid-cols-2 gap-2">
-        <button type="button" className={`btn ${role === 'student' ? 'btn-p' : ''}`} onClick={() => setRole('student')}><GraduationCap size={16} />مبدع</button>
-        <button type="button" className={`btn ${role === 'company' ? 'btn-p' : ''}`} onClick={() => setRole('company')}><Building2 size={16} />شركة</button>
+        <button type="button" className={`btn ${role === 'student' ? 'btn-p' : ''}`} onClick={() => setRole('student')}><GraduationCap size={16} />{t('مبدع')}</button>
+        <button type="button" className={`btn ${role === 'company' ? 'btn-p' : ''}`} onClick={() => setRole('company')}><Building2 size={16} />{t('شركة')}</button>
       </div>
       <form onSubmit={submit}>
-        <Field label={role === 'student' ? 'الصورة الشخصية' : 'شعار الشركة'}>
-          <AvatarUpload value={f.avatar} onChange={(v) => set('avatar', v)} label={role === 'student' ? 'رفع صورة' : 'رفع الشعار'} name={f.name || '؟'} square={role === 'company'} />
+        <Field label={role === 'student' ? t('الصورة الشخصية') : t('شعار الشركة')}>
+          <AvatarUpload value={f.avatar} onChange={(v) => set('avatar', v)} label={role === 'student' ? t('رفع صورة') : t('رفع الشعار')} name={f.name || t('؟')} square={role === 'company'} />
         </Field>
-        <Field label={role === 'student' ? 'الاسم الكامل' : 'اسم الشركة'}><input id="reg-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>
-        <Field label={role === 'company' ? 'البريد الرسمي' : 'البريد الإلكتروني'}><input id="reg-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
-        <Field label="كلمة المرور" hint="8 أحرف على الأقل"><input id="reg-pass" type="password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => set('password', e.target.value)} minLength={8} required /></Field>
+        <Field label={role === 'student' ? t('الاسم الكامل') : t('اسم الشركة')}><input id="reg-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>
+        <Field label={role === 'company' ? t('البريد الرسمي') : t('البريد الإلكتروني')}><input id="reg-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
+        <Field label={t('كلمة المرور')} hint={t('8 أحرف على الأقل')}><input id="reg-pass" type="password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => set('password', e.target.value)} minLength={8} required /></Field>
         {role === 'student' ? (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="التخصص"><select id="reg-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s}>{s}</option>)}</select></Field>
-              <Field label="الحالة"><select id="reg-status" className="inp" value={f.student_status} onChange={(e) => set('student_status', e.target.value)}><option>طالب</option><option>خريج جديد</option></select></Field>
+              <Field label={t('التخصص')}><select id="reg-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
+              <Field label={t('الحالة')}><select id="reg-status" className="inp" value={f.student_status} onChange={(e) => set('student_status', e.target.value)}><option value="طالب">{t('طالب')}</option><option value="خريج جديد">{t('خريج جديد')}</option></select></Field>
             </div>
-            <Field label="المهارات الأساسية" hint="افصل بينها بفاصلة"><input id="reg-skills" className="inp" value={f.skills} onChange={(e) => set('skills', e.target.value)} placeholder="React, Figma, AutoCAD" /></Field>
+            <Field label={t('المهارات الأساسية')} hint={t('افصل بينها بفاصلة')}><input id="reg-skills" className="inp" value={f.skills} onChange={(e) => set('skills', e.target.value)} placeholder="React, Figma, AutoCAD" /></Field>
           </>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="قطاع العمل"><input id="reg-sector" className="inp" value={f.sector} onChange={(e) => set('sector', e.target.value)} /></Field>
-              <Field label="المدينة"><input id="reg-city" className="inp" value={f.city} onChange={(e) => set('city', e.target.value)} /></Field>
+              <Field label={t('قطاع العمل')}><input id="reg-sector" className="inp" value={f.sector} onChange={(e) => set('sector', e.target.value)} /></Field>
+              <Field label={t('المدينة')}><input id="reg-city" className="inp" value={f.city} onChange={(e) => set('city', e.target.value)} /></Field>
             </div>
-            <Field label="نبذة عن الشركة"><textarea id="reg-about" rows="3" className="inp" value={f.about} onChange={(e) => set('about', e.target.value)} /></Field>
+            <Field label={t('نبذة عن الشركة')}><textarea id="reg-about" rows="3" className="inp" value={f.about} onChange={(e) => set('about', e.target.value)} /></Field>
           </>
         )}
-        <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? 'جارٍ الإنشاء…' : 'إنشاء الحساب'}</button>
+        <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الإنشاء…') : t('إنشاء الحساب')}</button>
       </form>
-      <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />أو<span className="h-px flex-1 bg-line" /></div>
+      <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
       <GoogleButton onCredential={google} />
-      <p className="mt-5 text-center text-sm text-mute">لديك حساب؟ <Link className="font-semibold text-brand" to="/login">تسجيل الدخول</Link></p>
+      <p className="mt-5 text-center text-sm text-mute">{t('لديك حساب؟')} <Link className="font-semibold text-brand" to="/login">{t('تسجيل الدخول')}</Link></p>
     </Shell>
   );
 }

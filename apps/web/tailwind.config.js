@@ -9,7 +9,7 @@ export default {
         brand: c('brand'), good: c('good'), soft: c('soft'), goodsoft: c('goodsoft'),
         warn: c('warn'), warnsoft: c('warnsoft'), bad: c('bad'), badsoft: c('badsoft'),
       },
-      fontFamily: { sans: ['"IBM Plex Sans Arabic"', 'Cairo', 'system-ui', 'sans-serif'] },
+      fontFamily: { sans: ['"IBM Plex Sans Arabic"', '"Noto Sans Arabic"', 'Cairo', 'system-ui', 'sans-serif'] },
       boxShadow: { card: '0 1px 2px rgb(15 23 42 / .06), 0 4px 14px rgb(15 23 42 / .05)' },
     },
   },
