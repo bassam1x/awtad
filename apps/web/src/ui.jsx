@@ -3,7 +3,7 @@ import { lang, locale, t } from './i18n/index.js';
 import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
 import { tr, useTrVersion } from './translate.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronLeft, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 import ImageEditor from './ImageEditor.jsx';
 
@@ -157,6 +157,28 @@ export function StatCard({ icon: I, label, value, tone = 'b', hint, to }) {
   return to
     ? <Link to={to} className="card stat-link p-4 flex items-center gap-3" aria-label={label}>{body}</Link>
     : <div className="card p-4 flex items-center gap-3">{body}</div>;
+}
+/** حقل مبلغ بفواصل الآلاف أثناء الكتابة (10,000,000)، يقبل الأرقام العربية، ويُرجع الأرقام فقط كنص. */
+const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩', FA_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
+const toDigits = (s) => String(s ?? '').replace(/[٠-٩]/g, (d) => AR_DIGITS.indexOf(d)).replace(/[۰-۹]/g, (d) => FA_DIGITS.indexOf(d)).replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 12);
+export function MoneyInput({ value, onChange, className = '', ...rest }) {
+  const ref = useRef(null);
+  const caret = useRef(null);
+  const digits = toDigits(value);
+  const shown = digits ? Number(digits).toLocaleString('en-US') : '';
+  useLayoutEffect(() => {
+    if (caret.current == null || !ref.current) return;
+    let seen = 0, pos = 0;
+    for (; pos < shown.length && seen < caret.current; pos++) if (/\d/.test(shown[pos])) seen++;
+    ref.current.setSelectionRange(pos, pos); caret.current = null;
+  });
+  return (
+    <input
+      {...rest} ref={ref} type="text" inputMode="numeric" autoComplete="off" dir="ltr" value={shown}
+      className={`inp text-start ${className}`}
+      onChange={(e) => { caret.current = toDigits(e.target.value.slice(0, e.target.selectionStart)).length; onChange(toDigits(e.target.value)); }}
+    />
+  );
 }
 export function Field({ label, children, hint }) {
   return <div className="mb-3"><label className="lbl">{label}</label>{children}{hint && <div className="mt-1 text-xs text-mute">{hint}</div>}</div>;

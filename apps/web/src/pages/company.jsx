@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, CURRENCIES, Empty, ErrorBox, Field, Modal, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
+import { Avatar, Banner, BarList, CURRENCIES, Empty, ErrorBox, Field, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 /* ---------- Dashboard ---------- */
@@ -127,7 +127,7 @@ export function PostingForm() {
         )}
         <Field label={isJob ? t('المسمى الوظيفي') : t('عنوان المشروع')}><input id="np-title" className="inp" value={f.title} onChange={(e) => set('title', e.target.value)} required /></Field>
         <div className="grid grid-cols-2 gap-x-4 sm:grid-cols-3">
-          <Field label={isJob ? t('الراتب الشهري') : t('المبلغ')}><input id="np-pay" type="number" min="1" className="inp" value={f.pay} onChange={(e) => set('pay', e.target.value)} required /></Field>
+          <Field label={isJob ? t('الراتب الشهري') : t('المبلغ')}><MoneyInput id="np-pay" value={f.pay} onChange={(v) => set('pay', v)} required placeholder="1,000,000" /></Field>
           <Field label={t('العملة')}><select id="np-cur" className="inp" value={f.cur} onChange={(e) => set('cur', e.target.value)}>{CURRENCIES.map(([v, l]) => <option key={v} value={v}>{t(l)}</option>)}</select></Field>
           <Field label={t('التخصص')}><select id="np-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
           {isJob ? (
