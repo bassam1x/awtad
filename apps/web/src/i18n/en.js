@@ -516,5 +516,9 @@ export default {
   "وظيفتك ومشاريعك الأولى تبدأ بمهارتك.. لا بشرط سنوات الخبرة": "Your first job and projects start with your skill.. not with years of experience",
   "يحذف حسابك وكل بياناته نهائياً، ولا يمكن التراجع.": "This permanently deletes your account and all its data, and can't be undone.",
   "يُحدد لاحقاً": "To be decided",
-  "يُستخدم في كل وظيفة لا تحدد عنواناً خاصاً بها.": "Used for every job that doesn't set its own address."
+  "يُستخدم في كل وظيفة لا تحدد عنواناً خاصاً بها.": "Used for every job that doesn't set its own address.",
+  "ألوان المنصة": "Platform colors",
+  "الشفق": "Aurora",
+  "الغروب": "Sunset",
+  "الزمرد": "Emerald"
 };

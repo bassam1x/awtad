@@ -75,10 +75,10 @@ export function PageHeader({ title, sub, children }) {
   );
 }
 export function StatCard({ icon: I, label, value, tone = 'b', hint }) {
-  const t = { b: 'bg-soft text-brand', g: 'bg-goodsoft text-good', w: 'bg-warnsoft text-warn', r: 'bg-badsoft text-bad' }[tone];
+  const t = { b: '', g: 'gicon-g', w: 'gicon-w', r: 'gicon-r' }[tone];
   return (
     <div className="card p-4 flex items-center gap-3">
-      <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${t}`}><I size={20} /></span>
+      <span className={`gicon ${t}`}><I size={20} /></span>
       <div className="min-w-0"><div className="text-2xl font-bold leading-tight">{value}</div><div className="text-sm text-mute">{label}</div>{hint}</div>
     </div>
   );
@@ -93,7 +93,7 @@ export function Modal({ title, onClose, children, wide }) {
     return () => document.removeEventListener('keydown', f);
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" onClick={onClose}>
       <div role="dialog" aria-modal="true" className={`card w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold">{title}</h3>

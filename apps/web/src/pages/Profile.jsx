@@ -9,7 +9,7 @@ import { AvatarUpload, Field, PageHeader, SPECS } from '../ui.jsx';
 export default function Profile() {
   const { user, setUser, logout } = useAuth();
   const toast = useToast();
-  const { mode, set: setMode } = useTheme();
+  const { mode, set: setMode, accent, setAccent } = useTheme();
   const nav = useNavigate();
   const isS = user.role === 'student', isC = user.role === 'company';
   const [f, setF] = useState({
@@ -74,8 +74,8 @@ export default function Profile() {
         <div className="grid h-fit gap-5">
           <form onSubmit={changePw} className="card p-5">
             <h2 className="mb-3 flex items-center gap-2 font-bold"><KeyRound size={18} />{user.has_password ? t('تغيير كلمة المرور') : t('تعيين كلمة مرور')}</h2>
-            {user.has_google && <p className="mb-3 flex items-center gap-1 text-sm text-mute"><Link2 size={14} />{t('حسابك مرتبط بـ Google.')}</p>}
-            {user.has_password && <Field label={t('كلمة المرور الحالية')}><input id="pw-cur" type="password" dir="ltr" className="inp text-left" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>}
+            {!!user.has_google && <p className="mb-3 flex items-center gap-1 text-sm text-mute"><Link2 size={14} />{t('حسابك مرتبط بـ Google.')}</p>}
+            {!!user.has_password && <Field label={t('كلمة المرور الحالية')}><input id="pw-cur" type="password" dir="ltr" className="inp text-left" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>}
             <Field label={t('كلمة المرور الجديدة')}><input id="pw-new" type="password" dir="ltr" className="inp text-left" minLength={8} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
             <button className="btn w-full">{t('تحديث')}</button>
           </form>
@@ -84,6 +84,14 @@ export default function Profile() {
             <h2 className="mb-3 font-bold">{t('المظهر')}</h2>
             <div className="grid grid-cols-3 gap-2">
               {[['light', t('نهاري')], ['dark', t('ليلي')], ['system', t('تلقائي')]].map(([k, l]) => <button key={k} type="button" className={`btn ${mode === k ? 'btn-p' : ''}`} onClick={() => setMode(k)}>{l}</button>)}
+            </div>
+            <h3 className="mb-2 mt-4 text-sm font-semibold text-mute">{t('ألوان المنصة')}</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {[['aurora', t('الشفق'), '#3b82f6,#14b8a6,#8b5cf6'], ['sunset', t('الغروب'), '#f97316,#ec4899,#facc15'], ['emerald', t('الزمرد'), '#10b981,#06b6d4,#84cc16']].map(([k, l, g]) => (
+                <button key={k} type="button" aria-pressed={accent === k} className={`btn flex-col !gap-1.5 ${accent === k ? 'ring-2 ring-brand' : ''}`} onClick={() => setAccent(k)}>
+                  <span className="h-5 w-full rounded-lg" style={{ background: `linear-gradient(90deg, ${g})` }} />{l}
+                </button>
+              ))}
             </div>
           </div>
 

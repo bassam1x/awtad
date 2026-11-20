@@ -4,8 +4,10 @@ import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 /* ---------- Theme ---------- */
 const ThemeCtx = createContext();
 const readTheme = () => { try { return localStorage.getItem('mahara-theme') || 'system'; } catch { return 'system'; } };
+const readAccent = () => { try { const a = localStorage.getItem('mahara-accent'); return ['aurora', 'sunset', 'emerald'].includes(a) ? a : 'aurora'; } catch { return 'aurora'; } };
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(readTheme);
+  const [accent, setAccentState] = useState(readAccent);
   const [sysDark, setSysDark] = useState(() => matchMedia('(prefers-color-scheme: dark)').matches);
   useEffect(() => {
     const m = matchMedia('(prefers-color-scheme: dark)');
@@ -15,9 +17,11 @@ export function ThemeProvider({ children }) {
   }, []);
   const dark = mode === 'dark' || (mode === 'system' && sysDark);
   useEffect(() => { document.documentElement.dataset.theme = dark ? 'dark' : 'light'; }, [dark]);
+  useEffect(() => { if (accent === 'aurora') delete document.documentElement.dataset.accent; else document.documentElement.dataset.accent = accent; }, [accent]);
+  const setAccent = (a) => { setAccentState(a); try { localStorage.setItem('mahara-accent', a); } catch { /* ignore */ } };
   const set = (m) => { setMode(m); try { localStorage.setItem('mahara-theme', m); } catch { /* ignore */ } };
   const toggle = () => set(dark ? 'light' : 'dark');
-  return <ThemeCtx.Provider value={{ mode, dark, set, toggle }}>{children}</ThemeCtx.Provider>;
+  return <ThemeCtx.Provider value={{ mode, dark, set, toggle, accent, setAccent }}>{children}</ThemeCtx.Provider>;
 }
 export const useTheme = () => useContext(ThemeCtx);
 

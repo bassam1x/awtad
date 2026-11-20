@@ -9,7 +9,7 @@ import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt } from '../ui.
 function Row({ icon: I, label, value }) {
   return (
     <div className="flex items-start gap-2">
-      <I size={16} className="mt-1 shrink-0" />
+      <span className="gicon gicon-sm mt-0.5"><I size={16} /></span>
       <div><div className="text-xs text-mute">{label}</div><div className="font-semibold">{value}</div></div>
     </div>
   );
@@ -53,7 +53,7 @@ export default function Opportunity() {
             <>
               <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="btn btn-p w-full"><MapIcon size={18} />{t('عرض موقع الشركة على خرائط جوجل (Google Maps)')}</a>
               <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white dark:text-slate-900"><MapPin size={20} /></span>
+                <span className="gicon"><MapPin size={20} /></span>
                 <div className="min-w-0"><div className="font-semibold">{p.company.name}</div><div className="text-sm text-mute">{p.address}</div></div>
                 <ExternalLink size={16} className="ms-auto" />
               </a>
