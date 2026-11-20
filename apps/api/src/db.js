@@ -25,12 +25,17 @@ export function toPg(sql) {
   return out;
 }
 
+/** Neon يعرض الرابط مع channel_binding=require وهو غير مدعوم عبر الـ pooler؛ نحذفه ونُبقي sslmode */
+export function cleanUrl(u) {
+  try { const x = new URL(u); x.searchParams.delete('channel_binding'); return x.toString(); } catch { return u; }
+}
+
 async function open() {
   if (config.databaseUrl) {
     const { default: pg } = await import('pg');
     pg.types.setTypeParser(20, (v) => parseInt(v, 10));   // bigint (COUNT/SUM) كأرقام
     pg.types.setTypeParser(1700, (v) => parseFloat(v));   // numeric
-    const pool = new pg.Pool({ connectionString: config.databaseUrl, max: Number(process.env.PG_POOL_MAX) || 5, idleTimeoutMillis: 30000, connectionTimeoutMillis: 20000 });
+    const pool = new pg.Pool({ connectionString: cleanUrl(config.databaseUrl), max: Number(process.env.PG_POOL_MAX) || 5, idleTimeoutMillis: 30000, connectionTimeoutMillis: 20000 });
     pool.on('error', (e) => console.error('خطأ في اتصال قاعدة البيانات:', e.message));
     return {
       kind: 'postgres',
