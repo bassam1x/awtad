@@ -3,7 +3,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog,
-  ListChecks, PlusCircle, Settings, ClipboardCheck, FolderPlus, Users, Search, Building2, ShieldCheck, FileText, Receipt, LogOut, Menu, X, Sun, Moon, Palette,
+  ListChecks, PlusCircle, Settings, ClipboardCheck, FolderPlus, Users, Search, Building2, ShieldCheck, FileText, Receipt, LogOut, Menu, X, Sun, Moon,
 } from 'lucide-react';
 import { useAuth, useFetch, useTheme, prefetch } from './context.jsx';
 import { onActivity } from './api.js';
@@ -118,7 +118,6 @@ export default function Layout() {
           <LangSwitch className="mt-2 w-full" />
           <div className="mt-2 flex gap-2">
             <ThemeButton />
-            <Link to="/brand" className="btn" title={t('الهوية البصرية')} aria-label={t('الهوية البصرية')} data-tip={t('الهوية البصرية')}><Palette size={16} /></Link>
             <button className="btn flex-1" onClick={logout}><LogOut size={16} />{t('خروج')}</button>
           </div>
         </div>

@@ -24,19 +24,6 @@ export function LogoMark({ size = 36 }) {
     </svg>
   );
 }
-/** أيقونة التطبيق (مربع بخلفية): للتبويب وصور المشاركة والأماكن الصغيرة */
-export function LogoTile({ size = 36 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo-mark">
-      <rect width="64" height="64" rx="17" style={{ fill: 'rgb(var(--b1))' }} />
-      <rect x=".75" y=".75" width="62.5" height="62.5" rx="16.3" fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.5" />
-      <rect x="14" y="36" width="9" height="14" rx="4.5" fill="#fff" opacity=".62" />
-      <rect x="27.5" y="26" width="9" height="24" rx="4.5" fill="#fff" opacity=".82" />
-      <rect x="41" y="16" width="9" height="34" rx="4.5" fill="#fff" />
-      <circle cx="45.5" cy="9.5" r="3.3" fill="#34D399" stroke="#fff" strokeOpacity=".9" strokeWidth="1.2" />
-    </svg>
-  );
-}
 /** الاسم بلغة الواجهة بخط عريض، وتحته الاسم باللغة الأخرى بحروف صغيرة متباعدة: هوية ثنائية اللغة ثابتة. */
 export function Logo({ size = 36, text = true }) {
   const second = lang === 'en' ? 'أوتاد' : 'AWTAD';

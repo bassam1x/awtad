@@ -28,7 +28,6 @@ export default function Welcome() {
         <div className="flex items-center gap-2">
           <ThemeButton />
           <LangSwitch />
-          <Link to="/brand" className="btn hidden sm:inline-flex">{t('الهوية البصرية')}</Link>
           {/* على الجوال يقع نموذج الدخول أسفل الصفحة، فنضع رابطاً ظاهراً في الأعلى */}
           <Link to="/login" className="btn lg:hidden">{t('دخول')}</Link>
           <Link to="/register" className="btn btn-p">{t('إنشاء حساب')}</Link>

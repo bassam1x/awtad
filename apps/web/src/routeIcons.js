@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog, ListChecks, PlusCircle, Pencil,
-  ClipboardCheck, Users, Search, ShieldCheck, FileText, Receipt, Settings, UserRound, Palette,
+  ClipboardCheck, Users, Search, ShieldCheck, FileText, Receipt, Settings, UserRound,
 } from 'lucide-react';
 
 /** أيقونة ولون لكل صفحة: تظهر أمام عنوان الصفحة وفي القائمة، فيعرف المستخدم أين هو بنظرة واحدة. */
@@ -24,7 +24,6 @@ const R = {
   '/app/all-applications': [ClipboardCheck, 'gicon-v'],
   '/app/transactions': [Receipt, 'gicon-w'],
   '/app/settings': [Settings, 'gicon-s'],
-  '/brand': [Palette, 'gicon-v'],
 };
 const KEYS = Object.keys(R).sort((a, b) => b.length - a.length);
 
