@@ -6,20 +6,21 @@ import { LangSwitch, ThemeButton } from '../Layout.jsx';
 import { LoginForm } from './Auth.jsx';
 
 const features = [
-  [BadgeCheck, t('بلا شرط سنوات الخبرة'), t('لا يوجد حقل «سنوات خبرة» في أي مكان. ملفك يثبت كفاءتك بمهاراتك وأعمالك المنجزة.')],
-  [Briefcase, t('وظائف بشفافية كاملة'), t('راتب شهري محدد، ساعات وأوقات العمل، نوع الدوام، وعنوان نصي مع رابط خرائط جوجل.')],
-  [FolderKanban, t('مشاريع وتعاونات'), t('منيو مطعم، شعار، موقع، نظام كاشير. مشاريع بمبالغ واضحة تبني بها سجلّ أعمالك.')],
-  [Wallet, t('محفظة وتقييمات'), t('عند اعتماد التسليم يتحول المبلغ إلى محفظتك ويُضاف العمل مع تقييمه إلى ملفك.')],
-  [MessagesSquare, t('محادثة مباشرة'), t('بعد قبول طلبك تفتح محادثة مع الشركة لمتابعة العمل والتسليم في مكان واحد.')],
-  [ShieldCheck, t('إدارة ورقابة'), t('لوحة إدارة تراجع الحسابات والفرص وتحافظ على جودة المنصة.')],
+  [BadgeCheck, t('بلا سنوات خبرة'), t('أعمالك ومهاراتك هي الدليل، لا عدد السنين.')],
+  [Briefcase, t('وظائف واضحة'), t('الراتب والدوام والعنوان مكتوبة من البداية.')],
+  [FolderKanban, t('مشاريع تبني سجلّك'), t('نفّذ مشاريع صغيرة بمبالغ محددة وأضفها إلى ملفك.')],
+  [Wallet, t('مبلغ وتقييم عند التسليم'), t('عند اعتماد العمل يصل المبلغ إلى محفظتك مع تقييم.')],
+  [MessagesSquare, t('محادثة مباشرة'), t('تابع العمل مع الشركة في مكان واحد.')],
+  [ShieldCheck, t('حسابات وفرص مراجَعة'), t('نراجع الحسابات والفرص للحفاظ على الجودة.')],
 ];
 const steps = [
-  [UserPlus, t('أنشئ حسابك'), t('سجّل كمبدع أو كشركة، أو ادخل بحساب Google.')],
-  [Send, t('قدّم أو انشر'), t('قدّم على الفرص بمشروعين من أعمالك، أو انشر وظيفة ومشروعاً.')],
-  [Handshake, t('اعمل واكسب'), t('تحدثا، سلّم العمل، واستلم المبلغ مع تقييم يدعم ملفك.')],
+  [UserPlus, t('أنشئ حسابك'), t('كمبدع أو كشركة، أو عبر Google.')],
+  [Send, t('قدّم أو انشر'), t('قدّم بمشروعين من أعمالك، أو انشر فرصتك.')],
+  [Handshake, t('اعمل واكسب'), t('تحادثا، سلّم العمل، واستلم المبلغ مع تقييم.')],
 ];
 
 export default function Welcome() {
+  const why = t('ليش نختار {name}؟').split('{name}');
   return (
     <div className="page-in min-h-full">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
@@ -38,13 +39,21 @@ export default function Welcome() {
         <div className="min-w-0">
           <span className="chip chip-g mb-4"><MapPin size={13} />{t('منصة عراقية وعربية للطلاب والخريجين')}</span>
           <h1 className="max-w-2xl text-3xl font-bold leading-snug sm:text-5xl" style={{ textWrap: 'balance' }}>
-            {t('وظيفتك ومشاريعك الأولى تبدأ بمهارتك.. لا بشرط سنوات الخبرة')}
+            {t('مهاراتك تفتح لك أول فرصة.. بلا شرط سنوات الخبرة')}
           </h1>
           <p className="mt-4 max-w-xl text-lg text-mute">
-            {t('أوتاد تربط الطلاب والخريجين الجدد والمبرمجين والمهندسين بالشركات وأصحاب الأعمال عبر مسارين: التوظيف، والمشاريع التعاونية.')}
+            {t('أوتاد تجمع الطلاب والخريجين مع الشركات في مكان واحد: وظائف للمبتدئين، ومشاريع صغيرة بمبالغ واضحة.')}
           </p>
 
-          <section className="mt-10 grid gap-4 sm:grid-cols-2" aria-label={t('مميزات المنصة')}>
+          <div className="mt-12">
+            <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">
+              {why[0]}<span className="text-brand">{t('أوتاد')}</span>{why[1]}
+            </h2>
+            <span className="mt-3 block h-1.5 w-16 rounded-full bg-brand" aria-hidden="true" />
+            <p className="mt-3 text-mute">{t('ستة أسباب تجعلها بدايتك الصحيحة')}</p>
+          </div>
+
+          <section className="mt-6 grid gap-4 sm:grid-cols-2" aria-label={t('مميزات المنصة')}>
             {features.map(([I, title, d]) => (
               <div key={title} className="card p-5">
                 <span className="gicon gicon-live mb-3"><I size={20} /></span>
@@ -55,7 +64,7 @@ export default function Welcome() {
           </section>
 
           <section className="mt-12">
-            <h2 className="mb-4 text-xl font-bold">{t('كيف تعمل المنصة؟')}</h2>
+            <h2 className="mb-4 text-xl font-bold">{t('ابدأ في ثلاث خطوات')}</h2>
             <ol className="grid gap-4 sm:grid-cols-3">
               {steps.map(([I, title, d], i) => (
                 <li key={title} className="card p-5">
@@ -68,8 +77,8 @@ export default function Welcome() {
           </section>
 
           <section className="mt-12 grid gap-4 sm:grid-cols-2">
-            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للطلاب والخريجين')}</h3><p className="mt-1 text-sm text-mute">{t('ابنِ ملفاً يثبت مهاراتك، قدّم على وظائف مناسبة للمبتدئين، ونفّذ مشاريع صغيرة بمبالغ واضحة.')}</p></div>
-            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('انشر وظيفة أو مشروعاً، راجع الأعمال السابقة للمتقدمين بدل سنوات الخبرة، وادفع عند الاعتماد فقط.')}</p></div>
+            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للطلاب والخريجين')}</h3><p className="mt-1 text-sm text-mute">{t('ملف يثبت مهاراتك، ووظائف ومشاريع مناسبة للمبتدئين.')}</p></div>
+            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('انشر فرصتك، وراجع أعمال المتقدمين بدل سنوات الخبرة.')}</p></div>
           </section>
         </div>
 
