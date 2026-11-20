@@ -1,9 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { locale, t } from './i18n/index.js';
+import { lang, locale, t } from './i18n/index.js';
 import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
 import { tr, useTrVersion } from './translate.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
@@ -11,23 +11,38 @@ export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
 export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 
 /* ---------- Brand ---------- */
+/* الشعار: ثلاثة أوتاد (أعمدة) متصاعدة على خط أرضية، ونقطة خضراء للإنجاز. لون الخلفية يتبع لوحة الألوان المختارة. */
 export function LogoMark({ size = 36 }) {
+  const uid = useId().replace(/:/g, '');
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#2563EB" /><stop offset="1" stopColor="#0EA5A4" /></linearGradient></defs>
-      <rect width="64" height="64" rx="16" fill="url(#mg)" />
-      <rect className="logo-bar b1" x="13" y="38" width="9" height="13" rx="4.5" fill="#fff" opacity=".7" />
-      <rect className="logo-bar b2" x="27.5" y="28" width="9" height="23" rx="4.5" fill="#fff" opacity=".85" />
-      <rect className="logo-bar b3" x="42" y="18" width="9" height="33" rx="4.5" fill="#fff" />
-      <circle className="logo-dot" cx="46.5" cy="11" r="3.6" fill="#10B981" />
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="logo-mark">
+      <defs>
+        <linearGradient id={`awg${uid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" style={{ stopColor: 'rgb(var(--b1))' }} /><stop offset="1" style={{ stopColor: 'rgb(var(--b2))' }} /></linearGradient>
+        <linearGradient id={`awh${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff" stopOpacity=".28" /><stop offset=".55" stopColor="#fff" stopOpacity="0" /></linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="17" fill={`url(#awg${uid})`} />
+      <rect width="64" height="64" rx="17" fill={`url(#awh${uid})`} />
+      <rect x=".75" y=".75" width="62.5" height="62.5" rx="16.3" fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.5" />
+      <rect className="logo-bar b1" x="14" y="36" width="9" height="14" rx="4.5" fill="#fff" opacity=".62" />
+      <rect className="logo-bar b2" x="27.5" y="26" width="9" height="24" rx="4.5" fill="#fff" opacity=".82" />
+      <rect className="logo-bar b3" x="41" y="16" width="9" height="34" rx="4.5" fill="#fff" />
+      <rect x="11" y="52.5" width="42" height="2.6" rx="1.3" fill="#fff" opacity=".4" />
+      <circle className="logo-dot" cx="45.5" cy="9.5" r="3.3" fill="#34D399" stroke="#fff" strokeOpacity=".9" strokeWidth="1.2" />
     </svg>
   );
 }
+/** الاسم بلغة الواجهة، وتحته الاسم باللغة الأخرى بحروف صغيرة متباعدة: هوية ثنائية اللغة ثابتة. */
 export function Logo({ size = 36, text = true }) {
+  const second = lang === 'en' ? 'أوتاد' : 'AWTAD';
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={size} />
-      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>{t('أوتاد')}</span>}
+      {text && (
+        <span className="inline-flex flex-col" style={{ lineHeight: 1 }}>
+          <span className="font-extrabold tracking-tight" style={{ fontSize: size * 0.62, lineHeight: 1.15 }}>{t('أوتاد')}</span>
+          <span className="font-semibold text-mute" style={{ fontSize: Math.max(10, size * 0.3), letterSpacing: lang === 'en' ? 0 : '.34em', marginTop: 3, textAlign: 'start', unicodeBidi: 'plaintext' }}>{second}</span>
+        </span>
+      )}
     </span>
   );
 }

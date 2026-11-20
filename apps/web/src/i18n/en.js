@@ -478,6 +478,7 @@ export default {
   "منيو مطعم": "Restaurant menu",
   "منيو مطعم، شعار، موقع، نظام كاشير. مشاريع بمبالغ واضحة تبني بها سجلّ أعمالك.": "Restaurant menu, logo, website, cashier system. Projects with clear pay to build your portfolio.",
   "منيو من 4 صفحات بألوان تناسب هوية المكان.": "A 4-page menu in colors that suit the venue's identity.",
+  "معنى الاسم: «أوتاد» جمع وتد، وهو الثابت الذي يُبنى عليه كل شيء. هكذا تكون المهارة أساس مستقبلك المهني.": "Meaning of the name: “Awtad” is the plural of watad, the firm stake everything is built on. Skill is the foundation of your career.",
   "أوتاد": "Awtad",
   "أوتاد تربط الطلاب والخريجين الجدد والمبرمجين والمهندسين بالشركات وأصحاب الأعمال عبر مسارين: التوظيف، والمشاريع التعاونية.": "Awtad connects students, new graduates, developers and engineers with companies and business owners through two tracks: hiring and collaborative projects.",
   "موقع": "Website",
