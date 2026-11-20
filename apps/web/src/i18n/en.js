@@ -520,5 +520,8 @@ export default {
   "ألوان المنصة": "Platform colors",
   "الشفق": "Aurora",
   "الغروب": "Sunset",
-  "الزمرد": "Emerald"
+  "الزمرد": "Emerald",
+  "الملكي": "Royal",
+  "الوردي": "Rose",
+  "الذهبي": "Gold"
 };

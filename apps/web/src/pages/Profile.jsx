@@ -87,7 +87,7 @@ export default function Profile() {
             </div>
             <h3 className="mb-2 mt-4 text-sm font-semibold text-mute">{t('ألوان المنصة')}</h3>
             <div className="grid grid-cols-3 gap-2">
-              {[['aurora', t('الشفق'), '#3b82f6,#14b8a6,#8b5cf6'], ['sunset', t('الغروب'), '#f97316,#ec4899,#facc15'], ['emerald', t('الزمرد'), '#10b981,#06b6d4,#84cc16']].map(([k, l, g]) => (
+              {[['aurora', t('الشفق'), '#3b82f6,#14b8a6,#8b5cf6'], ['sunset', t('الغروب'), '#f97316,#ec4899,#facc15'], ['emerald', t('الزمرد'), '#10b981,#06b6d4,#84cc16'], ['royal', t('الملكي'), '#7c3aed,#6366f1,#d946ef'], ['rose', t('الوردي'), '#f43f5e,#ec4899,#fb923c'], ['gold', t('الذهبي'), '#f59e0b,#d97706,#facc15']].map(([k, l, g]) => (
                 <button key={k} type="button" aria-pressed={accent === k} className={`btn flex-col !gap-1.5 ${accent === k ? 'ring-2 ring-brand' : ''}`} onClick={() => setAccent(k)}>
                   <span className="h-5 w-full rounded-lg" style={{ background: `linear-gradient(90deg, ${g})` }} />{l}
                 </button>

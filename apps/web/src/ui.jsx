@@ -1,5 +1,5 @@
 import { locale, t } from './i18n/index.js';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
@@ -12,10 +12,10 @@ export function LogoMark({ size = 36 }) {
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
       <defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#2563EB" /><stop offset="1" stopColor="#0EA5A4" /></linearGradient></defs>
       <rect width="64" height="64" rx="16" fill="url(#mg)" />
-      <rect x="13" y="38" width="9" height="13" rx="4.5" fill="#fff" opacity=".7" />
-      <rect x="27.5" y="28" width="9" height="23" rx="4.5" fill="#fff" opacity=".85" />
-      <rect x="42" y="18" width="9" height="33" rx="4.5" fill="#fff" />
-      <circle cx="46.5" cy="11" r="3.6" fill="#10B981" />
+      <rect className="logo-bar b1" x="13" y="38" width="9" height="13" rx="4.5" fill="#fff" opacity=".7" />
+      <rect className="logo-bar b2" x="27.5" y="28" width="9" height="23" rx="4.5" fill="#fff" opacity=".85" />
+      <rect className="logo-bar b3" x="42" y="18" width="9" height="33" rx="4.5" fill="#fff" />
+      <circle className="logo-dot" cx="46.5" cy="11" r="3.6" fill="#10B981" />
     </svg>
   );
 }
@@ -74,12 +74,27 @@ export function PageHeader({ title, sub, children }) {
     </div>
   );
 }
+/** عدّاد يرتفع من الصفر إلى القيمة عند الظهور */
+export function CountUp({ v }) {
+  const n = typeof v === 'number' && Number.isFinite(v) ? v : null;
+  const [x, setX] = useState(0);
+  useEffect(() => {
+    if (n === null) return undefined;
+    let raf; const t0 = performance.now();
+    const step = (now) => { const k = Math.min(1, (now - t0) / 900); setX(n * (1 - (1 - k) ** 3)); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [n]);
+  if (n === null) return v;
+  const d = Number.isInteger(n) ? 0 : 1;
+  return Number(x.toFixed(d)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
 export function StatCard({ icon: I, label, value, tone = 'b', hint }) {
   const t = { b: '', g: 'gicon-g', w: 'gicon-w', r: 'gicon-r' }[tone];
   return (
     <div className="card p-4 flex items-center gap-3">
-      <span className={`gicon ${t}`}><I size={20} /></span>
-      <div className="min-w-0"><div className="text-2xl font-bold leading-tight">{value}</div><div className="text-sm text-mute">{label}</div>{hint}</div>
+      <span className={`gicon gicon-live ${t}`}><I size={20} /></span>
+      <div className="min-w-0"><div className="text-2xl font-bold leading-tight"><CountUp v={value} /></div><div className="text-sm text-mute">{label}</div>{hint}</div>
     </div>
   );
 }
@@ -144,7 +159,7 @@ export const postingChips = (p) => (p.kind === 'job' ? [t(p.type), t(p.shift), t
 /* ---------- dashboard pieces ---------- */
 export function Banner({ title, sub, children }) {
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl p-6 text-white shadow-card sm:p-8" style={{ background: 'linear-gradient(120deg,#1D4ED8 0%,#2563EB 45%,#0EA5A4 100%)' }}>
+    <div className="banner-anim mb-6 rounded-2xl p-6 text-white shadow-card sm:p-8">
       <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
       {sub && <p className="mt-1 max-w-xl text-white/85">{sub}</p>}
       {children && <div className="mt-4 flex flex-wrap gap-2">{children}</div>}

@@ -8,6 +8,7 @@
   --brand: 37 99 235; --good: 5 150 105; --soft: 232 240 255; --goodsoft: 226 250 240;
   --warn: 180 83 9; --warnsoft: 254 243 199; --bad: 185 28 28; --badsoft: 254 226 226;
   --a1: 59 130 246; --a2: 20 184 166; --a3: 167 139 250;      /* ألوان الشفق */
+  --pink: 219 39 119; --cyan: 8 145 178;
   --glass: .62; --glass-edge: 255 255 255; --glass-edge-a: .75; --aurora-a: .5;
   color-scheme: light;
 }
@@ -16,6 +17,7 @@
   --brand: 96 165 250; --good: 52 211 153; --soft: 24 42 84; --goodsoft: 14 46 40;
   --warn: 251 191 36; --warnsoft: 56 42 10; --bad: 248 113 113; --badsoft: 62 22 28;
   --a1: 59 130 246; --a2: 20 184 166; --a3: 139 92 246;
+  --pink: 244 114 182; --cyan: 34 211 238;
   --glass: .5; --glass-edge: 255 255 255; --glass-edge-a: .13; --aurora-a: .8;
   color-scheme: dark;
 }
@@ -24,6 +26,13 @@
 :root[data-theme='dark'][data-accent='sunset'] { --brand: 251 146 60; --soft: 62 34 14; --a1: 249 115 22; --a2: 219 39 119; --a3: 245 158 11; }
 :root[data-accent='emerald'] { --brand: 5 150 105; --soft: 209 250 229; --a1: 16 185 129; --a2: 6 182 212; --a3: 132 204 22; }
 :root[data-theme='dark'][data-accent='emerald'] { --brand: 52 211 153; --soft: 12 48 38; --a1: 16 185 129; --a2: 8 145 178; --a3: 101 163 13; }
+
+:root[data-accent='royal'] { --brand: 109 40 217; --soft: 237 233 254; --a1: 124 58 237; --a2: 99 102 241; --a3: 217 70 239; }
+:root[data-theme='dark'][data-accent='royal'] { --brand: 167 139 250; --soft: 36 26 74; --a1: 139 92 246; --a2: 99 102 241; --a3: 192 38 211; }
+:root[data-accent='rose'] { --brand: 225 29 72; --soft: 255 228 230; --a1: 244 63 94; --a2: 236 72 153; --a3: 251 146 60; }
+:root[data-theme='dark'][data-accent='rose'] { --brand: 251 113 133; --soft: 64 22 36; --a1: 244 63 94; --a2: 219 39 119; --a3: 249 115 22; }
+:root[data-accent='gold'] { --brand: 202 120 4; --soft: 254 243 199; --a1: 245 158 11; --a2: 217 119 6; --a3: 234 179 8; }
+:root[data-theme='dark'][data-accent='gold'] { --brand: 251 191 36; --soft: 58 44 10; --a1: 245 158 11; --a2: 217 119 6; --a3: 253 224 71; }
 
 html, body, #root { height: 100%; }
 body { @apply bg-app text-ink font-sans antialiased; font-size: 15px; line-height: 1.7; }
@@ -62,6 +71,7 @@ body::after {
 @layer components {
   /* ---------- أسطح زجاجية ---------- */
   .card {
+    position: relative;
     background: rgb(var(--card) / var(--glass));
     border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-a));
     @apply rounded-2xl;
@@ -94,7 +104,7 @@ body::after {
   .chip-w { background: rgb(var(--warn) / .15); @apply text-warn border-transparent; }
   .chip-r { background: rgb(var(--bad) / .14); @apply text-bad border-transparent; }
   .money { @apply text-good font-bold; }
-  .nav-link { @apply flex items-center gap-3 rounded-xl px-2 py-1.5 text-sm font-semibold text-mute hover:text-ink transition; }
+  .nav-link { @apply flex items-center gap-3 rounded-xl px-2 py-1.5 text-[15px] font-semibold text-ink/75 hover:text-ink transition; }
   .nav-link:hover { background: rgb(var(--card) / .5); }
   .nav-link.active { background: rgb(var(--brand) / .14); @apply text-brand; box-shadow: inset 0 0 0 1px rgb(var(--brand) / .25); }
 
@@ -119,9 +129,70 @@ body::after {
   .gicon-w { --t: var(--warn); }
   .gicon-r { --t: var(--bad); }
   .gicon-v { --t: var(--a3); }
+  .gicon-p { --t: var(--pink); }
+  .gicon-c { --t: var(--cyan); }
   .card:hover .gicon, .nav-link:hover .gicon { transform: translateY(-2px) rotate(-4deg); box-shadow: 0 14px 28px rgb(var(--t) / .32), inset 0 1px 1px rgb(255 255 255 / .6); }
   .gicon-float { animation: float-y 3.2s ease-in-out infinite alternate; }
 }
 :focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; }
 /* لمن يفضّل تقليل الحركة: نوقف كل الحركات ونُبقي الخلفية ثابتة */
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ================= حركات ================= */
+@keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.97); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes gradient-pan { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes orbit-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(-40px, 30px) scale(1.25); } }
+@keyframes orbit-b { from { transform: translate(0, 0) scale(1.1); } to { transform: translate(36px, -28px) scale(.9); } }
+@keyframes bar-grow { from { transform: scaleY(.55); } to { transform: scaleY(1); } }
+@keyframes dot-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .55; } }
+@keyframes active-glow { 0%, 100% { box-shadow: inset 0 0 0 1px rgb(var(--brand) / .25), 0 0 0 rgb(var(--brand) / 0); } 50% { box-shadow: inset 0 0 0 1px rgb(var(--brand) / .45), 0 0 22px rgb(var(--brand) / .30); } }
+
+/* دخول الصفحة: العناصر تظهر تباعاً */
+.page-in > * { animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+.page-in > *:nth-child(2) { animation-delay: .07s; } .page-in > *:nth-child(3) { animation-delay: .14s; }
+.page-in > *:nth-child(4) { animation-delay: .21s; } .page-in > *:nth-child(5) { animation-delay: .28s; }
+.page-in > *:nth-child(n+6) { animation-delay: .35s; }
+.page-in .grid > * { animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+.page-in .grid > *:nth-child(1) { animation-delay: .12s; } .page-in .grid > *:nth-child(2) { animation-delay: .19s; }
+.page-in .grid > *:nth-child(3) { animation-delay: .26s; } .page-in .grid > *:nth-child(4) { animation-delay: .33s; }
+.page-in .grid > *:nth-child(5) { animation-delay: .40s; } .page-in .grid > *:nth-child(n+6) { animation-delay: .47s; }
+
+/* البطاقة: ارتفاع ولمعان يتبع المؤشر */
+.card { transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s ease; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgb(15 23 42 / .16), inset 0 1px 0 rgb(255 255 255 / .4); }
+.card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / .16), transparent 62%); }
+.card:hover::before { opacity: 1; }
+.card.no-lift:hover { transform: none; }
+.fixed .card:hover { transform: none; }
+
+/* لمعة تعبر الأزرار الرئيسية */
+.btn-p, .btn-g { position: relative; overflow: hidden; }
+.btn-p::after, .btn-g::after { content: ''; position: absolute; inset: 0; pointer-events: none; transform: translateX(-130%);
+  background: linear-gradient(110deg, transparent 32%, rgb(255 255 255 / .5) 50%, transparent 68%); transition: transform .8s ease; }
+.btn-p:hover::after, .btn-g:hover::after { transform: translateX(130%); }
+.btn:active { transform: scale(.97); }
+
+/* بانر متحرك */
+.banner-anim { position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(115deg, rgb(var(--a1)), rgb(var(--a2)) 45%, rgb(var(--a3)) 80%, rgb(var(--a1)));
+  background-size: 260% 260%; animation: gradient-pan 14s ease-in-out infinite; }
+.banner-anim::before, .banner-anim::after { content: ''; position: absolute; z-index: -1; border-radius: 50%; filter: blur(2px); }
+.banner-anim::before { width: 280px; height: 280px; top: -110px; inset-inline-end: -60px; background: radial-gradient(circle, rgb(255 255 255 / .35), transparent 68%); animation: orbit-a 9s ease-in-out infinite alternate; }
+.banner-anim::after { width: 220px; height: 220px; bottom: -100px; inset-inline-start: 18%; background: radial-gradient(circle, rgb(255 255 255 / .26), transparent 70%); animation: orbit-b 11s ease-in-out infinite alternate; }
+
+/* شعار نابض */
+.logo-bar { transform-box: fill-box; transform-origin: bottom; animation: bar-grow 1.8s ease-in-out infinite alternate; }
+.logo-bar.b2 { animation-delay: .35s; } .logo-bar.b3 { animation-delay: .7s; }
+.logo-dot { transform-box: fill-box; transform-origin: center; animation: dot-pulse 2.2s ease-in-out infinite; }
+
+/* أيقونات حيّة تطفو بهدوء، والمتتابعة بتأخير */
+.gicon-live { animation: float-y 3.4s ease-in-out infinite alternate; }
+.grid > *:nth-child(2) .gicon-live { animation-delay: .5s; } .grid > *:nth-child(3) .gicon-live { animation-delay: 1s; } .grid > *:nth-child(4) .gicon-live { animation-delay: 1.5s; }
+.nav-link.active { animation: active-glow 3.2s ease-in-out infinite; }
+.nav-link.active .gicon { transform: scale(1.06); }
+
+/* أيقونات القائمة الجانبية: واضحة وبحجم يتّسع للقائمة كاملة */
+.nav-link .gicon { width: 2.3rem; height: 2.3rem; border-radius: .8rem; }
+.nav-link { gap: .7rem; padding-block: .3rem; }
+

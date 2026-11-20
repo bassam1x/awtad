@@ -47,7 +47,7 @@ export default function Welcome() {
           <section className="mt-10 grid gap-4 sm:grid-cols-2" aria-label={t('مميزات المنصة')}>
             {features.map(([I, title, d]) => (
               <div key={title} className="card p-5">
-                <span className="gicon mb-3"><I size={20} /></span>
+                <span className="gicon gicon-live mb-3"><I size={20} /></span>
                 <h2 className="font-bold">{title}</h2>
                 <p className="mt-1 text-sm text-mute">{d}</p>
               </div>

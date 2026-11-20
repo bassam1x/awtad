@@ -13,7 +13,7 @@
       try {
         var l = localStorage.getItem('mahara-lang');
         if (l === 'en' || l === 'ku' || l === 'ar') { document.documentElement.lang = l; document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl'; }
-        var a = localStorage.getItem('mahara-accent'); if (a === 'sunset' || a === 'emerald') document.documentElement.dataset.accent = a;
+        var a = localStorage.getItem('mahara-accent'); if (a === 'sunset' || a === 'emerald' || a === 'royal' || a === 'rose' || a === 'gold') document.documentElement.dataset.accent = a;
         var t = localStorage.getItem('mahara-theme') || 'system';
         var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';

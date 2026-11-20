@@ -4,7 +4,7 @@ import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 /* ---------- Theme ---------- */
 const ThemeCtx = createContext();
 const readTheme = () => { try { return localStorage.getItem('mahara-theme') || 'system'; } catch { return 'system'; } };
-const readAccent = () => { try { const a = localStorage.getItem('mahara-accent'); return ['aurora', 'sunset', 'emerald'].includes(a) ? a : 'aurora'; } catch { return 'aurora'; } };
+const readAccent = () => { try { const a = localStorage.getItem('mahara-accent'); return ['aurora', 'sunset', 'emerald', 'royal', 'rose', 'gold'].includes(a) ? a : 'aurora'; } catch { return 'aurora'; } };
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(readTheme);
   const [accent, setAccentState] = useState(readAccent);
