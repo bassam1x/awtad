@@ -93,11 +93,25 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => { const tok = getToken(); mutate((list) => list.filter((a) => a.token !== tok)); setToken(null); clearFetchCache(); setUser(null); }, [mutate]);
   /* فصل الجلسة الحالية دون حذفها من القائمة (لإضافة حساب جديد) */
   const detach = useCallback(() => { setToken(null); clearFetchCache(); setUser(null); }, []);
+  /* الإقلاع: نتحقق من الجلسة المحفوظة. التوكن لا يُمسح إلا إذا رفضه الخادم فعلاً (401/403)؛
+     أما انقطاع الشبكة أو تعثّر الخادم فيبقيه، ونعيد المحاولة تلقائياً وتعرض شاشة البداية حالة الاتصال. */
+  const [offline, setOffline] = useState(false);
+  const boot = useCallback(async () => {
+    if (!getToken()) { setOffline(false); setReady(true); return; }
+    try {
+      const u = await api.get('/me');
+      setUser(u); save(u, getToken()); setOffline(false); setReady(true);
+    } catch (e) {
+      if (e.status === 401 || e.status === 403) { setToken(null); setOffline(false); setReady(true); } else setOffline(true);
+    }
+  }, [save]);
+  useEffect(() => { setUnauthorizedHandler(logout); boot(); }, [logout, boot]);
   useEffect(() => {
-    setUnauthorizedHandler(logout);
-    if (!getToken()) { setReady(true); return; }
-    api.get('/me').then((u) => { setUser(u); save(u, getToken()); }).catch(() => setToken(null)).finally(() => setReady(true));
-  }, [logout, save]);
+    if (!offline) return undefined;
+    const id = setInterval(boot, 4000);
+    window.addEventListener('online', boot);
+    return () => { clearInterval(id); window.removeEventListener('online', boot); };
+  }, [offline, boot]);
   /* تبديل فوري لحساب محفوظ: نتحقق من توكنه أولاً، فإن كان منتهياً يُحذف دون إخراجك من حسابك الحالي */
   const switchTo = useCallback(async (id) => {
     const a = readAcc().find((x) => x.id === id);
@@ -110,10 +124,10 @@ export function AuthProvider({ children }) {
     } catch { drop(id); return false; }
   }, [nav, save, drop]);
   const value = useMemo(() => ({
-    user, ready, logout, setUser, accounts, switchTo, drop, detach,
+    user, ready, offline, retry: boot, logout, setUser, accounts, switchTo, drop, detach,
     login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); save(s.user, s.token); },
     refresh: () => api.get('/me').then(setUser),
-  }), [user, ready, logout, accounts, switchTo, drop, detach, save]);
+  }), [user, ready, offline, boot, logout, accounts, switchTo, drop, detach, save]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => useContext(AuthCtx);
