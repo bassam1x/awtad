@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { all, get } from '../db.js';
 import { role } from '../security.js';
 import { balance, fullUser } from '../services.js';
+import { LANGS, translateMany } from '../translate.js';
+import { bad, wrap } from '../utils.js';
+import { rateLimit } from '../security.js';
 
 const r = Router();
 const count = (sql, ...p) => get(sql, ...p).c;
@@ -47,5 +50,13 @@ r.get('/stats', (req, res) => {
     recent: all("SELECT id,name,role,avatar,created_at FROM users WHERE role<>'admin' ORDER BY id DESC LIMIT 6"),
   });
 });
+
+/* ترجمة محتوى المستخدمين إلى لغة الواجهة (مخزّنة دائماً). للمسجّلين فقط. */
+r.post('/translate', rateLimit({ windowMs: 60 * 1000, max: 90 }), wrap(async (req, res) => {
+  const { lang, texts } = req.body || {};
+  if (!LANGS.includes(lang)) return bad(res, 'لغة غير مدعومة');
+  if (!Array.isArray(texts) || !texts.length || texts.length > 40 || texts.some((x) => typeof x !== 'string' || x.length > 2000)) return bad(res, 'طلب غير صالح');
+  res.json({ translations: await translateMany(texts, lang) });
+}));
 
 export default r;

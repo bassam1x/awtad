@@ -13,6 +13,7 @@ process.env.SERVE_WEB = 'false';
 
 const { createApp } = await import('../src/app.js');
 const { seedIfEmpty } = await import('../src/seed.js');
+const tr = await import('../src/translate.js');
 
 let server, base;
 before(() => { seedIfEmpty(); server = createApp().listen(0); base = `http://127.0.0.1:${server.address().port}`; });
@@ -45,6 +46,30 @@ test('حسابات التجربة تظهر في التطوير ولا تظهر �
   assert.ok(Array.isArray(r.json.demo) && r.json.demo.length === 3);
   const old = config.env; config.env = 'production';
   try { r = await call('GET', '/api/config'); assert.equal(r.json.demo, undefined); } finally { config.env = old; }
+});
+
+test('الترجمة: تخزين دائم، حدود، ولا ترجمة لما لا يحتاجها', async () => {
+  let calls = 0;
+  tr.setProvider(async (t, target) => { calls++; return `[${target}] ${t}`; });
+  const st = await login('sara@demo.iq');
+  assert.equal((await call('POST', '/api/translate', { lang: 'en', texts: ['x'] })).status, 401, 'يتطلب تسجيل دخول');
+  assert.equal((await call('POST', '/api/translate', { lang: 'fr', texts: ['x'] }, st)).status, 400);
+  assert.equal((await call('POST', '/api/translate', { lang: 'en', texts: new Array(41).fill('a') }, st)).status, 400);
+  const body = { lang: 'en', texts: ['مصمم محتوى سوشال ميديا', 'React', 'Hello world again'] };
+  let r = await call('POST', '/api/translate', body, st);
+  assert.equal(r.status, 200);
+  assert.equal(r.json.translations[0], '[en] مصمم محتوى سوشال ميديا');
+  assert.equal(r.json.translations[1], 'React', 'اسم تقني لا يُترجم');
+  assert.equal(r.json.translations[2], 'Hello world again', 'نص إنكليزي إلى الإنكليزية لا يُترجم');
+  assert.equal(calls, 1);
+  r = await call('POST', '/api/translate', body, st);
+  assert.equal(r.json.translations[0], '[en] مصمم محتوى سوشال ميديا');
+  assert.equal(calls, 1, 'الثانية من التخزين الدائم');
+  r = await call('POST', '/api/translate', { lang: 'ar', texts: ['Looking for a talented designer to join us'] }, st);
+  assert.match(r.json.translations[0], /^\[ar\]/);
+  tr.setProvider(async () => null);
+  r = await call('POST', '/api/translate', { lang: 'ku', texts: ['نص جديد لم يُترجم من قبل'] }, st);
+  assert.equal(r.json.translations[0], null, 'فشل المزوّد يعيد null ولا يُخزَّن');
 });
 
 test('الترويسات الأمنية وCORS', async () => {

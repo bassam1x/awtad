@@ -31,8 +31,6 @@ const NAV = {
     [t('حسابي'), [['/app/profile', t('إعدادات الحساب'), UserCog]]],
   ],
 };
-const TONES = ['', 'gicon-g', 'gicon-w', 'gicon-v', 'gicon-p', 'gicon-c'];
-const toneOf = (to) => TONES[[...to.split('?')[0]].reduce((a, c) => a + c.charCodeAt(0), 0) % TONES.length];
 const ROLE_LABEL = { student: t('مبدع'), company: t('شركة'), admin: t('مدير المنصة') };
 
 export function ThemeButton({ className = '' }) {
@@ -104,7 +102,7 @@ export default function Layout() {
             <div key={title} className="mb-4">
               <div className="px-3 pb-1 text-xs font-semibold text-mute/80">{title}</div>
               {items.map(([to, label, Icon, end]) => (
-                <NavLink key={to} to={to} onMouseEnter={() => prefetch(PREFETCH[to])} onFocus={() => prefetch(PREFETCH[to])} className={() => `nav-link ${isActive(to, end) ? 'active' : ''}`}><span className={`gicon ${toneOf(to)}`}><Icon size={19} /></span><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
+                <NavLink key={to} to={to} onMouseEnter={() => prefetch(PREFETCH[to])} onFocus={() => prefetch(PREFETCH[to])} className={() => `nav-link ${isActive(to, end) ? 'active' : ''}`}><Icon size={19} className="nav-ic" /><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
               ))}
             </div>
           ))}

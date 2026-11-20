@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { locale, t } from './i18n/index.js';
 import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
+import { tr, useTrVersion } from './translate.jsx';
 import { useEffect, useState } from 'react';
 import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 
@@ -35,14 +36,16 @@ export function Logo({ size = 36, text = true }) {
 const COLORS = ['#2563EB', '#0EA5A4', '#7C3AED', '#D97706', '#DB2777', '#059669', '#475569'];
 const colorOf = (id) => COLORS[Math.abs(Number(id) || 0) % COLORS.length];
 export function Avatar({ u, size = 40, square }) {
+  useTrVersion();
   if (!u) return null;
   const name = u.name || u.company_name || u.student_name || t('؟');
+  const initial = (square ? tr(name) : name).trim()[0];
   const img = u.avatar || u.company_avatar || u.student_avatar || u.other_avatar;
   const r = square ? Math.round(size * 0.24) : size / 2;
   if (img) return <img src={img} alt={name} width={size} height={size} className="shrink-0 border border-line object-cover" style={{ width: size, height: size, borderRadius: r }} />;
   return (
     <div aria-label={name} className="shrink-0 flex items-center justify-center font-bold text-white" style={{ width: size, height: size, borderRadius: r, background: colorOf(u.id || u.company_id || u.other_id), fontSize: size * 0.4 }}>
-      {name.trim()[0]}
+      {initial}
     </div>
   );
 }

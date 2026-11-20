@@ -324,7 +324,7 @@ export default {
   "طلبات التقديم": "Applications",
   "طلبات التقديم حسب الحالة": "Applications by status",
   "طلبات بانتظار مراجعتك": "Applications awaiting your review",
-  "طلبات تقديم": "applications",
+  "طلبات تقديم": "Applications",
   "طلبات قيد المراجعة": "Applications under review",
   "طلبات مقبولة": "Accepted applications",
   "طلباتي ودعواتي": "My applications and invitations",
@@ -531,5 +531,8 @@ export default {
   "حسابات تجريبية": "Demo accounts",
   "إضافة حساب موجود": "Add an existing account",
   "نسيان هذا الحساب": "Forget this account",
-  "انتهت صلاحية هذا الحساب، سجّل الدخول إليه من جديد": "This account has expired, sign in to it again"
+  "انتهت صلاحية هذا الحساب، سجّل الدخول إليه من جديد": "This account has expired, sign in to it again",
+  "ترجمة": "Translate",
+  "عرض الأصل": "Show original",
+  "لغة غير مدعومة": "Unsupported language"
 };

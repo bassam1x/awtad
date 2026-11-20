@@ -20,6 +20,17 @@ export function ThemeProvider({ children }) {
   const dark = mode === 'dark' || (mode === 'system' && sysDark);
   useEffect(() => { document.documentElement.dataset.theme = dark ? 'dark' : 'light'; }, [dark]);
   useEffect(() => { if (accent === 'aurora') delete document.documentElement.dataset.accent; else document.documentElement.dataset.accent = accent; }, [accent]);
+  /* مؤشر سهم أنيق بلون المنصة، ويدٌ على العناصر القابلة للنقر (حلقة حول رأس السهم) */
+  useEffect(() => {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim().split(/\s+/).map(Number);
+    if (raw.length < 3 || raw.some(Number.isNaN)) return;
+    const fill = '#' + raw.map((n) => n.toString(16).padStart(2, '0')).join('');
+    const arrow = "<path d='M5 3 5 21.5 9.6 17.3 12.6 24.2 16 22.7 13 16 19.4 15.6Z' fill='white' stroke='white' stroke-width='3' stroke-linejoin='round'/><path d='M5 3 5 21.5 9.6 17.3 12.6 24.2 16 22.7 13 16 19.4 15.6Z' fill='" + fill + "' stroke='#0b1220' stroke-width='1.1' stroke-linejoin='round'/>";
+    const svg = (extra) => "url(\"data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'>" + extra + arrow + "</svg>") + "\")";
+    const st = document.documentElement.style;
+    st.setProperty('--cur-arrow', svg('') + ' 5 3, auto');
+    st.setProperty('--cur-hand', svg("<circle cx='5' cy='3' r='5.5' fill='" + fill + "' fill-opacity='.28'/>") + ' 5 3, pointer');
+  }, [dark, accent]);
   const setAccent = (a) => { setAccentState(a); try { localStorage.setItem('mahara-accent', a); } catch { /* ignore */ } };
   const set = (m) => { setMode(m); try { localStorage.setItem('mahara-theme', m); } catch { /* ignore */ } };
   const toggle = () => set(dark ? 'light' : 'dark');

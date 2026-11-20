@@ -1,4 +1,5 @@
 import { t } from '../i18n/index.js';
+import { Tr } from '../translate.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from 'lucide-react';
 import { useFetch } from '../context.jsx';
@@ -8,9 +9,9 @@ export function ProfileBody({ p }) {
   if (p.role === 'company') {
     return (
       <div>
-        <div className="mb-4 flex items-center gap-4"><Avatar u={p} size={72} square /><div><h2 className="text-xl font-bold">{p.name}</h2><div className="text-mute">{p.sector} · {p.city}</div></div></div>
+        <div className="mb-4 flex items-center gap-4"><Avatar u={p} size={72} square /><div><h2 className="text-xl font-bold">{p.name}</h2><div className="text-mute"><Tr>{p.sector}</Tr> · <Tr>{p.city}</Tr></div></div></div>
         <p className="mb-4">{p.about || t('لا توجد نبذة.')}</p>
-        {p.address && <div className="mb-2 flex items-start gap-2"><MapPin size={18} className="mt-1" />{p.address}</div>}
+        {p.address && <div className="mb-2 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address}</Tr></div>}
         {p.map_url && <a className="btn" href={p.map_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={16} />{t('الموقع على خرائط جوجل')}</a>}
         {p.contact_email && <div className="mt-3 flex items-center gap-2 text-mute"><Mail size={16} /><span dir="ltr">{p.contact_email}</span></div>}
       </div>
@@ -30,23 +31,23 @@ export function ProfileBody({ p }) {
       <p className="mb-5">{p.bio || t('لم تُضف نبذة بعد.')}</p>
       <h3 className="mb-2 font-bold">{t('المهارات')}</h3>
       <div className="mb-5 flex flex-wrap gap-2">
-        {p.skills?.map((k) => <span key={k.id} className="chip chip-b">{k.name} · {t(k.level)}</span>)}
+        {p.skills?.map((k) => <span key={k.id} className="chip chip-b"><Tr>{k.name}</Tr> · {t(k.level)}</span>)}
         {!p.skills?.length && <span className="text-mute">{t('لا مهارات بعد')}</span>}
       </div>
       <h3 className="mb-2 font-bold">{t('سجل الأعمال المنجزة')}</h3>
       <div className="mb-5 grid gap-2">
         {p.works?.map((w) => (
           <div key={w.id} className="rounded-xl border border-line p-3">
-            <div className="flex flex-wrap justify-between gap-2"><b>{w.title}</b><Stars v={w.rating} size={14} /></div>
-            <div className="text-sm text-mute">{w.company_name} · <span className="money">{fmt(w.amount)} {t(w.cur)}</span></div>
-            <div className="mt-1 text-sm">«{t(w.comment)}»</div>
+            <div className="flex flex-wrap justify-between gap-2"><b><Tr>{w.title}</Tr></b><Stars v={w.rating} size={14} /></div>
+            <div className="text-sm text-mute"><Tr>{w.company_name}</Tr> · <span className="money">{fmt(w.amount)} {t(w.cur)}</span></div>
+            <div className="mt-1 text-sm">«<Tr>{t(w.comment)}</Tr>»</div>
           </div>
         ))}
         {!p.works?.length && <span className="text-mute">{t('لا أعمال منجزة بعد.')}</span>}
       </div>
       <h3 className="mb-2 font-bold">{t('معرض أعمال خارجي')}</h3>
       <div className="flex flex-wrap gap-2">
-        {p.portfolio?.map((x) => (x.url ? <a key={x.id} className="chip chip-b" href={x.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={12} />{x.title}</a> : <span key={x.id} className="chip">{x.title}</span>))}
+        {p.portfolio?.map((x) => (x.url ? <a key={x.id} className="chip chip-b" href={x.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={12} /><Tr>{x.title}</Tr></a> : <span key={x.id} className="chip"><Tr>{x.title}</Tr></span>))}
         {!p.portfolio?.length && <span className="text-mute">{t('لا روابط بعد')}</span>}
       </div>
     </div>

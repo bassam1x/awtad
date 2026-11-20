@@ -1,7 +1,8 @@
 import { t } from '../i18n/index.js';
+import { Tr, needsTr } from '../translate.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Check, PackageCheck, BadgeDollarSign, Send } from 'lucide-react';
+import { Check, PackageCheck, BadgeDollarSign, Languages, Send } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt } from '../ui.jsx';
@@ -23,7 +24,7 @@ export default function Workspace() {
           {convs.map((c) => (
             <Link key={c.id} to={`/app/workspace/${c.id}`} className={`flex items-center gap-3 rounded-xl p-2 ${cur?.id === c.id ? 'bg-soft' : 'hover:bg-app'}`}>
               <Avatar u={{ id: c.other_id, name: c.other_name, avatar: c.other_avatar }} size={40} square={user.role === 'student'} />
-              <div className="min-w-0"><div className="truncate font-semibold">{c.other_name}</div><div className="truncate text-xs text-mute">{c.title}</div></div>
+              <div className="min-w-0"><div className="truncate font-semibold">{c.other_name}</div><div className="truncate text-xs text-mute"><Tr>{c.title}</Tr></div></div>
             </Link>
           ))}
           {!convs.length && <div className="p-4 text-sm text-mute">{t('تظهر المحادثات هنا بعد قبول أي طلب.')}</div>}
@@ -41,6 +42,7 @@ function Chat({ id }) {
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState('');
   const [approve, setApprove] = useState(false);
+  const [shown, setShown] = useState(() => new Set());
   const box = useRef();
   const load = () => api.get(`/applications/${id}/messages`).then(setMsgs).catch(() => {});
   useEffect(() => { load(); const t = setInterval(load, 4000); return () => clearInterval(t); }, [id]); // eslint-disable-line
@@ -58,7 +60,7 @@ function Chat({ id }) {
     <div className="card flex min-h-[520px] min-w-0 flex-col p-4">
       <div className="mb-3 flex items-center gap-3 border-b border-line pb-3">
         <div className="flex"><Avatar u={a.company} size={40} square /><span className="-me-2"><Avatar u={a.student} size={40} /></span></div>
-        <div className="min-w-0"><div className="truncate font-bold">{a.posting_title}</div><div className="text-sm text-mute">{a.company.name} {t('و')}{a.student.name}</div></div>
+        <div className="min-w-0"><div className="truncate font-bold"><Tr>{a.posting_title}</Tr></div><div className="text-sm text-mute"><Tr>{a.company.name}</Tr> {t('و')}{a.student.name}</div></div>
       </div>
       {a.kind === 'project' && (
         <div className="mb-4">
@@ -84,7 +86,10 @@ function Chat({ id }) {
           const mine = m.sender_id === user.id;
           return (
             <div key={m.id} className={`flex items-end gap-2 ${mine ? 'flex-row' : 'flex-row-reverse'} justify-end`}>
-              <div className={`msg-in max-w-[75%] rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{t(m.text)}</div>
+              <div className="grid max-w-[75%] justify-items-start gap-1">
+                <div className={`msg-in rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{shown.has(m.id) ? <Tr>{t(m.text)}</Tr> : t(m.text)}</div>
+                {!mine && needsTr(t(m.text)) && <button type="button" className="inline-flex items-center gap-1 px-1 text-xs text-mute transition hover:text-brand" onClick={() => setShown((s) => { const n = new Set(s); n.has(m.id) ? n.delete(m.id) : n.add(m.id); return n; })}><Languages size={12} />{shown.has(m.id) ? t('عرض الأصل') : t('ترجمة')}</button>}
+              </div>
               <Avatar u={who(m.sender_id)} size={28} square={who(m.sender_id)?.role === 'company'} />
             </div>
           );

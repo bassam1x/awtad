@@ -1,4 +1,5 @@
 import { t } from '../i18n/index.js';
+import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from 'lucide-react';
@@ -12,7 +13,7 @@ function PostingCard({ p }) {
     <div className="card flex flex-col gap-3 p-4">
       <div className="flex items-start gap-3">
         <Avatar u={p.company} size={44} square />
-        <div className="min-w-0"><div className="font-bold leading-snug">{p.title}</div><div className="text-sm text-mute">{p.company.name} · {p.company.city}</div></div>
+        <div className="min-w-0"><div className="font-bold leading-snug"><Tr>{p.title}</Tr></div><div className="text-sm text-mute"><Tr>{p.company.name}</Tr> · <Tr>{p.company.city}</Tr></div></div>
       </div>
       <div className="money text-lg">{fmt(p.pay)} {t(p.cur)}<span className="text-sm font-medium text-mute">{p.kind === 'job' ? t(' / شهرياً') : t(' / للمشروع')}</span></div>
       <div className="flex flex-wrap gap-1.5"><span className="chip chip-b">{t(p.spec)}</span>{postingChips(p).map((c) => <span key={c} className="chip">{c}</span>)}</div>
@@ -105,7 +106,7 @@ export function Applications() {
             {inv.map((i) => (
               <div key={i.id} className="card flex flex-wrap items-center gap-3 p-4">
                 <Avatar u={{ id: i.id, name: i.company_name, avatar: i.company_avatar }} size={40} square />
-                <div className="min-w-0 flex-1"><div className="font-semibold">{i.company_name} {t('تدعوك إلى:')} {i.title}</div><div className="money">{fmt(i.pay)} {t(i.cur)}</div></div>
+                <div className="min-w-0 flex-1"><div className="font-semibold"><Tr>{i.company_name}</Tr> {t('تدعوك إلى:')} <Tr>{i.title}</Tr></div><div className="money">{fmt(i.pay)} {t(i.cur)}</div></div>
                 <Link className="btn" to={`/app/opportunity/${i.posting_id}`}>{t('التفاصيل')}</Link>
                 <button className="btn btn-g" onClick={() => accept(i.id)}>{t('قبول الدعوة')}</button>
               </div>
@@ -119,7 +120,7 @@ export function Applications() {
           {apps.map((a) => (
             <div key={a.id} className="card flex flex-wrap items-center gap-3 p-4">
               <Avatar u={{ id: a.company_id, name: a.company_name, avatar: a.company_avatar }} size={44} square />
-              <div className="min-w-0 flex-1"><div className="font-semibold">{a.title}</div><div className="text-sm text-mute">{a.company_name} · {a.kind === 'job' ? t('وظيفة') : t('مشروع')} · {dateAr(a.created_at)}</div></div>
+              <div className="min-w-0 flex-1"><div className="font-semibold"><Tr>{a.title}</Tr></div><div className="text-sm text-mute"><Tr>{a.company_name}</Tr> · {a.kind === 'job' ? t('وظيفة') : t('مشروع')} · {dateAr(a.created_at)}</div></div>
               <StatusChip status={a.status} />
               <Link className="btn" to={`/app/opportunity/${a.posting_id}`}>{t('عرض')}</Link>
               {a.status === 'accepted' && <Link className="btn btn-g" to={`/app/workspace/${a.id}`}>{t('المحادثة')}</Link>}
@@ -148,7 +149,7 @@ export function Wallet() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-line text-mute"><th className="p-3 text-start">{t('المشروع')}</th><th className="p-3 text-start">{t('التاريخ')}</th><th className="p-3 text-start">{t('المبلغ')}</th></tr></thead>
-            <tbody>{data.tx.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3">{x.title}</td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">+{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
+            <tbody>{data.tx.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">+{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
           </table>
         </div>
       ) : <Empty>{t('لا عمليات بعد. تظهر هنا أرباحك عند اعتماد أول مشروع.')}</Empty>}
@@ -171,7 +172,7 @@ export function Portfolio() {
           <div className="card p-5">
             <h2 className="mb-3 font-bold">{t('المهارات')}</h2>
             <div className="mb-4 flex flex-wrap gap-2">
-              {user.skills.map((k) => <span key={k.id} className="chip chip-b">{k.name} · {t(k.level)}<button aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/skills/${k.id}`))}><X size={12} /></button></span>)}
+              {user.skills.map((k) => <span key={k.id} className="chip chip-b"><Tr>{k.name}</Tr> · {t(k.level)}<button aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/skills/${k.id}`))}><X size={12} /></button></span>)}
               {!user.skills.length && <span className="text-sm text-mute">{t('لا مهارات بعد.')}</span>}
             </div>
             <div className="flex gap-2">
@@ -183,7 +184,7 @@ export function Portfolio() {
           <div className="card p-5">
             <h2 className="mb-3 font-bold">{t('مشاريع خارجية')}</h2>
             <div className="mb-4 grid gap-2">
-              {user.portfolio.map((x) => <div key={x.id} className="flex items-center justify-between gap-2 rounded-xl border border-line p-2 text-sm"><span className="truncate">{x.title}</span><button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/portfolio/${x.id}`))}><Trash2 size={14} /></button></div>)}
+              {user.portfolio.map((x) => <div key={x.id} className="flex items-center justify-between gap-2 rounded-xl border border-line p-2 text-sm"><span className="truncate"><Tr>{x.title}</Tr></span><button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/portfolio/${x.id}`))}><Trash2 size={14} /></button></div>)}
               {!user.portfolio.length && <span className="text-sm text-mute">{t('لا مشاريع خارجية بعد.')}</span>}
             </div>
             <div className="grid gap-2">

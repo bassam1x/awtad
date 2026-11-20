@@ -1,4 +1,5 @@
 import { t } from '../i18n/index.js';
+import { Tr } from '../translate.jsx';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send } from 'lucide-react';
@@ -35,7 +36,7 @@ export function CompanyDashboard() {
       {pending.length ? <div className="grid gap-3">{pending.map((a) => (
         <div key={a.id} className="card flex flex-wrap items-center gap-3 p-4">
           <Avatar u={{ id: a.student_id, name: a.student_name, avatar: a.student_avatar }} size={44} />
-          <div className="min-w-0 flex-1"><div className="font-semibold">{a.student_name}</div><div className="text-sm text-mute">{t('تقدّم على:')} {a.title}</div></div>
+          <div className="min-w-0 flex-1"><div className="font-semibold">{a.student_name}</div><div className="text-sm text-mute">{t('تقدّم على:')} <Tr>{a.title}</Tr></div></div>
           <Link className="btn" to={`/app/applicants?posting=${a.posting_id}`}>{t('مراجعة')}</Link>
         </div>
       ))}</div> : <Empty>{t('لا طلبات معلّقة حالياً.')}</Empty>}
@@ -62,7 +63,7 @@ export function MyPostings() {
             <div key={p.id} className="card flex flex-wrap items-center gap-3 p-4">
               <span className={`chip ${p.kind === 'job' ? 'chip-b' : 'chip-g'}`}>{p.kind === 'job' ? t('وظيفة') : t('مشروع')}</span>
               <div className="min-w-0 flex-1">
-                <Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand">{p.title}</Link>
+                <Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand"><Tr>{p.title}</Tr></Link>
                 <div className="text-sm text-mute">{t(p.spec)} · <span className="money">{fmt(p.pay)} {t(p.cur)}</span>{p.kind === 'job' ? ` · ${t(p.shift)} · ${t(p.type)}` : ` · ${t('{n} أيام', { n: p.days })}`}</div>
               </div>
               {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
@@ -160,7 +161,7 @@ export function Applicants() {
         <label className="lbl" htmlFor="app-sel">{t('المنشور')}</label>
         <select id="app-sel" className="inp" value={posting} onChange={(e) => setSp(e.target.value ? { posting: e.target.value } : {})}>
           <option value="">{t('كل المنشورات')}</option>
-          {mine?.map((p) => <option key={p.id} value={p.id}>{p.title} ({p.applicants})</option>)}
+          {mine?.map((p) => <option key={p.id} value={p.id}><Tr>{p.title}</Tr> ({p.applicants})</option>)}
         </select>
       </div>
       {loading ? <Spinner /> : apps?.length ? (
@@ -171,9 +172,9 @@ export function Applicants() {
                 <Avatar u={{ id: a.student_id, name: a.student_name, avatar: a.student_avatar }} size={52} />
                 <div className="min-w-0 flex-1">
                   <button className="text-lg font-bold text-brand" onClick={() => setView(a.student_id)}>{a.student_name}</button>
-                  <div className="text-sm text-mute">{t(a.spec)} · {t(a.student_status)} {t('· تقدّم على:')} {a.title}</div>
-                  <div className="my-2 flex flex-wrap gap-1.5">{a.skills.map((k) => <span key={k.name} className="chip chip-b">{k.name}</span>)}</div>
-                  <p className="mb-2 text-sm">«{t(a.message)}»</p>
+                  <div className="text-sm text-mute">{t(a.spec)} · {t(a.student_status)} {t('· تقدّم على:')} <Tr>{a.title}</Tr></div>
+                  <div className="my-2 flex flex-wrap gap-1.5">{a.skills.map((k) => <span key={k.name} className="chip chip-b"><Tr>{k.name}</Tr></span>)}</div>
+                  <p className="mb-2 text-sm">«<Tr>{t(a.message)}</Tr>»</p>
                   <div className="flex flex-wrap gap-1.5">{a.projects.map((p) => <span key={p} className="chip"><Paperclip size={12} />{p}</span>)}</div>
                 </div>
                 <div className="flex flex-col items-stretch gap-2">
@@ -218,7 +219,7 @@ function InviteBox({ student, onDone }) {
   };
   return (
     <div className="mt-5 flex flex-wrap items-end gap-2 border-t border-line pt-4">
-      <div className="min-w-[200px] flex-1"><label className="lbl" htmlFor="inv-sel">{t('دعوة إلى')}</label><select id="inv-sel" className="inp" value={pid || open[0].id} onChange={(e) => setPid(e.target.value)}>{open.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>
+      <div className="min-w-[200px] flex-1"><label className="lbl" htmlFor="inv-sel">{t('دعوة إلى')}</label><select id="inv-sel" className="inp" value={pid || open[0].id} onChange={(e) => setPid(e.target.value)}>{open.map((p) => <option key={p.id} value={p.id}><Tr>{p.title}</Tr></option>)}</select></div>
       <button className="btn btn-p" onClick={send}><Send size={16} />{t('إرسال الدعوة')}</button>
     </div>
   );
@@ -244,7 +245,7 @@ export function Talent() {
                 <Avatar u={s} size={52} />
                 <div className="min-w-0"><div className="font-bold">{s.name}</div><div className="text-sm text-mute">{t(s.spec)} · {t(s.student_status)}</div>{s.works.length > 0 && <div className="flex items-center gap-1"><Stars v={s.avg} size={13} /><span className="text-xs">({s.works.length})</span></div>}</div>
               </div>
-              <div className="flex flex-wrap gap-1.5">{s.skills.slice(0, 4).map((k) => <span key={k.id} className="chip chip-b">{k.name}</span>)}</div>
+              <div className="flex flex-wrap gap-1.5">{s.skills.slice(0, 4).map((k) => <span key={k.id} className="chip chip-b"><Tr>{k.name}</Tr></span>)}</div>
               <div className="flex flex-wrap gap-1.5">{s.badges.slice(0, 2).map((b) => <span key={b} className="chip chip-g">{t(b)}</span>)}</div>
               <button className="btn btn-p mt-auto" onClick={() => setView(s.id)}>{t('عرض الملف والدعوة')}</button>
             </div>

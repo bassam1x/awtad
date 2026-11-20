@@ -1,4 +1,5 @@
 import { isRtl, t } from '../i18n/index.js';
+import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from 'lucide-react';
@@ -103,7 +104,7 @@ export function AdminPostings() {
           {data.map((p) => (
             <div key={p.id} className="card flex flex-wrap items-center gap-3 p-4">
               <span className={`chip ${p.kind === 'job' ? 'chip-b' : 'chip-g'}`}>{p.kind === 'job' ? t('وظيفة') : t('مشروع')}</span>
-              <div className="min-w-0 flex-1"><Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand">{p.title}</Link><div className="text-sm text-mute">{p.company.name} · <span className="money">{fmt(p.pay)} {t(p.cur)}</span> · {p.applicants} {t('متقدم')}</div></div>
+              <div className="min-w-0 flex-1"><Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand"><Tr>{p.title}</Tr></Link><div className="text-sm text-mute"><Tr>{p.company.name}</Tr> · <span className="money">{fmt(p.pay)} {t(p.cur)}</span> · {p.applicants} {t('متقدم')}</div></div>
               {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
               <button className="btn btn-sm" onClick={() => toggle(p)}>{p.status === 'open' ? t('إغلاق') : t('فتح')}</button>
               <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => del(p.id)}><Trash2 size={14} /></button>
@@ -126,7 +127,7 @@ export function AdminTransactions() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-line text-mute"><th className="p-3 text-start">{t('المبدع')}</th><th className="p-3 text-start">{t('المشروع')}</th><th className="p-3 text-start">{t('التاريخ')}</th><th className="p-3 text-start">{t('المبلغ')}</th></tr></thead>
-            <tbody>{data.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3">{x.user_name}</td><td className="p-3">{x.title}</td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
+            <tbody>{data.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3">{x.user_name}</td><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
           </table>
         </div>
       ) : <Empty>{t('لا عمليات بعد.')}</Empty>}
@@ -146,7 +147,7 @@ export function AdminApplications() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-line text-mute"><th className="p-3 text-start">{t('المبدع')}</th><th className="p-3 text-start">{t('الفرصة')}</th><th className="p-3 text-start">{t('الشركة')}</th><th className="p-3 text-start">{t('الحالة')}</th><th className="p-3 text-start">{t('التاريخ')}</th></tr></thead>
-            <tbody>{data.map((a) => <tr key={a.id} className="border-b border-line last:border-0"><td className="p-3">{a.student_name}</td><td className="p-3"><Link className="hover:text-brand" to={`/app/opportunity/${a.posting_id}`}>{a.title}</Link></td><td className="p-3">{a.company_name}</td><td className="p-3"><span className={`chip ${st[a.status][1]}`}>{st[a.status][0]}</span></td><td className="p-3 text-mute">{dateAr(a.created_at)}</td></tr>)}</tbody>
+            <tbody>{data.map((a) => <tr key={a.id} className="border-b border-line last:border-0"><td className="p-3">{a.student_name}</td><td className="p-3"><Link className="hover:text-brand" to={`/app/opportunity/${a.posting_id}`}><Tr>{a.title}</Tr></Link></td><td className="p-3"><Tr>{a.company_name}</Tr></td><td className="p-3"><span className={`chip ${st[a.status][1]}`}>{st[a.status][0]}</span></td><td className="p-3 text-mute">{dateAr(a.created_at)}</td></tr>)}</tbody>
           </table>
         </div>
       ) : <Empty>{t('لا طلبات بعد.')}</Empty>}

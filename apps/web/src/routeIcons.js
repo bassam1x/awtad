@@ -6,30 +6,30 @@ import {
 /** أيقونة ولون لكل صفحة: تظهر أمام عنوان الصفحة وفي القائمة، فيعرف المستخدم أين هو بنظرة واحدة. */
 const R = {
   '/app': [LayoutDashboard, ''],
-  '/app/jobs': [Briefcase, 'gicon-c'],
-  '/app/projects': [FolderKanban, 'gicon-g'],
-  '/app/applications': [ClipboardList, 'gicon-p'],
-  '/app/workspace': [MessagesSquare, 'gicon-v'],
-  '/app/wallet': [Wallet, 'gicon-w'],
-  '/app/portfolio': [Award, 'gicon-p'],
+  '/app/jobs': [Briefcase, ''],
+  '/app/projects': [FolderKanban, ''],
+  '/app/applications': [ClipboardList, ''],
+  '/app/workspace': [MessagesSquare, ''],
+  '/app/wallet': [Wallet, ''],
+  '/app/portfolio': [Award, ''],
   '/app/profile': [UserCog, ''],
   '/app/people': [UserRound, ''],
-  '/app/opportunity': [Briefcase, 'gicon-c'],
-  '/app/my-postings/new': [PlusCircle, 'gicon-g'],
-  '/app/my-postings': [ListChecks, 'gicon-w'],
-  '/app/applicants': [Users, 'gicon-p'],
-  '/app/talent': [Search, 'gicon-c'],
+  '/app/opportunity': [Briefcase, ''],
+  '/app/my-postings/new': [PlusCircle, ''],
+  '/app/my-postings': [ListChecks, ''],
+  '/app/applicants': [Users, ''],
+  '/app/talent': [Search, ''],
   '/app/users': [Users, ''],
-  '/app/all-postings': [FileText, 'gicon-c'],
-  '/app/all-applications': [ClipboardCheck, 'gicon-g'],
-  '/app/transactions': [Receipt, 'gicon-w'],
-  '/app/settings': [Settings, 'gicon-v'],
-  '/brand': [Palette, 'gicon-v'],
+  '/app/all-postings': [FileText, ''],
+  '/app/all-applications': [ClipboardCheck, ''],
+  '/app/transactions': [Receipt, ''],
+  '/app/settings': [Settings, ''],
+  '/brand': [Palette, ''],
 };
 const KEYS = Object.keys(R).sort((a, b) => b.length - a.length);
 
 export function routeIcon(pathname) {
-  if (/\/my-postings\/\d+\/edit$/.test(pathname)) return [Pencil, 'gicon-w'];
+  if (/\/my-postings\/\d+\/edit$/.test(pathname)) return [Pencil, ''];
   const k = KEYS.find((x) => pathname === x || pathname.startsWith(`${x}/`));
   return k ? R[k] : [ShieldCheck, ''];
 }

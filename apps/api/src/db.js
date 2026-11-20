@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS invites(
   UNIQUE(posting_id, student_id)
 );
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS translations(h TEXT NOT NULL, lang TEXT NOT NULL, out TEXT NOT NULL, PRIMARY KEY(h, lang));
 CREATE INDEX IF NOT EXISTS idx_post_company ON postings(company_id);
 CREATE INDEX IF NOT EXISTS idx_app_posting ON applications(posting_id);
 CREATE INDEX IF NOT EXISTS idx_app_student ON applications(student_id);

@@ -1,4 +1,5 @@
 import { t } from '../i18n/index.js';
+import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Briefcase, CalendarDays, Clock, ExternalLink, FolderKanban, Layers, Map as MapIcon, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from 'lucide-react';
@@ -36,25 +37,25 @@ export default function Opportunity() {
           <div className="mb-4 flex items-start gap-3">
             <Avatar u={p.company} size={60} square />
             <div>
-              <h1 className="text-2xl font-bold leading-snug">{p.title}</h1>
-              <Link to={`/app/people/${p.company.id}`} className="text-mute hover:text-brand">{p.company.name} · {p.company.sector}</Link>
+              <h1 className="text-2xl font-bold leading-snug"><Tr>{p.title}</Tr></h1>
+              <Link to={`/app/people/${p.company.id}`} className="text-mute hover:text-brand"><Tr>{p.company.name}</Tr> · <Tr>{p.company.sector}</Tr></Link>
             </div>
           </div>
           <div className="mb-4 flex flex-wrap gap-2">
             <span className="chip chip-g"><Sprout size={14} />{t('مناسب للخريجين الجدد والطلاب')}</span>
             {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
           </div>
-          <p className="mb-5">{p.description}</p>
+          <p className="mb-5"><Tr>{p.description}</Tr></p>
           <h3 className="mb-2 font-bold">{t('المتطلبات (مهارات وأدوات)')}</h3>
-          <div className="mb-5 flex flex-wrap gap-2">{p.reqs.map((r) => <span key={r} className="chip chip-b">{r}</span>)}</div>
+          <div className="mb-5 flex flex-wrap gap-2">{p.reqs.map((r) => <span key={r} className="chip chip-b"><Tr>{r}</Tr></span>)}</div>
           <h3 className="mb-2 font-bold">{t('الموقع')}</h3>
-          <div className="mb-3 flex items-start gap-2"><MapPin size={18} className="mt-1" />{p.address || t('غير محدد')}</div>
+          <div className="mb-3 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address || t('غير محدد')}</Tr></div>
           {p.map_url && (
             <>
               <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="btn btn-p w-full"><MapIcon size={18} />{t('عرض موقع الشركة على خرائط جوجل (Google Maps)')}</a>
               <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
                 <span className="gicon"><MapPin size={20} /></span>
-                <div className="min-w-0"><div className="font-semibold">{p.company.name}</div><div className="text-sm text-mute">{p.address}</div></div>
+                <div className="min-w-0"><div className="font-semibold"><Tr>{p.company.name}</Tr></div><div className="text-sm text-mute"><Tr>{p.address}</Tr></div></div>
                 <ExternalLink size={16} className="ms-auto" />
               </a>
             </>
@@ -69,7 +70,7 @@ export default function Opportunity() {
                 <Row icon={Briefcase} label={t('نوع العمل')} value={t(p.type)} />
                 <Row icon={Sun} label={t('الفترة')} value={t(p.shift)} />
                 <Row icon={Clock} label={t('ساعات العمل')} value={t('{n} ساعات يومياً', { n: p.hours })} />
-                <Row icon={CalendarDays} label={t('الأوقات')} value={t(p.schedule)} />
+                <Row icon={CalendarDays} label={t('الأوقات')} value={<Tr>{t(p.schedule)}</Tr>} />
               </>
             ) : (
               <>
