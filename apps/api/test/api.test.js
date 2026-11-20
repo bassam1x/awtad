@@ -39,6 +39,14 @@ test('كل الردود JSON: 404 وJSON تالف وبدون توكن', async ()
   assert.equal((await call('GET', '/api/health')).json.ok, true);
 });
 
+test('حسابات التجربة تظهر في التطوير ولا تظهر أبداً في الإنتاج', async () => {
+  const { config } = await import('../src/config.js');
+  let r = await call('GET', '/api/config');
+  assert.ok(Array.isArray(r.json.demo) && r.json.demo.length === 3);
+  const old = config.env; config.env = 'production';
+  try { r = await call('GET', '/api/config'); assert.equal(r.json.demo, undefined); } finally { config.env = old; }
+});
+
 test('الترويسات الأمنية وCORS', async () => {
   const r = await call('GET', '/api/health', null, null, { Origin: 'https://app.example.com' });
   assert.equal(r.headers.get('access-control-allow-origin'), 'https://app.example.com');

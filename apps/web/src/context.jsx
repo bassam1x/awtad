@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 
@@ -60,22 +61,48 @@ export function prefetch(path) {
   api.get(path).then((d) => cache.set(path, d)).catch(() => {});
 }
 
-/* ---------- Auth ---------- */
+/* ---------- Auth + حسابات محفوظة للتبديل السريع ---------- */
 const AuthCtx = createContext();
+const AK = 'mahara-accounts';
+const readAcc = () => { try { const a = JSON.parse(localStorage.getItem(AK) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
+const writeAcc = (a) => { try { localStorage.setItem(AK, JSON.stringify(a)); } catch { /* ignore */ } };
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
-  const logout = useCallback(() => { setToken(null); clearFetchCache(); setUser(null); }, []);
+  const [accounts, setAccounts] = useState(readAcc);
+  const nav = useNavigate();
+  const mutate = useCallback((fn) => setAccounts((list) => { const next = fn(list); writeAcc(next); return next; }), []);
+  /* يحفظ الحساب (أو يحدّثه) بعد أي دخول ناجح */
+  const save = useCallback((u, token) => mutate((list) => {
+    const a = { id: u.id, token, name: u.name, role: u.role, email: u.email };
+    return list.some((x) => x.id === u.id) ? list.map((x) => (x.id === u.id ? a : x)) : [...list, a];
+  }), [mutate]);
+  const drop = useCallback((id) => mutate((list) => list.filter((a) => a.id !== id)), [mutate]);
+  /* خروج: ينهي الجلسة الحالية ويحذف هذا الحساب من القائمة، وتبقى الحسابات الأخرى */
+  const logout = useCallback(() => { const tok = getToken(); mutate((list) => list.filter((a) => a.token !== tok)); setToken(null); clearFetchCache(); setUser(null); }, [mutate]);
+  /* فصل الجلسة الحالية دون حذفها من القائمة (لإضافة حساب جديد) */
+  const detach = useCallback(() => { setToken(null); clearFetchCache(); setUser(null); }, []);
   useEffect(() => {
     setUnauthorizedHandler(logout);
     if (!getToken()) { setReady(true); return; }
-    api.get('/me').then(setUser).catch(() => setToken(null)).finally(() => setReady(true));
-  }, [logout]);
+    api.get('/me').then((u) => { setUser(u); save(u, getToken()); }).catch(() => setToken(null)).finally(() => setReady(true));
+  }, [logout, save]);
+  /* تبديل فوري لحساب محفوظ: نتحقق من توكنه أولاً، فإن كان منتهياً يُحذف دون إخراجك من حسابك الحالي */
+  const switchTo = useCallback(async (id) => {
+    const a = readAcc().find((x) => x.id === id);
+    if (!a) return false;
+    try {
+      const u = await api.getAs('/me', a.token);
+      setToken(a.token); clearFetchCache(); setUser(u); save(u, a.token);
+      nav('/app', { replace: true });
+      return true;
+    } catch { drop(id); return false; }
+  }, [nav, save, drop]);
   const value = useMemo(() => ({
-    user, ready, logout, setUser,
-    login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); },
+    user, ready, logout, setUser, accounts, switchTo, drop, detach,
+    login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); save(s.user, s.token); },
     refresh: () => api.get('/me').then(setUser),
-  }), [user, ready, logout]);
+  }), [user, ready, logout, accounts, switchTo, drop, detach, save]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => useContext(AuthCtx);

@@ -279,3 +279,16 @@ tbody tr { transition: background .2s; }
 tbody tr:hover { background: rgb(var(--brand) / .07); }
 .chip.chip-b, .chip.chip-g { cursor: default; }
 select.inp, select.btn { cursor: pointer; }
+
+/* ---------- تبديل الحساب ---------- */
+.switcher { position: absolute; inset-inline: 0; bottom: calc(100% + 10px); z-index: 80; padding: .75rem; border-radius: 18px; max-height: 70vh; overflow-x: hidden; overflow-y: auto;
+  background: rgb(var(--card) / .97); border: 1px solid rgb(var(--line)); box-shadow: 0 24px 60px rgb(var(--shadow-c) / .32);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); animation: modal-in .3s cubic-bezier(.2, 1, .3, 1) both; }
+.switcher-title { font-size: 12px; font-weight: 700; color: rgb(var(--mute)); margin: 0 .25rem .4rem; }
+.switcher-row { position: relative; display: flex; align-items: center; gap: .25rem; }
+.switcher-item { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .4rem .5rem; border-radius: 12px; text-align: start; transition: background .2s; cursor: pointer; }
+.switcher-item:hover { background: rgb(var(--brand) / .1); }
+.switcher-item:disabled { opacity: .6; cursor: progress; }
+.switcher-item.is-cur { background: rgb(var(--brand) / .13); box-shadow: inset 0 0 0 1px rgb(var(--brand) / .25); }
+.switcher-x { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 9px; color: rgb(var(--mute)); cursor: pointer; transition: background .2s, color .2s; }
+.switcher-x:hover { background: rgb(var(--bad) / .12); color: rgb(var(--bad)); }

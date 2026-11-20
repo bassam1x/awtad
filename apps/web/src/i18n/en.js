@@ -525,5 +525,11 @@ export default {
   "الوردي": "Rose",
   "الذهبي": "Gold",
   "جارٍ التحميل…": "Loading…",
-  "التبديل بين الأقسام": "Switch section"
+  "التبديل بين الأقسام": "Switch section",
+  "تبديل الحساب": "Switch account",
+  "الحسابات المحفوظة": "Saved accounts",
+  "حسابات تجريبية": "Demo accounts",
+  "إضافة حساب موجود": "Add an existing account",
+  "نسيان هذا الحساب": "Forget this account",
+  "انتهت صلاحية هذا الحساب، سجّل الدخول إليه من جديد": "This account has expired, sign in to it again"
 };

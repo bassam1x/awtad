@@ -17,9 +17,10 @@ export const onActivity = (f) => { subs.add(f); return () => subs.delete(f); };
 let onUnauthorized = () => {};
 export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
 
-async function req(method, path, body) {
+/* asToken: يستخدم توكناً آخر لهذا الطلب فقط (للتحقق من حساب محفوظ) دون تفعيل «انتهت الجلسة» العام */
+async function req(method, path, body, asToken) {
   const headers = { Accept: 'application/json' };
-  const token = getToken();
+  const token = asToken ?? getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   bump(1);
@@ -35,13 +36,14 @@ async function req(method, path, body) {
     bump(-1);
   }
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && token && !path.startsWith('/auth')) onUnauthorized();
+  if (res.status === 401 && token && !asToken && !path.startsWith('/auth')) onUnauthorized();
   if (!res.ok && res.status !== 202) throw Object.assign(new Error(t(data.error || 'حدث خطأ')), { status: res.status });
   return Object.assign(data, res.status === 202 ? { _status: 202 } : {});
 }
 
 export const api = {
   get: (p) => req('GET', p),
+  getAs: (p, token) => req('GET', p, undefined, token),
   post: (p, b = {}) => req('POST', p, b),
   put: (p, b = {}) => req('PUT', p, b),
   patch: (p, b = {}) => req('PATCH', p, b),

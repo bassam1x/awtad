@@ -9,6 +9,7 @@ import { useAuth, useFetch, useTheme, prefetch } from './context.jsx';
 import { onActivity } from './api.js';
 import { PREFETCH } from './routeIcons.js';
 import { Avatar, Logo, Spinner } from './ui.jsx';
+import AccountSwitcher from './AccountSwitcher.jsx';
 
 const NAV = {
   student: [
@@ -109,10 +110,13 @@ export default function Layout() {
           ))}
         </nav>
         <div className="border-t border-line p-3">
-          <Link to="/app/profile" className="flex items-center gap-3 rounded-xl p-2 hover:bg-app">
+          <div className="relative flex items-center gap-1">
+          <Link to="/app/profile" className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 hover:bg-app">
             <Avatar u={user} size={40} square={user.role === 'company'} />
             <div className="min-w-0"><div className="truncate text-sm font-semibold">{user.name}</div><div className="text-xs text-mute">{ROLE_LABEL[user.role]}</div></div>
           </Link>
+          <AccountSwitcher />
+          </div>
           <LangSwitch className="mt-2 w-full" />
           <div className="mt-2 flex gap-2">
             <ThemeButton />

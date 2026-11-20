@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { get, run } from '../db.js';
 import { checkPassword, rateLimit } from '../security.js';
 import { createUser, session } from '../services.js';
+import { ADMIN, DEMO_PASSWORD } from '../seed.js';
 import { bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
 
 export const getGoogleId = () => get("SELECT value FROM settings WHERE key='google_client_id'")?.value || config.googleClientId;
@@ -13,7 +14,13 @@ const clientFor = (id) => { if (!id) return null; if (!clients.has(id)) clients.
 const r = Router();
 const limit = rateLimit();
 
-r.get('/config', (_req, res) => res.json({ googleClientId: getGoogleId() }));
+/* حسابات التجربة للتبديل السريع: تظهر في بيئة التطوير فقط، ولا تُعرض أبداً في الإنتاج. */
+const demoAccounts = () => (config.env === 'production' ? undefined : [
+  { role: 'admin', email: ADMIN.email, password: ADMIN.password },
+  { role: 'student', email: 'sara@demo.iq', password: DEMO_PASSWORD },
+  { role: 'company', email: 'dijla@demo.iq', password: DEMO_PASSWORD },
+]);
+r.get('/config', (_req, res) => res.json({ googleClientId: getGoogleId(), demo: demoAccounts() }));
 
 r.post('/auth/register', limit, wrap((req, res) => {
   const b = req.body || {};
