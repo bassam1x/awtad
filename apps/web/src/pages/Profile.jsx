@@ -26,6 +26,11 @@ export default function Profile() {
     e.preventDefault(); setBusy(true);
     try { setUser(await api.put('/me', f)); toast(t('تم حفظ التغييرات')); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
   };
+  /** الصورة تُحفظ في الحساب فور اعتمادها، دون انتظار زر حفظ بقية الحقول */
+  const saveAvatar = async (v) => {
+    set('avatar', v);
+    try { setUser(await api.put('/me', { avatar: v })); toast(t('تم حفظ الصورة في حسابك')); } catch (err) { toast(err.message, 'err'); }
+  };
   const changePw = async (e) => {
     e.preventDefault();
     try { const r = await api.put('/me/password', pw); if (r.token) setToken(r.token); setPw({ current: '', next: '' }); toast(t('تم تحديث كلمة المرور')); } catch (err) { toast(err.message, 'err'); }
@@ -40,7 +45,7 @@ export default function Profile() {
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         <form onSubmit={save} className="card p-5">
           <Field label={isC ? t('شعار الشركة') : t('الصورة الشخصية')}>
-            <AvatarUpload value={f.avatar} onChange={(v) => set('avatar', v)} label={t('تغيير الصورة')} name={f.name} square={isC} />
+            <AvatarUpload value={f.avatar} onChange={saveAvatar} label={t('تغيير الصورة')} name={f.name} square={isC} />
           </Field>
           <div className="grid gap-x-4 sm:grid-cols-2">
             <Field label={isC ? t('اسم الشركة') : t('الاسم')}><input id="pf-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>

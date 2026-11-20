@@ -4,7 +4,8 @@ import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
 import { tr, useTrVersion } from './translate.jsx';
 import { useEffect, useState } from 'react';
-import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
+import { Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
+import ImageEditor from './ImageEditor.jsx';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
@@ -202,17 +203,20 @@ export function fileToAvatar(file, max = 256) {
     img.src = url;
   });
 }
+/** رفع صورة ثم تعديلها (قصّ/تكبير/تدوير/حجم) قبل اعتمادها. onChange تُستدعى بالصورة النهائية. */
 export function AvatarUpload({ value, onChange, label = t('رفع صورة'), name = t('؟'), square }) {
-  const pick = async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    try { onChange(await fileToAvatar(f)); } catch { /* ignored */ }
-    e.target.value = '';
+  const [edit, setEdit] = useState(null);
+  const pick = (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (f && f.type.startsWith('image/')) setEdit(f);
   };
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3">
       <Avatar u={{ id: 1, name, avatar: value }} size={64} square={square} />
       <label className="btn cursor-pointer"><Upload size={16} />{label}<input type="file" accept="image/*" hidden onChange={pick} /></label>
-      {value && <button type="button" className="btn btn-d btn-sm" onClick={() => onChange(null)}>إزالة</button>}
+      {value && <button type="button" className="btn btn-sm" onClick={() => setEdit(value)}><Crop size={15} />{t('تعديل الصورة')}</button>}
+      {value && <button type="button" className="btn btn-d btn-sm" onClick={() => onChange(null)}>{t('إزالة')}</button>}
+      {edit && <ImageEditor source={edit} square={square} onCancel={() => setEdit(null)} onDone={(d) => { setEdit(null); onChange(d); }} />}
     </div>
   );
 }
