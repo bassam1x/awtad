@@ -7,29 +7,29 @@ import {
 const R = {
   '/app': [LayoutDashboard, ''],
   '/app/jobs': [Briefcase, ''],
-  '/app/projects': [FolderKanban, ''],
-  '/app/applications': [ClipboardList, ''],
-  '/app/workspace': [MessagesSquare, ''],
-  '/app/wallet': [Wallet, ''],
-  '/app/portfolio': [Award, ''],
-  '/app/profile': [UserCog, ''],
-  '/app/people': [UserRound, ''],
+  '/app/projects': [FolderKanban, 'gicon-t'],
+  '/app/applications': [ClipboardList, 'gicon-v'],
+  '/app/workspace': [MessagesSquare, 'gicon-t'],
+  '/app/wallet': [Wallet, 'gicon-w'],
+  '/app/portfolio': [Award, 'gicon-v'],
+  '/app/profile': [UserCog, 'gicon-v'],
+  '/app/people': [UserRound, 'gicon-v'],
   '/app/opportunity': [Briefcase, ''],
-  '/app/my-postings/new': [PlusCircle, ''],
+  '/app/my-postings/new': [PlusCircle, 'gicon-t'],
   '/app/my-postings': [ListChecks, ''],
-  '/app/applicants': [Users, ''],
-  '/app/talent': [Search, ''],
+  '/app/applicants': [Users, 'gicon-v'],
+  '/app/talent': [Search, 'gicon-t'],
   '/app/users': [Users, ''],
-  '/app/all-postings': [FileText, ''],
-  '/app/all-applications': [ClipboardCheck, ''],
-  '/app/transactions': [Receipt, ''],
-  '/app/settings': [Settings, ''],
-  '/brand': [Palette, ''],
+  '/app/all-postings': [FileText, 'gicon-t'],
+  '/app/all-applications': [ClipboardCheck, 'gicon-v'],
+  '/app/transactions': [Receipt, 'gicon-w'],
+  '/app/settings': [Settings, 'gicon-s'],
+  '/brand': [Palette, 'gicon-v'],
 };
 const KEYS = Object.keys(R).sort((a, b) => b.length - a.length);
 
 export function routeIcon(pathname) {
-  if (/\/my-postings\/\d+\/edit$/.test(pathname)) return [Pencil, ''];
+  if (/\/my-postings\/\d+\/edit$/.test(pathname)) return [Pencil, 'gicon-w'];
   const k = KEYS.find((x) => pathname === x || pathname.startsWith(`${x}/`));
   return k ? R[k] : [ShieldCheck, ''];
 }

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth, useFetch, useTheme, prefetch } from './context.jsx';
 import { onActivity } from './api.js';
-import { PREFETCH } from './routeIcons.js';
+import { PREFETCH, routeIcon } from './routeIcons.js';
 import { Avatar, Logo, Spinner } from './ui.jsx';
 import AccountSwitcher from './AccountSwitcher.jsx';
 
@@ -102,7 +102,7 @@ export default function Layout() {
             <div key={title} className="mb-4">
               <div className="px-3 pb-1 text-xs font-semibold text-mute/80">{title}</div>
               {items.map(([to, label, Icon, end]) => (
-                <NavLink key={to} to={to} onMouseEnter={() => prefetch(PREFETCH[to])} onFocus={() => prefetch(PREFETCH[to])} className={() => `nav-link ${isActive(to, end) ? 'active' : ''}`}><Icon size={19} className="nav-ic" /><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
+                <NavLink key={to} to={to} onMouseEnter={() => prefetch(PREFETCH[to])} onFocus={() => prefetch(PREFETCH[to])} className={() => `nav-link ${isActive(to, end) ? 'active' : ''}`}><span className={`gicon gicon-sm ${to.includes('kind=project') ? 'gicon-t' : routeIcon(to.split('?')[0])[1]}`}><Icon size={17} /></span><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
               ))}
             </div>
           ))}
