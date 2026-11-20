@@ -4,6 +4,7 @@ import { Building2, Check, ChevronsUpDown, FlaskConical, GraduationCap, LogIn, S
 import { api } from './api.js';
 import { useAuth, useFetch, useToast } from './context.jsx';
 import { t } from './i18n/index.js';
+import { Tr } from './translate.jsx';
 
 const ROLE = {
   admin: [ShieldCheck, 'مدير المنصة', 'gicon-v'],
@@ -89,7 +90,7 @@ export default function AccountSwitcher() {
                   return (
                     <button key={d.email} type="button" className="switcher-item" disabled={busy === d.email} onClick={() => demoLogin(d)}>
                       <span className={`gicon gicon-sm ${tone}`}><I size={16} /></span>
-                      <span className="flex-1 text-start text-sm font-semibold">{t(label)}</span>
+                      <span className="min-w-0 flex-1 text-start"><span className="block truncate text-sm font-semibold"><Tr>{d.name || t(label)}</Tr></span><span className="block text-xs text-mute">{t(label)}</span></span>
                       <LogIn size={15} className="text-mute" />
                     </button>
                   );

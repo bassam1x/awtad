@@ -98,7 +98,7 @@ test('الدعوات والمحادثات والتقديم والمهارات و
   const posting = mine.find((p) => p.kind === 'project');
   const students = ok(await call('GET', '/api/students?spec=هندسة', null, co));
   assert.ok(students.length >= 1 && students.every((s) => s.spec === 'هندسة'));
-  const target = students[0];
+  const target = students.find((x) => x.name.includes('مريم'));
   ok(await call('POST', '/api/invites', { posting_id: posting.id, student_id: target.id }, co));
   assert.equal((await call('POST', '/api/invites', { posting_id: posting.id, student_id: target.id }, co)).status, 409);
   const inv = ok(await call('GET', '/api/invites', null, st));

@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { config } from '../config.js';
-import { get, run } from '../db.js';
+import { all, get, run } from '../db.js';
 import { checkPassword, rateLimit } from '../security.js';
 import { createUser, session } from '../services.js';
-import { ADMIN, DEMO_PASSWORD } from '../seed.js';
+import { ADMIN, DEMO_DOMAIN, DEMO_PASSWORD, demoEnabled } from '../seed.js';
 import { bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
 
 export const getGoogleId = async () => (await get("SELECT value FROM settings WHERE key='google_client_id'"))?.value || config.googleClientId;
@@ -14,20 +14,22 @@ const clientFor = (id) => { if (!id) return null; if (!clients.has(id)) clients.
 const r = Router();
 const limit = rateLimit();
 
-/* حسابات التجربة للتبديل السريع: تظهر في بيئة التطوير فقط، ولا تُعرض أبداً في الإنتاج. */
-const demoAccounts = () => (config.env === 'production' ? undefined : [
-  { role: 'admin', email: ADMIN.email, password: ADMIN.password },
-  { role: 'student', email: 'sara@demo.iq', password: DEMO_PASSWORD },
-  { role: 'company', email: 'dijla@demo.iq', password: DEMO_PASSWORD },
-]);
-r.get('/config', async (_req, res) => res.json({ googleClientId: await getGoogleId(), demo: demoAccounts() }));
-
+/* حسابات التجربة للتبديل السريع: في التطوير دائماً (مع حساب المدير التجريبي)، وفي الإنتاج فقط عند DEMO_MODE=true
+   (طلاب وشركات فقط، ولا يُعرض حساب المدير أبداً). */
+const demoAccounts = async () => {
+  if (!demoEnabled()) return undefined;
+  const rows = await all(`SELECT email, role, name FROM users WHERE email LIKE ? ORDER BY CASE role WHEN 'company' THEN 0 ELSE 1 END, id`, `%${DEMO_DOMAIN}`);
+  const list = rows.map((u) => ({ role: u.role, email: u.email, name: u.name, password: DEMO_PASSWORD }));
+  return config.env === 'production' ? list : [{ role: 'admin', email: ADMIN.email, name: 'مدير المنصة', password: ADMIN.password }, ...list];
+};
+r.get('/config', async (_req, res) => res.json({ googleClientId: await getGoogleId(), demo: await demoAccounts() }));
 r.post('/auth/register', limit, wrap(async (req, res) => {
   const b = req.body || {};
   if (!['student', 'company'].includes(b.role)) return bad(res, 'اختر نوع الحساب');
   const name = str(b.name, 80), email = str(b.email, 120).toLowerCase(), password = String(b.password || '');
   if (!name) return bad(res, 'أدخل الاسم');
   if (!emailOk(email)) return bad(res, 'البريد الإلكتروني غير صحيح');
+  if (email.endsWith(DEMO_DOMAIN)) return bad(res, 'هذا النطاق محجوز للحسابات التجريبية');
   if (password.length < 8) return bad(res, 'كلمة المرور 8 أحرف على الأقل');
   if (await get('SELECT 1 FROM users WHERE email=?', email)) return bad(res, 'هذا البريد مسجّل مسبقاً', 409);
   const id = await createUser({ role: b.role, name, email, password, avatar: safeAvatar(b.avatar), extra: b });

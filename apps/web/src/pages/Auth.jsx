@@ -1,9 +1,10 @@
 import { t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, GraduationCap, ArrowRight } from 'lucide-react';
+import { Building2, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { api } from '../api.js';
-import { useAuth, useToast } from '../context.jsx';
+import { useAuth, useFetch, useToast } from '../context.jsx';
+import { Tr } from '../translate.jsx';
 import { AvatarUpload, Field, Logo, SPECS } from '../ui.jsx';
 import { LangSwitch, ThemeButton } from '../Layout.jsx';
 
@@ -56,6 +57,8 @@ export function LoginForm() {
   const [f, setF] = useState({ email: '', password: '' });
   const [busy, setBusy] = useState(false);
   const [pendingGoogle, setPendingGoogle] = useState(null);
+  const { data: cfg } = useFetch('/config');
+  const demo = cfg?.demo || [];
   const go = (s) => { login(s); nav('/app'); };
   const submit = async (e, creds = f) => {
     e?.preventDefault();
@@ -90,6 +93,22 @@ export function LoginForm() {
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
       <GoogleButton onCredential={(c) => google(c)} />
+      {demo.length > 0 && (
+        <div className="mt-5 border-t border-line pt-4">
+          <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-mute"><FlaskConical size={13} />{t('جرّب بحساب تجريبي بنقرة واحدة')}</div>
+          <div className="grid max-h-56 gap-1 overflow-y-auto pe-1">
+            {demo.map((d) => {
+              const I = d.role === 'admin' ? ShieldCheck : d.role === 'company' ? Building2 : GraduationCap;
+              return (
+                <button key={d.email} type="button" className="switcher-item" disabled={busy} onClick={() => submit(null, { email: d.email, password: d.password })}>
+                  <span className={`gicon gicon-sm ${d.role === 'admin' ? 'gicon-v' : d.role === 'company' ? 'gicon-w' : 'gicon-c'}`}><I size={16} /></span>
+                  <span className="min-w-0 flex-1 text-start"><span className="block truncate text-sm font-semibold"><Tr>{d.name}</Tr></span><span className="block text-xs text-mute">{t(d.role === 'admin' ? 'مدير المنصة' : d.role === 'company' ? 'شركة' : 'مبدع')}</span></span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

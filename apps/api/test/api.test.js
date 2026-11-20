@@ -43,7 +43,7 @@ test('كل الردود JSON: 404 وJSON تالف وبدون توكن', async ()
 test('حسابات التجربة تظهر في التطوير ولا تظهر أبداً في الإنتاج', async () => {
   const { config } = await import('../src/config.js');
   let r = await call('GET', '/api/config');
-  assert.ok(Array.isArray(r.json.demo) && r.json.demo.length === 3);
+  assert.ok(Array.isArray(r.json.demo) && r.json.demo.length >= 10 && r.json.demo.some((d) => d.role === 'admin') && r.json.demo.every((d) => d.name && d.password));
   const old = config.env; config.env = 'production';
   try { r = await call('GET', '/api/config'); assert.equal(r.json.demo, undefined); } finally { config.env = old; }
 });

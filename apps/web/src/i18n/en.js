@@ -486,6 +486,7 @@ export default {
   "تعذّر الوصول إلى الخادم": "Could not reach the server",
   "الخدمة غير متاحة الآن. سنعيد المحاولة تلقائياً.": "The service is unavailable right now. We will retry automatically.",
   "إعادة المحاولة": "Try again",
+  "جرّب بحساب تجريبي بنقرة واحدة": "Try a demo account in one click",
   "أوتاد": "Awtad",
   "أوتاد تربط الطلاب والخريجين الجدد والمبرمجين والمهندسين بالشركات وأصحاب الأعمال عبر مسارين: التوظيف، والمشاريع التعاونية.": "Awtad connects students, new graduates, developers and engineers with companies and business owners through two tracks: hiring and collaborative projects.",
   "موقع": "Website",
