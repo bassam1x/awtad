@@ -261,4 +261,39 @@ tbody tr:hover { background: rgb(var(--brand) / .06); }
 :root[data-theme='dark'] .inp:hover { border-color: rgb(var(--brand) / .5); }
 :root[data-theme='dark'] .nav-link.active, :root[data-theme='dark'] .nav-link.active:hover { background: linear-gradient(180deg, rgb(var(--brand) / .2), rgb(var(--brand) / .09)); border-color: rgb(var(--brand) / .35); }
 :root[data-theme='dark'] .seg::before { box-shadow: 0 8px 16px -6px rgb(var(--brand) / .55), inset 0 1px 0 rgb(255 255 255 / .35); }
+/* ---------- قوائم الاختيار (select) ----------
+   القائمة المنسدلة الأصلية تأخذ خلفية الحقل الشفافة فتظهر بيضاء ونصها فاتح (غير واضحة).
+   أولاً: خلفية صلبة ونص واضح لكل خيار (يعمل في كل المتصفحات).
+   ثانياً: في المتصفحات التي تدعم base-select نرسم القائمة زجاجية بالكامل بتمييز للخيار المحدد. */
+select { color-scheme: light; }
+:root[data-theme='dark'] select { color-scheme: dark; }
+select option, select optgroup { background-color: rgb(var(--card)); color: rgb(var(--ink)); }
+:root[data-theme='dark'] select option, :root[data-theme='dark'] select optgroup { background-color: rgb(20 28 48); }
+select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
+
+@supports (appearance: base-select) {
+  select, select::picker(select) { appearance: base-select; }
+  select { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-block: .5rem; }
+  select::picker-icon { content: ''; width: .5rem; height: .5rem; flex: none; margin-inline-start: .25rem;
+    border-right: 2px solid rgb(var(--mute)); border-bottom: 2px solid rgb(var(--mute)); transform: translateY(-2px) rotate(45deg); transition: transform .2s, border-color .2s; }
+  select:hover::picker-icon { border-color: rgb(var(--brand)); }
+  select:open::picker-icon { transform: translateY(2px) rotate(225deg); border-color: rgb(var(--brand)); }
+  select::picker(select) {
+    margin-block: 6px; padding: 6px; max-height: min(320px, 55vh); overflow: auto;
+    border: 1px solid rgb(var(--edge) / calc(var(--edge-a) + .15)); border-radius: 16px;
+    background: linear-gradient(180deg, rgb(var(--card) / .96), rgb(var(--card) / .9));
+    -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 2px 4px rgb(var(--shadow-c) / .12), 0 24px 48px -16px rgb(var(--shadow-c) / .5), inset 0 1px 0 rgb(255 255 255 / .35);
+    opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top; transition: opacity .16s, transform .16s, overlay .16s allow-discrete, display .16s allow-discrete; }
+  :root[data-theme='dark'] select::picker(select) { background: linear-gradient(180deg, rgb(26 36 60 / .97), rgb(18 26 46 / .95)); border-color: rgb(255 255 255 / .14); }
+  select:open::picker(select) { opacity: 1; transform: none; }
+  @starting-style { select:open::picker(select) { opacity: 0; transform: translateY(-6px) scale(.98); } }
+  select option { display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem; margin-block: 1px; border-radius: 10px;
+    font-size: .9rem; font-weight: 600; background: transparent; color: rgb(var(--ink)); transition: background .12s, color .12s; }
+  :root[data-theme='dark'] select option { background: transparent; }
+  select option:hover, select option:focus-visible { background: rgb(var(--brand) / .14); outline: none; }
+  select option:checked { background: linear-gradient(180deg, rgb(var(--brand) / .2), rgb(var(--brand) / .1)); color: rgb(var(--brand)); font-weight: 700; }
+  select option::checkmark { content: '✓'; order: 2; margin-inline-start: auto; font-size: .85rem; color: rgb(var(--brand)); }
+  select option:disabled { opacity: .45; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
