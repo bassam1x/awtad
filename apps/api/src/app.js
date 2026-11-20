@@ -4,7 +4,7 @@ import path from 'node:path';
 import { config } from './config.js';
 import { auth } from './security.js';
 import { bad } from './utils.js';
-import { backupStatus } from './backup.js';
+import { db, get } from './db.js';
 import authRoutes from './routes/auth.js';
 import meRoutes from './routes/me.js';
 import postingRoutes from './routes/postings.js';
@@ -34,7 +34,10 @@ export function createApp() {
 
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/api/health', (_req, res) => res.json({ ok: true, backup: backupStatus() }));
+  app.get('/api/health', async (_req, res) => {
+    try { await get('SELECT 1 AS ok'); res.json({ ok: true, db: db.kind }); }
+    catch (e) { console.error('فحص الصحة: القاعدة لا تستجيب:', e.message); res.status(503).json({ ok: false, error: 'قاعدة البيانات لا تستجيب' }); }
+  });
 
   // مسارات عامة
   app.use('/api', authRoutes);

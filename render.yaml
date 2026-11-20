@@ -1,8 +1,5 @@
 # Render Blueprint (الخطة المجانية): خادم واحد يقدّم الـ API والواجهة معاً.
-# تنبيه: الخطة المجانية بلا قرص دائم، فقاعدة SQLite تُمسح عند كل إعادة تشغيل أو نوم الخدمة.
-# للاستخدام الفعلي: غيّر plan إلى starter وأضف قرصاً دائماً:
-#   disk: { name: awtad-data, mountPath: /var/data, sizeGB: 1 }
-#   وأضف متغير DB_FILE=/var/data/awtad.db
+# البيانات في PostgreSQL خارجي (مثل Neon المجاني) عبر DATABASE_URL، فتبقى عند نوم الخدمة أو إعادة تشغيلها.
 services:
   - type: web
     name: awtad
@@ -20,5 +17,7 @@ services:
         value: "true"
       - key: JWT_SECRET
         generateValue: true
+      - key: DATABASE_URL
+        sync: false # رابط Neon: postgresql://user:pass@host/db?sslmode=require
       - key: ADMIN_PASSWORD
         sync: false # تُدخَل يدوياً في لوحة Render

@@ -1,4 +1,4 @@
-﻿import crypto from 'node:crypto';
+import crypto from 'node:crypto';
 import { get, run } from './db.js';
 
 /** ترجمة محتوى المستخدمين (المنشورات، النبذات...) إلى لغة الواجهة، مع تخزين دائم لكل نص فلا يُترجم مرتين.
@@ -56,17 +56,17 @@ export async function translateMany(texts, lang) {
   const target = CODE[lang];
   const out = new Array(texts.length).fill(null);
   const todo = [];
-  texts.forEach((t, i) => {
-    if (!needsTranslation(t, lang)) { out[i] = t; return; }
+  for (const [i, t] of texts.entries()) {
+    if (!needsTranslation(t, lang)) { out[i] = t; continue; }
     const h = hash(t.trim());
-    const hit = get('SELECT out FROM translations WHERE h=? AND lang=?', h, lang);
-    if (hit) out[i] = hit.out; else todo.push([i, t.trim(), h]);
-  });
+    const hit = await get('SELECT tr_out FROM translations WHERE h=? AND lang=?', h, lang);
+    if (hit) out[i] = hit.tr_out; else todo.push([i, t.trim(), h]);
+  }
   // نترجم بالتوازي لكن بحدّ 4 طلبات معاً حتى لا نُحظر
   for (let k = 0; k < todo.length; k += 4) {
     await Promise.all(todo.slice(k, k + 4).map(async ([i, t, h]) => {
       const r = await provider(t, target);
-      if (r && r.trim()) { out[i] = r.trim(); run('INSERT OR REPLACE INTO translations(h,lang,out) VALUES(?,?,?)', h, lang, out[i]); }
+      if (r && r.trim()) { out[i] = r.trim(); await run('INSERT INTO translations(h,lang,tr_out) VALUES(?,?,?) ON CONFLICT(h,lang) DO UPDATE SET tr_out=EXCLUDED.tr_out', h, lang, out[i]); }
     }));
   }
   return out;

@@ -1,145 +1,87 @@
-import { DatabaseSync } from 'node:sqlite';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
+import { SCHEMA } from './schema.js';
 
-fs.mkdirSync(path.dirname(config.dbFile), { recursive: true });
-export const db = new DatabaseSync(config.dbFile);
-db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
+/* طبقة قاعدة البيانات: PostgreSQL.
+   - الإنتاج: DATABASE_URL (مثلاً Neon) عبر مكتبة pg.
+   - التطوير والاختبارات: PGlite (PostgreSQL حقيقي داخل العملية، يُحفظ في ملفات محلية) بلا أي إعداد.
+   الواجهة غير متزامنة: all/get/run/tx، وتكتب الاستعلامات بعلامات «؟» فتُحوَّل إلى $1,$2... */
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS users(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT,
-  google_id TEXT UNIQUE,
-  role TEXT NOT NULL CHECK(role IN ('student','company','admin')),
-  name TEXT NOT NULL,
-  avatar TEXT,
-  phone TEXT,
-  status TEXT NOT NULL DEFAULT 'active',
-  token_version INTEGER NOT NULL DEFAULT 0,
-  email_verified INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS student_profiles(
-  user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  spec TEXT NOT NULL DEFAULT 'برمجة',
-  status TEXT NOT NULL DEFAULT 'طالب',
-  bio TEXT NOT NULL DEFAULT ''
-);
-CREATE TABLE IF NOT EXISTS company_profiles(
-  user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  sector TEXT NOT NULL DEFAULT '',
-  city TEXT NOT NULL DEFAULT '',
-  about TEXT NOT NULL DEFAULT '',
-  address TEXT NOT NULL DEFAULT '',
-  map_url TEXT NOT NULL DEFAULT '',
-  contact_email TEXT NOT NULL DEFAULT ''
-);
-CREATE TABLE IF NOT EXISTS skills(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  level TEXT NOT NULL DEFAULT 'مبتدئ'
-);
-CREATE TABLE IF NOT EXISTS portfolio(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  url TEXT NOT NULL DEFAULT ''
-);
-CREATE TABLE IF NOT EXISTS postings(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  company_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  kind TEXT NOT NULL CHECK(kind IN ('job','project')),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL DEFAULT '',
-  spec TEXT NOT NULL DEFAULT 'برمجة',
-  pay INTEGER NOT NULL,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
-  hours INTEGER,
-  schedule TEXT,
-  shift TEXT,
-  type TEXT,
-  days INTEGER,
-  address TEXT NOT NULL DEFAULT '',
-  map_url TEXT NOT NULL DEFAULT '',
-  reqs TEXT NOT NULL DEFAULT '[]',
-  status TEXT NOT NULL DEFAULT 'open',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS applications(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  posting_id INTEGER NOT NULL REFERENCES postings(id) ON DELETE CASCADE,
-  student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  message TEXT NOT NULL DEFAULT '',
-  projects TEXT NOT NULL DEFAULT '[]',
-  status TEXT NOT NULL DEFAULT 'pending',
-  stage TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE(posting_id, student_id)
-);
-CREATE TABLE IF NOT EXISTS messages(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-  sender_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  text TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS works(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  rating INTEGER NOT NULL,
-  comment TEXT NOT NULL DEFAULT '',
-  company_name TEXT NOT NULL DEFAULT '',
-  amount INTEGER NOT NULL DEFAULT 0,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS wallet_tx(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  amount INTEGER NOT NULL,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS invites(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  posting_id INTEGER NOT NULL REFERENCES postings(id) ON DELETE CASCADE,
-  student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'open',
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE(posting_id, student_id)
-);
-CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS translations(h TEXT NOT NULL, lang TEXT NOT NULL, out TEXT NOT NULL, PRIMARY KEY(h, lang));
-CREATE INDEX IF NOT EXISTS idx_post_company ON postings(company_id);
-CREATE INDEX IF NOT EXISTS idx_app_posting ON applications(posting_id);
-CREATE INDEX IF NOT EXISTS idx_app_student ON applications(student_id);
-CREATE INDEX IF NOT EXISTS idx_msg_app ON messages(application_id);
-`);
+const als = new AsyncLocalStorage();
+const ID_TABLES = new Set(['users', 'skills', 'portfolio', 'postings', 'applications', 'messages', 'works', 'wallet_tx', 'invites']);
+/* مدخلات غير صالحة لنوع العمود (مثل رقم تعريف غير رقمي في الرابط): نعاملها «لا نتيجة» كما كان سلوك SQLite، لا خطأ 500 */
+const SOFT_ERRORS = new Set(['22P02', '22003', '22001']);
 
-/* ترحيل خفيف للقواعد القديمة */
-const userCols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
-if (!userCols.includes('token_version')) db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
-if (!userCols.includes('email_verified')) db.exec('ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0');
+/** يحوّل علامات ? إلى $1,$2... خارج النصوص المقتبسة */
+export function toPg(sql) {
+  let n = 0, out = '', quote = null;
+  for (const ch of sql) {
+    if (quote) { out += ch; if (ch === quote) quote = null; continue; }
+    if (ch === "'" || ch === '"') { quote = ch; out += ch; continue; }
+    out += ch === '?' ? `$${++n}` : ch;
+  }
+  return out;
+}
 
-/* خطّاف يُستدعى بعد كل كتابة (يستخدمه الحفظ الخارجي). كتابات جدول الترجمة المؤقت لا تستحق لقطة. */
-let writeHook = null;
-export const setWriteHook = (f) => { writeHook = f; };
+async function open() {
+  if (config.databaseUrl) {
+    const { default: pg } = await import('pg');
+    pg.types.setTypeParser(20, (v) => parseInt(v, 10));   // bigint (COUNT/SUM) كأرقام
+    pg.types.setTypeParser(1700, (v) => parseFloat(v));   // numeric
+    const pool = new pg.Pool({ connectionString: config.databaseUrl, max: Number(process.env.PG_POOL_MAX) || 5, idleTimeoutMillis: 30000, connectionTimeoutMillis: 20000 });
+    pool.on('error', (e) => console.error('خطأ في اتصال قاعدة البيانات:', e.message));
+    return {
+      kind: 'postgres',
+      query: (client, text, params) => (client || pool).query(text, params),
+      exec: (text) => pool.query(text),
+      async transaction(fn) {
+        const c = await pool.connect();
+        try { await c.query('BEGIN'); const r = await fn(c); await c.query('COMMIT'); return r; }
+        catch (e) { try { await c.query('ROLLBACK'); } catch { /* الاتصال قد يكون مقطوعاً */ } throw e; }
+        finally { c.release(); }
+      },
+      close: () => pool.end(),
+    };
+  }
+  const { PGlite } = await import('@electric-sql/pglite');
+  const dir = config.pgliteDir;
+  fs.mkdirSync(path.dirname(dir), { recursive: true });
+  const pl = new PGlite(dir, { parsers: { 20: (v) => parseInt(v, 10), 1700: (v) => parseFloat(v) } });
+  await pl.waitReady;
+  return {
+    kind: 'pglite',
+    query: (client, text, params) => (client || pl).query(text, params),
+    exec: (text) => pl.exec(text),
+    transaction: (fn) => pl.transaction(fn),
+    close: () => pl.close(),
+  };
+}
 
-export const all = (sql, ...p) => db.prepare(sql).all(...p);
-export const get = (sql, ...p) => db.prepare(sql).get(...p);
-export const run = (sql, ...p) => {
-  const r = db.prepare(sql).run(...p);
-  if (writeHook && !/translations/i.test(sql)) writeHook();
-  return r;
+const backend = await open();
+await backend.exec(SCHEMA);
+
+export const db = { kind: backend.kind, exec: (sql) => backend.exec(sql), close: () => backend.close() };
+
+async function q(sql, params) {
+  let text = toPg(sql);
+  const ins = /^\s*insert\s+into\s+([a-z_]+)/i.exec(text);
+  if (ins && ID_TABLES.has(ins[1].toLowerCase()) && !/\breturning\b/i.test(text)) text += ' RETURNING id';
+  const ctx = als.getStore();
+  try {
+    return await backend.query(ctx?.client, text, params.map((p) => (p === undefined ? null : p)));
+  } catch (e) {
+    if (!ctx && SOFT_ERRORS.has(e.code)) return { rows: [], rowCount: 0 };
+    throw e;
+  }
+}
+
+export const all = async (sql, ...p) => (await q(sql, p)).rows;
+export const get = async (sql, ...p) => (await q(sql, p)).rows[0];
+/** ينفّذ أمر كتابة. lastInsertRowid متوفر لـ INSERT على الجداول ذات id */
+export const run = async (sql, ...p) => {
+  const r = await q(sql, p);
+  return { changes: r.rowCount ?? r.affectedRows ?? 0, lastInsertRowid: r.rows?.[0]?.id };
 };
-export const tx = (fn) => {
-  db.exec('BEGIN');
-  try { const r = fn(); db.exec('COMMIT'); if (writeHook) writeHook(); return r; }
-  catch (e) { db.exec('ROLLBACK'); throw e; }
-};
+export const tx = (fn) => (als.getStore() ? fn() : backend.transaction((client) => als.run({ client }, fn)));

@@ -16,10 +16,10 @@ const { seedIfEmpty } = await import('../src/seed.js');
 const tr = await import('../src/translate.js');
 
 let server, base;
-before(() => { seedIfEmpty(); server = createApp().listen(0); base = `http://127.0.0.1:${server.address().port}`; });
+before(async () => { await seedIfEmpty(); server = createApp().listen(0); base = `http://127.0.0.1:${server.address().port}`; });
 after(async () => {
   server.close();
-  (await import('../src/db.js')).db.close(); // يحرّر قفل الملف على ويندوز
+  await (await import('../src/db.js')).db.close();
   try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* مجلد مؤقت، لا يهم */ }
 });
 

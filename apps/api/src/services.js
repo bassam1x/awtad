@@ -13,19 +13,19 @@ export function badges(works) {
 
 export const balance = (uid) => all('SELECT cur, SUM(amount) AS total FROM wallet_tx WHERE user_id=? GROUP BY cur', uid);
 
-export function fullUser(id, { forSelf = false } = {}) {
-  const u = get('SELECT id,email,role,name,avatar,phone,status,created_at,(password_hash IS NOT NULL) AS has_password,(google_id IS NOT NULL) AS has_google FROM users WHERE id=?', id);
+export async function fullUser(id, { forSelf = false } = {}) {
+  const u = await get('SELECT id,email,role,name,avatar,phone,status,created_at,(password_hash IS NOT NULL) AS has_password,(google_id IS NOT NULL) AS has_google FROM users WHERE id=?', id);
   if (!u) return null;
   if (!forSelf) { delete u.email; delete u.phone; delete u.has_password; delete u.has_google; }
   if (u.role === 'student') {
-    Object.assign(u, get('SELECT spec,status AS student_status,bio FROM student_profiles WHERE user_id=?', id));
-    u.skills = all('SELECT id,name,level FROM skills WHERE user_id=?', id);
-    u.portfolio = all('SELECT id,title,url FROM portfolio WHERE user_id=?', id);
-    u.works = all('SELECT id,title,rating,comment,company_name,amount,cur,created_at FROM works WHERE student_id=? ORDER BY id DESC', id);
+    Object.assign(u, await get('SELECT spec,status AS student_status,bio FROM student_profiles WHERE user_id=?', id));
+    u.skills = await all('SELECT id,name,level FROM skills WHERE user_id=?', id);
+    u.portfolio = await all('SELECT id,title,url FROM portfolio WHERE user_id=?', id);
+    u.works = await all('SELECT id,title,rating,comment,company_name,amount,cur,created_at FROM works WHERE student_id=? ORDER BY id DESC', id);
     Object.assign(u, badges(u.works));
-    if (forSelf) u.wallet = balance(id);
+    if (forSelf) u.wallet = await balance(id);
   } else if (u.role === 'company') {
-    Object.assign(u, get('SELECT sector,city,about,address,map_url,contact_email FROM company_profiles WHERE user_id=?', id));
+    Object.assign(u, await get('SELECT sector,city,about,address,map_url,contact_email FROM company_profiles WHERE user_id=?', id));
   }
   return u;
 }
@@ -43,26 +43,26 @@ export const postingOut = (r) => ({
 
 export const toIQD = (n, cur) => (cur === 'ر.س' ? n * 350 : n);
 
-export function appAccess(id, user) {
-  const a = get(`SELECT a.*, p.company_id, p.title AS posting_title, p.kind, p.pay, p.cur FROM applications a JOIN postings p ON p.id=a.posting_id WHERE a.id=?`, id);
+export async function appAccess(id, user) {
+  const a = await get(`SELECT a.*, p.company_id, p.title AS posting_title, p.kind, p.pay, p.cur FROM applications a JOIN postings p ON p.id=a.posting_id WHERE a.id=?`, id);
   if (!a) return null;
   return user.role === 'admin' || a.student_id === user.id || a.company_id === user.id ? a : null;
 }
 
 export const addMsg = (appId, sender, text) => run('INSERT INTO messages(application_id,sender_id,text) VALUES(?,?,?)', appId, sender, text);
 
-export function createUser({ role, name, email, password, googleId, avatar, extra = {} }) {
-  return tx(() => {
-    const info = run('INSERT INTO users(email,password_hash,google_id,role,name,avatar,email_verified) VALUES(?,?,?,?,?,?,?)',
+export async function createUser({ role, name, email, password, googleId, avatar, extra = {} }) {
+  return await tx(async () => {
+    const info = await run('INSERT INTO users(email,password_hash,google_id,role,name,avatar,email_verified) VALUES(?,?,?,?,?,?,?)',
       email, password ? hashPassword(password) : null, googleId || null, role, name, avatar || null, googleId ? 1 : 0);
     const id = Number(info.lastInsertRowid);
     if (role === 'student') {
-      run('INSERT INTO student_profiles(user_id,spec,status) VALUES(?,?,?)', id,
+      await run('INSERT INTO student_profiles(user_id,spec,status) VALUES(?,?,?)', id,
         SPECS.includes(extra.spec) ? extra.spec : 'برمجة', extra.student_status === 'خريج جديد' ? 'خريج جديد' : 'طالب');
       for (const s of String(extra.skills || '').split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 15))
-        run('INSERT INTO skills(user_id,name) VALUES(?,?)', id, s.slice(0, 40));
+        await run('INSERT INTO skills(user_id,name) VALUES(?,?)', id, s.slice(0, 40));
     } else if (role === 'company') {
-      run('INSERT INTO company_profiles(user_id,sector,city,about,contact_email,address,map_url) VALUES(?,?,?,?,?,?,?)', id,
+      await run('INSERT INTO company_profiles(user_id,sector,city,about,contact_email,address,map_url) VALUES(?,?,?,?,?,?,?)', id,
         str(extra.sector, 80), str(extra.city, 80), str(extra.about, 800), email, str(extra.city, 80),
         'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ' ' + str(extra.city, 80)));
     }
@@ -70,4 +70,4 @@ export function createUser({ role, name, email, password, googleId, avatar, extr
   });
 }
 
-export const session = (id) => ({ token: signToken(id), user: fullUser(id, { forSelf: true }) });
+export const session = async (id) => ({ token: await signToken(id), user: await fullUser(id, { forSelf: true }) });

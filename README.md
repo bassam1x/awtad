@@ -3,7 +3,7 @@
 منصة توظيف ومشاريع تعاونية للطلاب والخريجين والشركات، بلا شرط سنوات الخبرة.
 
 ```
-apps/api   خادم Node.js + Express يرجّع JSON فقط، قاعدة SQLite (node:sqlite)
+apps/api   خادم Node.js + Express يرجّع JSON فقط، قاعدة PostgreSQL
 apps/web   واجهة React + Vite + Tailwind + React Router
 infra/     قالب CloudFormation وسكربت نشر الواجهة على S3 + CloudFront
 ```
@@ -48,21 +48,20 @@ npm start          # http://localhost:4000
 .\infra\deploy-web.ps1 -StackName awtad-web -BucketName <اسم-فريد> -ApiUrl https://api.example.com -Region eu-central-1
 ```
 
-الخادم (Node + SQLite) يحتاج مكاناً دائماً بقرص ثابت، مثل EC2 مع `systemctl`/pm2، ولا يصلح لـ Lambda أو Beanstalk بقرص مؤقت. اضبط عليه `NODE_ENV=production` و`JWT_SECRET` و`CORS_ORIGINS=<عنوان CloudFront>` و`TRUST_PROXY=true` خلف HTTPS.
+الخادم (Node) يحتاج مكاناً دائماً مثل EC2 مع `systemctl`/pm2 أو أي استضافة، ويتصل بقاعدة PostgreSQL خارجية (`DATABASE_URL`). اضبط عليه `NODE_ENV=production` و`JWT_SECRET` و`CORS_ORIGINS=<عنوان CloudFront>` و`TRUST_PROXY=true` خلف HTTPS.
 
 ## ترجمة المحتوى
 
 عند تغيير لغة الواجهة تتغير كل النصوص الثابتة، ويُترجَم أيضاً **محتوى المستخدمين** (عناوين الوظائف والأوصاف والنبذات...) تلقائياً عبر `POST /api/translate`، وتُخزَّن كل ترجمة في قاعدة البيانات فلا تُحسب مرتين. رسائل الدردشة خاصة فلا تُترجم تلقائياً، وبجانب كل رسالة زر «ترجمة». المزوّد الافتراضي نقطة Google المجانية غير الرسمية (مع MyMemory احتياطاً)؛ للتعطيل `TRANSLATE_PROVIDER=none`، وللإنتاج الجاد استخدم مزوّداً رسمياً بمفتاح عبر `setProvider`.
 
-## حفظ البيانات على الخدمة المجانية
+## قاعدة البيانات (PostgreSQL)
 
-الخدمات المجانية (مثل Render) تمسح قرصها عند النوم أو إعادة التشغيل أو النشر، فتضيع الحسابات. لذلك يدعم الخادم حفظ لقطة من قاعدة SQLite خارج الخادم:
+الخادم يستخدم PostgreSQL:
 
-- بعد أي تعديل (بتأخير بضع ثوانٍ لتجميع الكتابات) تُؤخذ لقطة، وتُضغط وتُشفَّر بـ AES-256-GCM، وتُرفع إلى مستودع GitHub **خاص** كملحق إصدار (لا يتضخم سجل git).
-- عند الإقلاع وغياب ملف القاعدة تُستعاد آخر لقطة تلقائياً. إن تعذّر الوصول للمخزن أو فكّ التشفير يتوقف الإقلاع حمايةً للنسخة السليمة ولا تبدأ قاعدة فارغة.
-- عند إيقاف الخدمة (`SIGTERM`) تُرفع آخر لقطة قبل الإغلاق.
-- التفعيل: `BACKUP_GITHUB_REPO` و`BACKUP_GITHUB_TOKEN` و`BACKUP_SECRET` (انظر `.env.example`). الحالة في `GET /api/health` ضمن `backup`.
-- قيود: آخر بضع ثوانٍ قبل توقف مفاجئ قد تضيع، وهذا حل للمشاريع الصغيرة؛ للإنتاج الجاد استخدم قرصاً دائماً أو قاعدة مُدارة.
+- **الإنتاج:** عيّن `DATABASE_URL` (مثلاً قاعدة مجانية على [Neon](https://neon.tech): `postgresql://user:pass@host/db?sslmode=require`). تُنشأ الجداول تلقائياً عند أول إقلاع، وتبقى البيانات عند إعادة تشغيل الخدمة أو نشر نسخة جديدة. يُفضَّل رابط الاتصال المجمَّع (`-pooler`).
+- **التطوير والاختبارات:** بدون `DATABASE_URL` تُستخدم [PGlite](https://pglite.dev) (PostgreSQL حقيقي داخل العملية، يُحفظ في `data/awtad.db.pgdata`) فلا حاجة لتثبيت شيء.
+- فحص الصحة `GET /api/health` يلمس القاعدة ويعيد `db: "postgres"` أو `"pglite"`؛ وعند تعطلها يعيد 503.
+- في الإنتاج بدون `DATABASE_URL` يطبع الخادم تحذيراً لأن البيانات تُفقد على الخدمات المجانية ذات القرص المؤقت.
 ## ملاحظات
 
 - المبالغ تُسجَّل في محفظة المبدع داخل المنصة فقط، بلا بوابة دفع حقيقية.
