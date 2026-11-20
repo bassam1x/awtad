@@ -3,7 +3,7 @@ import { Tr } from '../translate.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from 'lucide-react';
 import { useFetch } from '../context.jsx';
-import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel } from '../ui.jsx';
+import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel, MapLinks } from '../ui.jsx';
 
 export function ProfileBody({ p }) {
   if (p.role === 'company') {
@@ -12,7 +12,7 @@ export function ProfileBody({ p }) {
         <div className="mb-4 flex items-center gap-4"><Avatar u={p} size={72} square /><div><h2 className="text-xl font-bold">{p.name}</h2><div className="text-mute"><Tr>{p.sector}</Tr> · <Tr>{p.city}</Tr></div></div></div>
         <p className="mb-4">{p.about || t('لا توجد نبذة.')}</p>
         {p.address && <div className="mb-2 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address}</Tr></div>}
-        {p.map_url && <a className="btn" href={p.map_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={16} />{t('الموقع على خرائط جوجل')}</a>}
+        {(p.map_url || p.address) && <MapLinks url={p.map_url} address={`${p.address || ''} ${p.city || ''}`.trim()} />}
         {p.contact_email && <div className="mt-3 flex items-center gap-2 text-mute"><Mail size={16} /><span dir="ltr">{p.contact_email}</span></div>}
       </div>
     );

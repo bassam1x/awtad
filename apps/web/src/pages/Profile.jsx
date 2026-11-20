@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Save, KeyRound, Trash2, Link2 } from 'lucide-react';
 import { api, setToken } from '../api.js';
 import { useAuth, useToast, useTheme } from '../context.jsx';
-import { AvatarUpload, Field, PageHeader, SPECS } from '../ui.jsx';
+import { AvatarUpload, Field, MapKindHint, PageHeader, SPECS } from '../ui.jsx';
 
 export default function Profile() {
   const { user, setUser, logout } = useAuth();
@@ -70,7 +70,7 @@ export default function Profile() {
             <>
               <Field label={t('نبذة عن الشركة')}><textarea id="pf-about" rows="3" className="inp" value={f.about} onChange={(e) => set('about', e.target.value)} /></Field>
               <Field label={t('العنوان النصي الافتراضي')} hint={t('يُستخدم في كل وظيفة لا تحدد عنواناً خاصاً بها.')}><input id="pf-addr" className="inp" value={f.address} onChange={(e) => set('address', e.target.value)} /></Field>
-              <Field label={t('رابط Google Maps الافتراضي')}><input id="pf-map" dir="ltr" className="inp text-left" value={f.map_url} onChange={(e) => set('map_url', e.target.value)} /></Field>
+              <Field label={t('رابط موقع الشركة: Google Maps أو Waze')} hint={<span className="flex flex-wrap items-center gap-2">{t('يُستخدم لفرصك التي لا تحدد لها رابطاً خاصاً.')}<MapKindHint url={f.map_url} /></span>}><input id="pf-map" dir="ltr" className="inp text-left" inputMode="url" placeholder="https://waze.com/ul?..." value={f.map_url} onChange={(e) => set('map_url', e.target.value)} /></Field>
             </>
           )}
           <button className="btn btn-p" disabled={busy}><Save size={16} />{busy ? t('جارٍ الحفظ…') : t('حفظ التغييرات')}</button>

@@ -4,8 +4,9 @@ import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
 import { tr, useTrVersion } from './translate.jsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronLeft, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Map as MapIcon, Navigation, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 import ImageEditor from './ImageEditor.jsx';
+import { mapKind, mapLinks } from './maps.js';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 /** رمز العملة بلغة الواجهة: IQD دينار عراقي، USD دولار أمريكي (والقيم القديمة تُعرض كما هي) */
@@ -158,6 +159,27 @@ export function StatCard({ icon: I, label, value, tone = 'b', hint, to }) {
     ? <Link to={to} className="card stat-link p-4 flex items-center gap-3" aria-label={label}>{body}</Link>
     : <div className="card p-4 flex items-center gap-3">{body}</div>;
 }
+/* ---------- روابط الخرائط: Google Maps وWaze (الأكثر استخداماً في العراق): المنطق في maps.js ---------- */
+/** أزرار «افتح في Google Maps» و«افتح في Waze» */
+export function MapLinks({ url, address, full = false }) {
+  const l = mapLinks(url, address);
+  if (!l.google && !l.waze && !l.other) return null;
+  const cls = `${full ? 'flex-1 ' : ''}`;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {l.other && <a href={l.other} target="_blank" rel="noopener noreferrer" className="btn btn-p "><MapIcon size={17} />{t('فتح رابط الموقع')}</a>}
+      {l.google && <a href={l.google} target="_blank" rel="noopener noreferrer" className={`btn ${l.kind !== 'waze' ? 'btn-p' : ''} ${cls}`}><MapIcon size={17} />{t('فتح في')} Google Maps</a>}
+      {l.waze && <a href={l.waze} target="_blank" rel="noopener noreferrer" className={`btn ${l.kind === 'waze' ? 'btn-p' : ''} ${cls}`}><Navigation size={17} />{t('فتح في')} Waze</a>}
+    </div>
+  );
+}
+/** يُظهر نوع الرابط الذي كتبه المستخدم (للتأكد أنه صحيح) */
+export function MapKindHint({ url }) {
+  const k = mapKind(url);
+  if (!k) return null;
+  return <span className={`chip ${k === 'other' ? 'chip-w' : 'chip-g'}`}>{k === 'waze' ? 'Waze' : k === 'google' ? 'Google Maps' : t('رابط غير معروف: سيُفتح كما هو')}</span>;
+}
+
 /** حقل مبلغ بفواصل الآلاف أثناء الكتابة (10,000,000)، يقبل الأرقام العربية، ويُرجع الأرقام فقط كنص. */
 const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩', FA_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 const toDigits = (s) => String(s ?? '').replace(/[٠-٩]/g, (d) => AR_DIGITS.indexOf(d)).replace(/[۰-۹]/g, (d) => FA_DIGITS.indexOf(d)).replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 12);

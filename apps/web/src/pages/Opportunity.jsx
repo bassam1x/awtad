@@ -2,10 +2,10 @@ import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, Briefcase, CalendarDays, Clock, ExternalLink, FolderKanban, Layers, Map as MapIcon, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from 'lucide-react';
+import { ArrowRight, Briefcase, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel } from '../ui.jsx';
+import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel, MapLinks } from '../ui.jsx';
 
 function Row({ icon: I, label, value }) {
   return (
@@ -50,14 +50,13 @@ export default function Opportunity() {
           <div className="mb-5 flex flex-wrap gap-2">{p.reqs.map((r) => <span key={r} className="chip chip-b"><Tr>{r}</Tr></span>)}</div>
           <h3 className="mb-2 font-bold">{t('الموقع')}</h3>
           <div className="mb-3 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address || t('غير محدد')}</Tr></div>
-          {p.map_url && (
+          {(p.map_url || p.address) && (
             <>
-              <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="btn btn-p w-full"><MapIcon size={18} />{t('عرض موقع الشركة على خرائط جوجل (Google Maps)')}</a>
-              <a href={p.map_url} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
+              <MapLinks url={p.map_url} address={p.address} full />
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
                 <span className="gicon"><MapPin size={20} /></span>
                 <div className="min-w-0"><div className="font-semibold"><Tr>{p.company.name}</Tr></div><div className="text-sm text-mute"><Tr>{p.address}</Tr></div></div>
-                <ExternalLink size={16} className="ms-auto" />
-              </a>
+              </div>
             </>
           )}
         </div>

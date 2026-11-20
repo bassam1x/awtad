@@ -10,6 +10,6 @@
     "build": "npm run build -w @awtad/web",
     "start": "npm start -w @awtad/api",
     "seed": "npm run seed -w @awtad/api",
-    "test": "npm test -w @awtad/api"
+    "test": "npm test -w @awtad/api && npm test -w @awtad/web"
   }
 }
