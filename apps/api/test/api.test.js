@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mahara-'));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'awtad-'));
 process.env.DB_FILE = path.join(dir, 'test.db');
 process.env.JWT_SECRET = 'test-secret';
 process.env.RATE_LIMIT_MAX = '10';

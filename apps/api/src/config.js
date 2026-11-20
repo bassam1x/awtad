@@ -10,7 +10,7 @@ const list = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boole
 export const config = {
   env: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 4000,
-  dbFile: process.env.DB_FILE || path.join(ROOT, 'data', 'mahara.db'),
+  dbFile: process.env.DB_FILE || path.join(ROOT, 'data', 'awtad.db'),
   secretFile: path.join(ROOT, 'data', '.jwt-secret'),
   jwtSecret: process.env.JWT_SECRET || '',
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',

@@ -2,7 +2,7 @@ import { t } from './i18n/index.js';
 /* عميل الـ API: كل الردود JSON.
    VITE_API_URL: عنوان الخادم عند فصل الواجهة (مثلاً على S3/CloudFront)؛ فارغ = نفس الأصل. */
 const BASE = `${(import.meta.env.VITE_API_URL || '').replace(/\/$/, '')}/api`;
-const KEY = 'mahara-token';
+const KEY = 'awtad-token';
 const TIMEOUT_MS = 20000;
 
 export const getToken = () => { try { return localStorage.getItem(KEY); } catch { return null; } };

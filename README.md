@@ -26,7 +26,7 @@ npm start          # http://localhost:4000
 
 | الدور | البريد | كلمة المرور |
 |---|---|---|
-| مدير | admin@mahara.iq | Admin@12345 |
+| مدير | admin@awtad.iq | Admin@12345 |
 | شركة | nibras@demo.iq / dijla@demo.iq | Demo@1234 |
 | مبدع | sara@demo.iq / ali@demo.iq | Demo@1234 |
 
@@ -45,7 +45,7 @@ npm start          # http://localhost:4000
 الواجهة على S3 خلف CloudFront (الدلو خاص، والوصول عبر OAC، ومسارات React Router تُوجَّه إلى index.html):
 
 ```powershell
-.\infra\deploy-web.ps1 -StackName mahara-web -BucketName <اسم-فريد> -ApiUrl https://api.example.com -Region eu-central-1
+.\infra\deploy-web.ps1 -StackName awtad-web -BucketName <اسم-فريد> -ApiUrl https://api.example.com -Region eu-central-1
 ```
 
 الخادم (Node + SQLite) يحتاج مكاناً دائماً بقرص ثابت، مثل EC2 مع `systemctl`/pm2، ولا يصلح لـ Lambda أو Beanstalk بقرص مؤقت. اضبط عليه `NODE_ENV=production` و`JWT_SECRET` و`CORS_ORIGINS=<عنوان CloudFront>` و`TRUST_PROXY=true` خلف HTTPS.

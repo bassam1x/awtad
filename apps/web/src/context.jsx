@@ -5,8 +5,8 @@ import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 
 /* ---------- Theme ---------- */
 const ThemeCtx = createContext();
-const readTheme = () => { try { return localStorage.getItem('mahara-theme') || 'system'; } catch { return 'system'; } };
-const readAccent = () => { try { const a = localStorage.getItem('mahara-accent'); return ['aurora', 'sunset', 'emerald', 'royal', 'rose', 'gold'].includes(a) ? a : 'aurora'; } catch { return 'aurora'; } };
+const readTheme = () => { try { return localStorage.getItem('awtad-theme') || 'system'; } catch { return 'system'; } };
+const readAccent = () => { try { const a = localStorage.getItem('awtad-accent'); return ['aurora', 'sunset', 'emerald', 'royal', 'rose', 'gold'].includes(a) ? a : 'aurora'; } catch { return 'aurora'; } };
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(readTheme);
   const [accent, setAccentState] = useState(readAccent);
@@ -31,8 +31,8 @@ export function ThemeProvider({ children }) {
     st.setProperty('--cur-arrow', svg('') + ' 5 3, auto');
     st.setProperty('--cur-hand', svg("<circle cx='5' cy='3' r='5.5' fill='" + fill + "' fill-opacity='.28'/>") + ' 5 3, pointer');
   }, [dark, accent]);
-  const setAccent = (a) => { setAccentState(a); try { localStorage.setItem('mahara-accent', a); } catch { /* ignore */ } };
-  const set = (m) => { setMode(m); try { localStorage.setItem('mahara-theme', m); } catch { /* ignore */ } };
+  const setAccent = (a) => { setAccentState(a); try { localStorage.setItem('awtad-accent', a); } catch { /* ignore */ } };
+  const set = (m) => { setMode(m); try { localStorage.setItem('awtad-theme', m); } catch { /* ignore */ } };
   const toggle = () => set(dark ? 'light' : 'dark');
   return <ThemeCtx.Provider value={{ mode, dark, set, toggle, accent, setAccent }}>{children}</ThemeCtx.Provider>;
 }
@@ -74,7 +74,7 @@ export function prefetch(path) {
 
 /* ---------- Auth + حسابات محفوظة للتبديل السريع ---------- */
 const AuthCtx = createContext();
-const AK = 'mahara-accounts';
+const AK = 'awtad-accounts';
 const readAcc = () => { try { const a = JSON.parse(localStorage.getItem(AK) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
 const writeAcc = (a) => { try { localStorage.setItem(AK, JSON.stringify(a)); } catch { /* ignore */ } };
 export function AuthProvider({ children }) {

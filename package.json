@@ -1,15 +1,15 @@
 {
-  "name": "mahara",
+  "name": "awtad",
   "version": "2.0.0",
   "private": true,
   "workspaces": ["apps/*"],
   "engines": { "node": ">=22.13" },
   "scripts": {
-    "dev:api": "npm run dev -w @mahara/api",
-    "dev:web": "npm run dev -w @mahara/web",
-    "build": "npm run build -w @mahara/web",
-    "start": "npm start -w @mahara/api",
-    "seed": "npm run seed -w @mahara/api",
-    "test": "npm test -w @mahara/api"
+    "dev:api": "npm run dev -w @awtad/api",
+    "dev:web": "npm run dev -w @awtad/web",
+    "build": "npm run build -w @awtad/web",
+    "start": "npm start -w @awtad/api",
+    "seed": "npm run seed -w @awtad/api",
+    "test": "npm test -w @awtad/api"
   }
 }

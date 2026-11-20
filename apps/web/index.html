@@ -13,10 +13,11 @@
       try {
         var cores = navigator.hardwareConcurrency || 8, mem = navigator.deviceMemory || 8;
         if (cores <= 2 || mem <= 2) document.documentElement.dataset.fx = 'lite';
-        var l = localStorage.getItem('mahara-lang');
+        try { ['lang','accent','theme','token','accounts'].forEach(function (k) { var o = localStorage.getItem('ma' + 'hara-' + k); if (o !== null && localStorage.getItem('awtad-' + k) === null) localStorage.setItem('awtad-' + k, o); }); } catch (e) {}
+        var l = localStorage.getItem('awtad-lang');
         if (l === 'en' || l === 'ku' || l === 'ar') { document.documentElement.lang = l; document.documentElement.dir = l === 'en' ? 'ltr' : 'rtl'; }
-        var a = localStorage.getItem('mahara-accent'); if (a === 'sunset' || a === 'emerald' || a === 'royal' || a === 'rose' || a === 'gold') document.documentElement.dataset.accent = a;
-        var t = localStorage.getItem('mahara-theme') || 'system';
+        var a = localStorage.getItem('awtad-accent'); if (a === 'sunset' || a === 'emerald' || a === 'royal' || a === 'rose' || a === 'gold') document.documentElement.dataset.accent = a;
+        var t = localStorage.getItem('awtad-theme') || 'system';
         var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
       } catch (e) {}

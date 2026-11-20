@@ -1,6 +1,6 @@
 # نشر الواجهة على S3 + CloudFront.
 # الاستخدام:
-#   .\infra\deploy-web.ps1 -StackName mahara-web -BucketName my-unique-bucket -ApiUrl https://api.example.com -Region eu-central-1
+#   .\infra\deploy-web.ps1 -StackName awtad-web -BucketName my-unique-bucket -ApiUrl https://api.example.com -Region eu-central-1
 param(
   [Parameter(Mandatory)] [string] $StackName,
   [Parameter(Mandatory)] [string] $BucketName,

@@ -8,7 +8,7 @@ export const LANGS = {
   en: { label: 'English', dir: 'ltr', locale: 'en-US' },
   ku: { label: 'کوردی', dir: 'rtl', locale: 'ckb-IQ' },
 };
-const KEY = 'mahara-lang';
+const KEY = 'awtad-lang';
 const DICTS = { en, ku };
 const HAS_AR = /[؀-ۿ]/;
 

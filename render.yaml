@@ -1,11 +1,11 @@
 # Render Blueprint (الخطة المجانية): خادم واحد يقدّم الـ API والواجهة معاً.
 # تنبيه: الخطة المجانية بلا قرص دائم، فقاعدة SQLite تُمسح عند كل إعادة تشغيل أو نوم الخدمة.
 # للاستخدام الفعلي: غيّر plan إلى starter وأضف قرصاً دائماً:
-#   disk: { name: mahara-data, mountPath: /var/data, sizeGB: 1 }
-#   وأضف متغير DB_FILE=/var/data/mahara.db
+#   disk: { name: awtad-data, mountPath: /var/data, sizeGB: 1 }
+#   وأضف متغير DB_FILE=/var/data/awtad.db
 services:
   - type: web
-    name: mahara
+    name: awtad
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev && npm run build

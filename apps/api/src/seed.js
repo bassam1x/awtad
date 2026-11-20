@@ -1,9 +1,9 @@
-﻿import crypto from 'node:crypto';
+import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { db, get, run, tx } from './db.js';
 import { hashPassword } from './security.js';
 
-export const ADMIN = { email: 'admin@mahara.iq', password: 'Admin@12345' };
+export const ADMIN = { email: 'admin@awtad.iq', password: 'Admin@12345' };
 export const DEMO_PASSWORD = 'Demo@1234';
 const map = (q) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 
