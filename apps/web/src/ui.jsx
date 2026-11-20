@@ -27,7 +27,7 @@ export function Logo({ size = 36, text = true }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={size} />
-      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>{t('مهارة')}</span>}
+      {text && <span className="font-bold tracking-tight" style={{ fontSize: size * 0.6 }}>{t('أوتاد')}</span>}
     </span>
   );
 }

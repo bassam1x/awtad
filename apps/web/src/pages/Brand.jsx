@@ -5,7 +5,7 @@ import { Logo, LogoMark } from '../ui.jsx';
 import { LangSwitch, ThemeButton } from '../Layout.jsx';
 
 const palette = [
-  [t('أزرق مهارة'), '#2563EB', t('الأزرار الرئيسية والروابط والعناصر النشطة')],
+  [t('أزرق أوتاد'), '#2563EB', t('الأزرار الرئيسية والروابط والعناصر النشطة')],
   [t('أخضر الإنجاز'), '#10B981', t('الرواتب والأرباح والمحفظة وحالات النجاح')],
   [t('كحلي'), '#0F172A', t('النصوص والعناوين')],
   [t('فيروزي'), '#0EA5A4', t('التدرج في الشعار والرسوم')],
@@ -21,12 +21,12 @@ export default function Brand() {
         <Link to="/" className="btn"><ArrowRight size={16} className="ltr:rotate-180" />{t('رجوع')}</Link>
         <div className="flex gap-2"><ThemeButton /><LangSwitch /></div>
       </div>
-      <h1 className="text-3xl font-bold">{t('الهوية البصرية لمهارة')}</h1>
+      <h1 className="text-3xl font-bold">{t('الهوية البصرية لأوتاد')}</h1>
       <p className="mt-2 max-w-2xl text-mute">{t('فكرة الشعار: ثلاثة أعمدة متصاعدة تمثل نمو المهارة خطوة بعد خطوة، ونقطة خضراء فوق العمود الأعلى تمثل الإنجاز المعتمد، وتشبه نقطة الحرف العربي.')}</p>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="card flex h-44 items-center justify-center"><Logo size={56} /></div>
-        <div className="card flex h-44 items-center justify-center bg-ink"><span className="inline-flex items-center gap-3 text-white"><LogoMark size={56} /><span className="text-4xl font-bold">{t('مهارة')}</span></span></div>
+        <div className="card flex h-44 items-center justify-center bg-ink"><span className="inline-flex items-center gap-3 text-white"><LogoMark size={56} /><span className="text-4xl font-bold">{t('أوتاد')}</span></span></div>
         <div className="card flex h-44 items-center justify-center gap-4"><LogoMark size={28} /><LogoMark size={44} /><LogoMark size={64} /></div>
       </section>
 

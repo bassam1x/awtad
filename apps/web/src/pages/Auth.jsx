@@ -113,7 +113,7 @@ function Shell({ title, sub, children, back = true }) {
 
 export function LoginPage() {
   return (
-    <Shell title={t('تسجيل الدخول')} sub={t('أهلاً بعودتك إلى مهارة.')}>
+    <Shell title={t('تسجيل الدخول')} sub={t('أهلاً بعودتك إلى أوتاد.')}>
       <LoginForm />
       <p className="mt-5 text-center text-sm text-mute">{t('ليس لديك حساب؟')} <Link className="font-semibold text-brand" to="/register">{t('إنشاء حساب جديد')}</Link></p>
     </Shell>

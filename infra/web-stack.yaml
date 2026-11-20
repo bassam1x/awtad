@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Mahara web - private S3 bucket behind CloudFront (OAC) with SPA routing
+Description: Awtad web - private S3 bucket behind CloudFront (OAC) with SPA routing
 
 Parameters:
   BucketName:
