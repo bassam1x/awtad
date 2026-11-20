@@ -1,7 +1,7 @@
 import { isRtl, t } from '../i18n/index.js';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { Logo, LogoMark } from '../ui.jsx';
+import { Logo, LogoMark, LogoTile } from '../ui.jsx';
 import { LangSwitch, ThemeButton } from '../Layout.jsx';
 
 const palette = [
@@ -27,8 +27,8 @@ export default function Brand() {
 
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="card flex h-44 items-center justify-center"><Logo size={56} /></div>
-        <div className="card flex h-44 items-center justify-center !bg-[#0b1220] !bg-none"><span className="text-white [&_.text-mute]:!text-white/60"><Logo size={56} /></span></div>
-        <div className="card flex h-44 items-center justify-center gap-4"><LogoMark size={28} /><LogoMark size={44} /><LogoMark size={64} /></div>
+        <div className="card flex h-44 items-center justify-center !bg-[#0b1220] !bg-none"><span className="text-white [&_.text-mute]:!text-white/60" style={{ '--brand': '132 168 255', '--good': '74 222 160' }}><Logo size={56} /></span></div>
+        <div className="card flex h-44 items-center justify-center gap-5"><LogoMark size={30} /><LogoMark size={46} /><LogoTile size={30} /><LogoTile size={46} /></div>
       </section>
 
       <h2 className="mb-3 mt-10 text-xl font-bold">{t('الألوان')}</h2>
