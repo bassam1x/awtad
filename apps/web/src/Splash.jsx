@@ -13,13 +13,19 @@ const MIN_MS = 2300;   // أقل مدة لعرض الحركة كاملة أول 
 const SLOW_MS = 6000;  // بعدها نخبر المستخدم أن الخادم بطيء
 const LATE_MS = 700;   // في المرات التالية لا نظهرها إلا إن تأخر التحميل
 
-const seen = () => { try { return sessionStorage.getItem(SEEN) === '1'; } catch { return false; } };
+const asked = () => { try { const u = new URL(location.href); if (!u.searchParams.has('intro')) return false; u.searchParams.delete('intro'); history.replaceState(null, '', u.pathname + u.search + u.hash); return true; } catch { return false; } };
+const seen = () => { if (asked()) return false; try { return sessionStorage.getItem(SEEN) === '1'; } catch { return false; } };
+
+/** يعيد عرض المقدمة فوراً من أي مكان (زر في الإعدادات) */
+export const replayIntro = () => window.dispatchEvent(new Event('awtad:intro'));
 const mark = () => { try { sessionStorage.setItem(SEEN, '1'); } catch { /* ignore */ } };
 
 export default function Splash() {
   const { ready, offline, retry } = useAuth();
-  const first = useRef(!seen()).current;
-  const [minDone, setMinDone] = useState(!first);
+  const firstRef = useRef(null);
+  if (firstRef.current === null) firstRef.current = !seen();
+  const [run, setRun] = useState(0);
+  const [minDone, setMinDone] = useState(!firstRef.current);
   const [late, setLate] = useState(false);
   const [slow, setSlow] = useState(false);
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
@@ -28,13 +34,19 @@ export default function Splash() {
   const hasToken = useRef(!!getToken()).current;
 
   useEffect(() => {
-    const a = first ? setTimeout(() => setMinDone(true), MIN_MS) : 0;
+    const again = () => { firstRef.current = true; setMinDone(false); setLeaving(false); setGone(false); setSlow(false); setRun((r) => r + 1); };
+    window.addEventListener('awtad:intro', again);
+    return () => window.removeEventListener('awtad:intro', again);
+  }, []);
+
+  useEffect(() => {
+    const a = firstRef.current ? setTimeout(() => setMinDone(true), MIN_MS) : 0;
     const b = setTimeout(() => setLate(true), LATE_MS);
     const c = setTimeout(() => setSlow(true), SLOW_MS);
     const on = () => setOnline(true), off = () => setOnline(false);
     window.addEventListener('online', on); window.addEventListener('offline', off);
     return () => { clearTimeout(a); clearTimeout(b); clearTimeout(c); window.removeEventListener('online', on); window.removeEventListener('offline', off); };
-  }, [first]);
+  }, [run]);
 
   const done = ready && minDone && online !== false;
   useEffect(() => {
@@ -45,7 +57,7 @@ export default function Splash() {
   }, [done]);
 
   if (gone) return null;
-  if (!first && !late && !leaving) return null;
+  if (!firstRef.current && !late && !leaving) return null;
 
   const noNet = online === false;
   const problem = noNet || (offline && !ready);

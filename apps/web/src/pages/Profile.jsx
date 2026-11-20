@@ -1,7 +1,8 @@
 import { t } from '../i18n/index.js';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Save, KeyRound, Trash2, Link2 } from 'lucide-react';
+import { Save, KeyRound, Trash2, Link2, Play } from 'lucide-react';
+import { replayIntro } from '../Splash.jsx';
 import { api, setToken } from '../api.js';
 import { useAuth, useToast, useTheme } from '../context.jsx';
 import { AvatarUpload, Field, PageHeader, SPECS } from '../ui.jsx';
@@ -98,6 +99,8 @@ export default function Profile() {
                 </button>
               ))}
             </div>
+            <h3 className="mb-2 mt-4 text-sm font-semibold text-mute">{t('مقدمة المنصة')}</h3>
+            <button type="button" className="btn w-full" onClick={replayIntro}><Play size={16} />{t('مشاهدة المقدمة مرة أخرى')}</button>
           </div>
 
           {user.role !== 'admin' && (
