@@ -37,7 +37,7 @@ function readPosting(b, kind, fallbackSpec = 'برمجة') {
   if (!title || !pay || pay <= 0) return null;
   const job = kind === 'job';
   return [
-    title, str(b.description, 1500), SPECS.includes(b.spec) ? b.spec : fallbackSpec, pay, b.cur === 'ر.س' ? 'ر.س' : 'د.ع',
+    title, str(b.description, 1500), SPECS.includes(b.spec) ? b.spec : fallbackSpec, pay, b.cur === 'USD' ? 'USD' : 'IQD',
     job ? num(b.hours) || 6 : null, job ? str(b.schedule, 120) || 'يُحدد لاحقاً' : null,
     job ? (b.shift === 'مسائي' ? 'مسائي' : 'صباحي') : null, job ? (b.type === 'دوام كامل' ? 'دوام كامل' : 'دوام جزئي') : null,
     job ? null : num(b.days) || 7, str(b.address, 250), safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)),

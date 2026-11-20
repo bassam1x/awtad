@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS postings(
   description TEXT NOT NULL DEFAULT '',
   spec TEXT NOT NULL DEFAULT 'برمجة',
   pay INTEGER NOT NULL,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
+  cur TEXT NOT NULL DEFAULT 'IQD',
   hours INTEGER,
   schedule TEXT,
   shift TEXT,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS works(
   comment TEXT NOT NULL DEFAULT '',
   company_name TEXT NOT NULL DEFAULT '',
   amount INTEGER NOT NULL DEFAULT 0,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
+  cur TEXT NOT NULL DEFAULT 'IQD',
   created_at TEXT NOT NULL DEFAULT ${NOW}
 );
 CREATE TABLE IF NOT EXISTS wallet_tx(
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS wallet_tx(
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   amount INTEGER NOT NULL,
-  cur TEXT NOT NULL DEFAULT 'د.ع',
+  cur TEXT NOT NULL DEFAULT 'IQD',
   created_at TEXT NOT NULL DEFAULT ${NOW}
 );
 CREATE TABLE IF NOT EXISTS invites(
@@ -114,4 +114,14 @@ CREATE INDEX IF NOT EXISTS idx_post_company ON postings(company_id);
 CREATE INDEX IF NOT EXISTS idx_app_posting ON applications(posting_id);
 CREATE INDEX IF NOT EXISTS idx_app_student ON applications(student_id);
 CREATE INDEX IF NOT EXISTS idx_msg_app ON messages(application_id);
+`;
+
+/* ترحيل العملة: الدينار «د.ع» ← IQD، والريال السعودي «ر.س» ← دولار أمريكي USD (بسعر 3.75). يُنفَّذ عند كل إقلاع وهو آمن للتكرار. */
+export const MIGRATE = `
+UPDATE postings SET cur='IQD' WHERE cur='د.ع';
+UPDATE works SET cur='IQD' WHERE cur='د.ع';
+UPDATE wallet_tx SET cur='IQD' WHERE cur='د.ع';
+UPDATE postings SET pay=GREATEST(1, ROUND(pay / 3.75)::int), cur='USD' WHERE cur='ر.س';
+UPDATE works SET amount=ROUND(amount / 3.75)::int, cur='USD' WHERE cur='ر.س';
+UPDATE wallet_tx SET amount=ROUND(amount / 3.75)::int, cur='USD' WHERE cur='ر.س';
 `;

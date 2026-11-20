@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Check, PackageCheck, BadgeDollarSign, Languages, Send } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt } from '../ui.jsx';
+import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt , curLabel } from '../ui.jsx';
 
 const STEPS = [t('قيد التنفيذ'), t('تم التسليم'), t('تم استلام المبلغ')];
 
@@ -76,7 +76,7 @@ function Chat({ id }) {
           {a.stage === 'progress' && isS && <button className="btn btn-p" onClick={deliver}><PackageCheck size={16} />{t('تسليم العمل')}</button>}
           {a.stage === 'progress' && !isS && <span className="chip">{t('بانتظار تسليم المبدع')}</span>}
           {a.stage === 'delivered' && isS && <span className="chip chip-w">{t('بانتظار اعتماد الشركة')}</span>}
-          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />{t('اعتماد التسليم وتحويل')} {fmt(a.pay)} {t(a.cur)}</button>}
+          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />{t('اعتماد التسليم وتحويل')} {fmt(a.pay)} {curLabel(a.cur)}</button>}
           {a.stage === 'paid' && <span className="chip chip-g">{t('اكتمل المشروع وحُوّل المبلغ إلى المحفظة')}</span>}
         </div>
       )}
@@ -113,7 +113,7 @@ function Approve({ a, onClose, done }) {
   };
   return (
     <Modal title={t('اعتماد التسليم والدفع')} onClose={onClose}>
-      <p className="mb-3">{t('سيُحوَّل')} <b className="money">{fmt(a.pay)} {t(a.cur)}</b> {t('إلى محفظة المبدع ويُضاف العمل مع تقييمك إلى ملفه.')}</p>
+      <p className="mb-3">{t('سيُحوَّل')} <b className="money">{fmt(a.pay)} {curLabel(a.cur)}</b> {t('إلى محفظة المبدع ويُضاف العمل مع تقييمك إلى ملفه.')}</p>
       <Field label={t('التقييم')}><Stars v={rating} onChange={setRating} size={26} /></Field>
       <Field label={t('تعليقك')}><textarea id="ap-comment" rows="3" className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('كيف كان التعامل والتسليم؟')} /></Field>
       <button className="btn btn-g w-full" onClick={go}>{t('اعتماد وتحويل المبلغ')}</button>

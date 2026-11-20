@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Briefcase, CalendarDays, Clock, ExternalLink, FolderKanban, Layers, Map as MapIcon, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt } from '../ui.jsx';
+import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel } from '../ui.jsx';
 
 function Row({ icon: I, label, value }) {
   return (
@@ -62,7 +62,7 @@ export default function Opportunity() {
           )}
         </div>
         <aside className="card h-fit p-5 lg:sticky lg:top-6">
-          <div className="money text-3xl">{fmt(p.pay)} <span className="text-base">{t(p.cur)}</span></div>
+          <div className="money text-3xl">{fmt(p.pay)} <span className="text-base">{curLabel(p.cur)}</span></div>
           <div className="mb-4 text-mute">{p.kind === 'job' ? t('راتب شهري ثابت') : t('مبلغ المشروع يُحوَّل لمحفظتك عند الاعتماد')}</div>
           <div className="mb-5 grid gap-3 text-sm">
             {p.kind === 'job' ? (

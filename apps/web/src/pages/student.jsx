@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips } from '../ui.jsx';
+import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 function PostingCard({ p }) {
@@ -15,7 +15,7 @@ function PostingCard({ p }) {
         <Avatar u={p.company} size={44} square />
         <div className="min-w-0"><div className="font-bold leading-snug"><Tr>{p.title}</Tr></div><div className="text-sm text-mute"><Tr>{p.company.name}</Tr> · <Tr>{p.company.city}</Tr></div></div>
       </div>
-      <div className="money text-lg">{fmt(p.pay)} {t(p.cur)}<span className="text-sm font-medium text-mute">{p.kind === 'job' ? t(' / شهرياً') : t(' / للمشروع')}</span></div>
+      <div className="money text-lg">{fmt(p.pay)} {curLabel(p.cur)}<span className="text-sm font-medium text-mute">{p.kind === 'job' ? t(' / شهرياً') : t(' / للمشروع')}</span></div>
       <div className="flex flex-wrap gap-1.5"><span className="chip chip-b">{t(p.spec)}</span>{postingChips(p).map((c) => <span key={c} className="chip">{c}</span>)}</div>
       <div className="mt-auto flex items-center justify-between pt-1">
         {p.my_status ? <StatusChip status={p.my_status} /> : <span className="chip chip-g"><Sprout size={13} />{t('مناسب للخريجين الجدد')}</span>}
@@ -33,7 +33,7 @@ export function StudentDashboard() {
   const { data: projects } = useFetch('/postings?kind=project');
   if (loading) return <Spinner />;
   if (error) return <ErrorBox>{error}</ErrorBox>;
-  const bal = s.wallet?.length ? s.wallet.map((w) => `${fmt(w.total)} ${t(w.cur)}`).join(' + ') : '0';
+  const bal = s.wallet?.length ? s.wallet.map((w) => `${fmt(w.total)} ${curLabel(w.cur)}`).join(' + ') : '0';
   return (
     <div>
       <Banner title={t('أهلاً {name}', { name: user.name.split(' ')[0] })} sub={t('هذا ملخص نشاطك على المنصة. مهاراتك وأعمالك هي ما يراه أصحاب العمل.')}>
@@ -41,10 +41,10 @@ export function StudentDashboard() {
         <Link to="/app/portfolio" className="btn border-white/40 bg-white/15 text-white hover:bg-white/25">{t('حدّث ملفي المهني')}</Link>
       </Banner>
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={ClipboardList} label={t('طلبات قيد المراجعة')} value={s.pending} tone="w" />
-        <StatCard icon={CheckCircle2} label={t('طلبات مقبولة')} value={s.accepted} tone="g" />
-        <StatCard icon={Mail} label={t('دعوات جديدة')} value={s.invites} />
-        <StatCard icon={Star} label={t('متوسط التقييم')} value={s.works ? s.avg : '—'} tone="w" hint={<div className="text-xs text-mute">{s.works} {t('أعمال منجزة')}</div>} />
+        <StatCard icon={ClipboardList} label={t('طلبات قيد المراجعة')} value={s.pending} tone="w" to="/app/applications" />
+        <StatCard icon={CheckCircle2} label={t('طلبات مقبولة')} value={s.accepted} tone="g" to="/app/applications" />
+        <StatCard icon={Mail} label={t('دعوات جديدة')} value={s.invites} to="/app/applications" />
+        <StatCard icon={Star} label={t('متوسط التقييم')} value={s.works ? s.avg : '—'} tone="w" to="/app/portfolio" hint={<div className="text-xs text-mute">{s.works} {t('أعمال منجزة')}</div>} />
       </div>
       <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="card p-5">
@@ -106,7 +106,7 @@ export function Applications() {
             {inv.map((i) => (
               <div key={i.id} className="card flex flex-wrap items-center gap-3 p-4">
                 <Avatar u={{ id: i.id, name: i.company_name, avatar: i.company_avatar }} size={40} square />
-                <div className="min-w-0 flex-1"><div className="font-semibold"><Tr>{i.company_name}</Tr> {t('تدعوك إلى:')} <Tr>{i.title}</Tr></div><div className="money">{fmt(i.pay)} {t(i.cur)}</div></div>
+                <div className="min-w-0 flex-1"><div className="font-semibold"><Tr>{i.company_name}</Tr> {t('تدعوك إلى:')} <Tr>{i.title}</Tr></div><div className="money">{fmt(i.pay)} {curLabel(i.cur)}</div></div>
                 <Link className="btn" to={`/app/opportunity/${i.posting_id}`}>{t('التفاصيل')}</Link>
                 <button className="btn btn-g" onClick={() => accept(i.id)}>{t('قبول الدعوة')}</button>
               </div>
@@ -141,7 +141,7 @@ export function Wallet() {
       <PageHeader title={t('المحفظة')} sub={t('أرباحك من المشاريع المعتمدة.')} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
         {data.balances.length ? data.balances.map((b) => (
-          <div key={b.cur} className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('الرصيد')} ({t(b.cur)})</div><div className="money text-3xl">{fmt(b.total)}</div></div>
+          <div key={b.cur} className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('الرصيد')} ({curLabel(b.cur)})</div><div className="money text-3xl">{fmt(b.total)}</div></div>
         )) : <div className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('الرصيد')}</div><div className="money text-3xl">0</div></div>}
       </div>
       <h2 className="mb-3 font-bold">{t('سجل العمليات')}</h2>
@@ -149,7 +149,7 @@ export function Wallet() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-line text-mute"><th className="p-3 text-start">{t('المشروع')}</th><th className="p-3 text-start">{t('التاريخ')}</th><th className="p-3 text-start">{t('المبلغ')}</th></tr></thead>
-            <tbody>{data.tx.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">+{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
+            <tbody>{data.tx.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">+{fmt(x.amount)} {curLabel(x.cur)}</td></tr>)}</tbody>
           </table>
         </div>
       ) : <Empty>{t('لا عمليات بعد. تظهر هنا أرباحك عند اعتماد أول مشروع.')}</Empty>}

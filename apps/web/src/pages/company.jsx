@@ -2,10 +2,10 @@ import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send } from 'lucide-react';
+import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, Empty, ErrorBox, Field, Modal, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt } from '../ui.jsx';
+import { Avatar, Banner, BarList, CURRENCIES, Empty, ErrorBox, Field, Modal, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 /* ---------- Dashboard ---------- */
@@ -23,14 +23,14 @@ export function CompanyDashboard() {
         <Link to="/app/my-postings/new?kind=project" className="btn border-white/40 bg-white/15 text-white hover:bg-white/25"><Plus size={16} />{t('مشروع جديد')}</Link>
       </Banner>
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={Briefcase} label={t('وظائف منشورة')} value={s.jobs} />
-        <StatCard icon={FolderKanban} label={t('مشاريع منشورة')} value={s.projects} tone="g" />
-        <StatCard icon={Users} label={t('طلبات بانتظار مراجعتك')} value={s.pending} tone="w" hint={<div className="text-xs text-mute">{t('من أصل')} {s.applicants} {t('متقدم')}</div>} />
-        <StatCard icon={PackageCheck} label={t('تسليمات بانتظار اعتمادك')} value={s.awaiting} tone={s.awaiting ? 'r' : 'g'} />
+        <StatCard icon={Briefcase} label={t('وظائف منشورة')} value={s.jobs} to="/app/my-postings?kind=job" />
+        <StatCard icon={FolderKanban} label={t('مشاريع منشورة')} value={s.projects} tone="g" to="/app/my-postings?kind=project" />
+        <StatCard icon={Users} label={t('طلبات بانتظار مراجعتك')} value={s.pending} tone="w" to="/app/applicants?status=pending" hint={<div className="text-xs text-mute">{t('من أصل')} {s.applicants} {t('متقدم')}</div>} />
+        <StatCard icon={PackageCheck} label={t('تسليمات بانتظار اعتمادك')} value={s.awaiting} tone={s.awaiting ? 'r' : 'g'} to="/app/workspace" />
       </div>
       <div className="mb-8 grid gap-4 lg:grid-cols-2">
         <BarList title={t('مسار المتقدمين')} rows={[{ label: t('إجمالي المتقدمين'), value: s.applicants }, { label: t('بانتظار المراجعة'), value: s.pending, color: 'bg-warn' }, { label: t('تسليمات بانتظار الاعتماد'), value: s.awaiting, color: 'bg-good' }]} />
-        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي ما دُفع للمبدعين')}</div><div className="money mt-1 text-2xl">{s.paid.length ? s.paid.map((p) => `${fmt(p.total)} ${t(p.cur)}`).join(' + ') : '0'}</div></div>
+        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي ما دُفع للمبدعين')}</div><div className="money mt-1 text-2xl">{s.paid.length ? s.paid.map((p) => `${fmt(p.total)} ${curLabel(p.cur)}`).join(' + ') : '0'}</div></div>
       </div>
       <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-bold">{t('أحدث الطلبات المعلّقة')}</h2><Link to="/app/applicants" className="text-sm font-semibold text-brand">{t('عرض الكل')}</Link></div>
       {pending.length ? <div className="grid gap-3">{pending.map((a) => (
@@ -47,7 +47,10 @@ export function CompanyDashboard() {
 /* ---------- Manage postings ---------- */
 export function MyPostings() {
   const toast = useToast();
-  const { data, loading, error, reload } = useFetch('/postings/mine');
+  const [sp, setSp] = useSearchParams();
+  const kindF = ['job', 'project'].includes(sp.get('kind')) ? sp.get('kind') : '';
+  const { data: all, loading, error, reload } = useFetch('/postings/mine');
+  const data = (all || []).filter((p) => !kindF || p.kind === kindF);
   const del = async (id) => { try { await api.del(`/postings/${id}`); toast(t('أُزيل المنشور')); reload(); } catch (e) { toast(e.message, 'err'); } };
   if (loading) return <Spinner />;
   if (error) return <ErrorBox>{error}</ErrorBox>;
@@ -57,6 +60,11 @@ export function MyPostings() {
         <Link to="/app/my-postings/new?kind=job" className="btn btn-p"><Plus size={16} />{t('وظيفة شاغرة جديدة')}</Link>
         <Link to="/app/my-postings/new?kind=project" className="btn btn-g"><Plus size={16} />{t('مشروع / تعاون جديد')}</Link>
       </PageHeader>
+      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label={t('نوع المنشور')}>
+        {[['', t('الكل')], ['job', t('وظائف')], ['project', t('مشاريع')]].map(([k, l]) => (
+          <button key={k} type="button" aria-pressed={kindF === k} className={`btn btn-sm ${kindF === k ? 'btn-p' : ''}`} onClick={() => setSp(k ? { kind: k } : {})}>{l}{all ? ` (${k ? all.filter((p) => p.kind === k).length : all.length})` : ''}</button>
+        ))}
+      </div>
       {data.length ? (
         <div className="grid gap-3">
           {data.map((p) => (
@@ -64,7 +72,7 @@ export function MyPostings() {
               <span className={`chip ${p.kind === 'job' ? 'chip-b' : 'chip-g'}`}>{p.kind === 'job' ? t('وظيفة') : t('مشروع')}</span>
               <div className="min-w-0 flex-1">
                 <Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand"><Tr>{p.title}</Tr></Link>
-                <div className="text-sm text-mute">{t(p.spec)} · <span className="money">{fmt(p.pay)} {t(p.cur)}</span>{p.kind === 'job' ? ` · ${t(p.shift)} · ${t(p.type)}` : ` · ${t('{n} أيام', { n: p.days })}`}</div>
+                <div className="text-sm text-mute">{t(p.spec)} · <span className="money">{fmt(p.pay)} {curLabel(p.cur)}</span>{p.kind === 'job' ? ` · ${t(p.shift)} · ${t(p.type)}` : ` · ${t('{n} أيام', { n: p.days })}`}</div>
               </div>
               {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
               <span className="chip"><Users size={13} />{p.applicants} {t('متقدم')}</span>
@@ -97,7 +105,7 @@ export function PostingForm() {
   const ex = id ? loaded : null; // لا نعيد استخدام بيانات منشور سابق عند فتح نموذج جديد
   const kind = ex ? ex.kind : sp.get('kind') === 'project' ? 'project' : 'job';
   const isJob = kind === 'job';
-  const [f, setF] = useState({ title: '', spec: 'برمجة', pay: '', cur: 'د.ع', hours: 6, schedule: '', shift: 'صباحي', type: 'دوام جزئي', address: '', map_url: '', reqs: '', description: '', days: 7 });
+  const [f, setF] = useState({ title: '', spec: 'برمجة', pay: '', cur: 'IQD', hours: 6, schedule: '', shift: 'صباحي', type: 'دوام جزئي', address: '', map_url: '', reqs: '', description: '', days: 7 });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (ex) setF({ title: ex.title, spec: ex.spec, pay: ex.pay, cur: ex.cur, hours: ex.hours || 6, schedule: ex.schedule || '', shift: ex.shift || 'صباحي', type: ex.type || 'دوام جزئي', address: ex.address || '', map_url: ex.map_url || '', reqs: ex.reqs.join(', '), description: ex.description, days: ex.days || 7 });
@@ -120,7 +128,7 @@ export function PostingForm() {
         <Field label={isJob ? t('المسمى الوظيفي') : t('عنوان المشروع')}><input id="np-title" className="inp" value={f.title} onChange={(e) => set('title', e.target.value)} required /></Field>
         <div className="grid grid-cols-2 gap-x-4 sm:grid-cols-3">
           <Field label={isJob ? t('الراتب الشهري') : t('المبلغ')}><input id="np-pay" type="number" min="1" className="inp" value={f.pay} onChange={(e) => set('pay', e.target.value)} required /></Field>
-          <Field label={t('العملة')}><select id="np-cur" className="inp" value={f.cur} onChange={(e) => set('cur', e.target.value)}><option value="د.ع">{t('د.ع')}</option><option value="ر.س">{t('ر.س')}</option></select></Field>
+          <Field label={t('العملة')}><select id="np-cur" className="inp" value={f.cur} onChange={(e) => set('cur', e.target.value)}>{CURRENCIES.map(([v, l]) => <option key={v} value={v}>{t(l)}</option>)}</select></Field>
           <Field label={t('التخصص')}><select id="np-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
           {isJob ? (
             <>
@@ -151,7 +159,9 @@ export function Applicants() {
   const [sp, setSp] = useSearchParams();
   const posting = sp.get('posting') || '';
   const { data: mine } = useFetch('/postings/mine');
-  const { data: apps, loading, reload } = useFetch(`/applications${posting ? `?posting=${posting}` : ''}`);
+  const { data: allApps, loading, reload } = useFetch(`/applications${posting ? `?posting=${posting}` : ''}`);
+  const statusF = sp.get('status') === 'pending' ? 'pending' : '';
+  const apps = statusF ? allApps?.filter((a) => a.status === 'pending') : allApps;
   const [view, setView] = useState(null);
   const act = async (id, what) => { try { await api.post(`/applications/${id}/${what}`); toast(what === 'accept' ? t('تم القبول وفتحت المحادثة') : t('رُفض الطلب')); reload(); } catch (e) { toast(e.message, 'err'); } };
   return (
@@ -159,11 +169,12 @@ export function Applicants() {
       <PageHeader title={t('مراجعة المتقدمين')} sub={t('راجع أعمالهم السابقة بدل سنوات الخبرة، ثم اقبل أو ارفض.')} />
       <div className="mb-4 max-w-md">
         <label className="lbl" htmlFor="app-sel">{t('المنشور')}</label>
-        <select id="app-sel" className="inp" value={posting} onChange={(e) => setSp(e.target.value ? { posting: e.target.value } : {})}>
+        <select id="app-sel" className="inp" value={posting} onChange={(e) => setSp({ ...(e.target.value ? { posting: e.target.value } : {}), ...(statusF ? { status: statusF } : {}) })}>
           <option value="">{t('كل المنشورات')}</option>
           {mine?.map((p) => <option key={p.id} value={p.id}><Tr>{p.title}</Tr> ({p.applicants})</option>)}
         </select>
       </div>
+      {statusF && <div className="mb-3"><button type="button" className="chip chip-w" onClick={() => setSp(posting ? { posting } : {})} aria-label={t('إلغاء التصفية')}>{t('قيد المراجعة فقط')} <X size={12} /></button></div>}
       {loading ? <Spinner /> : apps?.length ? (
         <div className="grid gap-3">
           {apps.map((a) => (

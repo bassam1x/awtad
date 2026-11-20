@@ -41,7 +41,8 @@ export const postingOut = (r) => ({
   company: { id: r.company_id, name: r.company_name, avatar: r.company_avatar, city: r.city, sector: r.sector },
 });
 
-export const toIQD = (n, cur) => (cur === 'ر.س' ? n * 350 : n);
+/** تحويل تقريبي للمقارنة بين العملات عند فلترة الراتب (1 دولار = 1500 دينار) */
+export const toIQD = (n, cur) => (cur === 'USD' ? n * 1500 : n);
 
 export async function appAccess(id, user) {
   const a = await get(`SELECT a.*, p.company_id, p.title AS posting_title, p.kind, p.pay, p.cur FROM applications a JOIN postings p ON p.id=a.posting_id WHERE a.id=?`, id);

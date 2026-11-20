@@ -109,10 +109,10 @@ test('دورة العمل كاملة: تقديم، قبول، تسليم، اع�
   assert.equal((await call('POST', `/api/applications/${aid}/accept`, {}, co)).status, 200);
   assert.equal((await call('POST', `/api/applications/${aid}/messages`, { text: 'مرحباً' }, st)).status, 200);
   assert.equal((await call('POST', `/api/applications/${aid}/deliver`, {}, st)).status, 200);
-  const before = (await call('GET', '/api/wallet', null, st)).json.balances.find((b) => b.cur === 'د.ع')?.total || 0;
+  const before = (await call('GET', '/api/wallet', null, st)).json.balances.find((b) => b.cur === 'IQD')?.total || 0;
   assert.equal((await call('POST', `/api/applications/${aid}/approve`, { rating: 5 }, co)).status, 200);
   assert.equal((await call('POST', `/api/applications/${aid}/approve`, { rating: 5 }, co)).status, 403, 'لا دفع مرتين');
-  const after = (await call('GET', '/api/wallet', null, st)).json.balances.find((b) => b.cur === 'د.ع').total;
+  const after = (await call('GET', '/api/wallet', null, st)).json.balances.find((b) => b.cur === 'IQD').total;
   assert.equal(after - before, 250000);
 });
 

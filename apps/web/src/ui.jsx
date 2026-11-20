@@ -4,10 +4,13 @@ import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
 import { tr, useTrVersion } from './translate.jsx';
 import { useEffect, useState } from 'react';
-import { Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 import ImageEditor from './ImageEditor.jsx';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+/** رمز العملة بلغة الواجهة: IQD دينار عراقي، USD دولار أمريكي (والقيم القديمة تُعرض كما هي) */
+export const curLabel = (c) => ({ IQD: t('د.ع'), USD: t('دولار') }[c] ?? t(c));
+export const CURRENCIES = [['IQD', 'دينار عراقي (IQD)'], ['USD', 'دولار أمريكي (USD)']];
 export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
 export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 
@@ -141,14 +144,19 @@ export function SegTabs({ items, active }) {
     </nav>
   );
 }
-export function StatCard({ icon: I, label, value, tone = 'b', hint }) {
+/** بطاقة إحصائية؛ مع `to` تصير رابطاً يفتح الصفحة المرتبطة بها */
+export function StatCard({ icon: I, label, value, tone = 'b', hint, to }) {
   const t = { b: '', g: 'gicon-g', w: 'gicon-w', r: 'gicon-r' }[tone];
-  return (
-    <div className="card p-4 flex items-center gap-3">
+  const body = (
+    <>
       <span className={`gicon gicon-live ${t}`}><I size={20} /></span>
-      <div className="min-w-0"><div className="text-2xl font-bold leading-tight"><CountUp v={value} /></div><div className="text-sm text-mute">{label}</div>{hint}</div>
-    </div>
+      <div className="min-w-0 flex-1"><div className="text-2xl font-bold leading-tight"><CountUp v={value} /></div><div className="text-sm text-mute">{label}</div>{hint}</div>
+      {to && <ChevronLeft size={18} className="stat-go text-mute rtl:rotate-0 ltr:rotate-180" aria-hidden="true" />}
+    </>
   );
+  return to
+    ? <Link to={to} className="card stat-link p-4 flex items-center gap-3" aria-label={label}>{body}</Link>
+    : <div className="card p-4 flex items-center gap-3">{body}</div>;
 }
 export function Field({ label, children, hint }) {
   return <div className="mb-3"><label className="lbl">{label}</label>{children}{hint && <div className="mt-1 text-xs text-mute">{hint}</div>}</div>;

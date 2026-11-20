@@ -77,7 +77,7 @@ test('الفرص: قوائم وفلاتر وminimum وmine وتعديل وحذف
   assert.ok(jobs.length >= 4 && jobs.every((j) => j.kind === 'job'));
   assert.ok(ok(await call('GET', '/api/postings?spec=تصميم', null, st)).every((j) => j.spec === 'تصميم'));
   const rich = ok(await call('GET', '/api/postings?min=1000000', null, st));
-  assert.ok(rich.length >= 1 && rich.every((j) => j.pay >= 1000000 || j.cur === 'ر.س'));
+  assert.ok(rich.length >= 1 && rich.every((j) => j.pay >= 1000000 || j.cur === 'USD'));
   const mine = ok(await call('GET', '/api/postings/mine', null, co));
   assert.ok(mine.length >= 3 && mine.every((p) => typeof p.applicants === 'number' && typeof p.pending === 'number'));
   const created = ok(await call('POST', '/api/postings', { kind: 'job', title: 'اختبار', pay: 500000, hours: 4 }, co));
@@ -160,4 +160,24 @@ test('ADMIN_PASSWORD مرجع كلمة مرور المدير: يُطبَّق ع�
   assert.ok(await login(ADMIN.email, 'New-Admin-Pass-9'));
   assert.equal((await call('GET', '/api/me', null, old)).status, 401);  // الجلسة القديمة أُبطلت
   assert.equal(await syncAdminPassword('New-Admin-Pass-9'), false);     // مكرّر: لا تغيير
+});
+test('العملة: IQD وUSD فقط، وترحيل القيم القديمة (د.ع، ر.س) آمن للتكرار', async () => {
+  const { MIGRATE } = await import('../src/schema.js');
+  const co = await login('nibras@demo.iq');
+  const a = ok(await call('POST', '/api/postings', { kind: 'job', title: 'بالدولار', pay: 900, cur: 'USD', hours: 5 }, co));
+  const b = ok(await call('POST', '/api/postings', { kind: 'job', title: 'عملة غريبة', pay: 500000, cur: 'EUR', hours: 5 }, co));
+  const st = await login('sara@demo.iq');
+  assert.equal(ok(await call('GET', `/api/postings/${a.id}`, null, st)).cur, 'USD');
+  assert.equal(ok(await call('GET', `/api/postings/${b.id}`, null, st)).cur, 'IQD');           // أي قيمة أخرى تصير IQD
+  assert.ok(ok(await call('GET', '/api/postings?min=1000000', null, st)).some((p) => p.id === a.id)); // 900$ ≈ 1.35 مليون د.ع
+
+  // بيانات قديمة: 3750 ر.س = 1000 دولار، و500000 د.ع
+  const u = (await dbm.get("SELECT id FROM users WHERE email='sara@demo.iq'")).id;
+  await dbm.run("INSERT INTO wallet_tx(user_id,title,amount,cur) VALUES(?,?,?,?)", u, 'قديم ريال', 3750, 'ر.س');
+  await dbm.run("INSERT INTO wallet_tx(user_id,title,amount,cur) VALUES(?,?,?,?)", u, 'قديم دينار', 500000, 'د.ع');
+  await dbm.db.exec(MIGRATE); await dbm.db.exec(MIGRATE); // مرتان: لا يتضاعف التحويل
+  const rows = await dbm.all("SELECT title, amount, cur FROM wallet_tx WHERE title IN ('قديم ريال','قديم دينار') ORDER BY title");
+  assert.deepEqual(rows.map((r) => [r.title, r.amount, r.cur]), [['قديم دينار', 500000, 'IQD'], ['قديم ريال', 1000, 'USD']]);
+  const bal = ok(await call('GET', '/api/wallet', null, st)).balances;
+  assert.ok(bal.every((x) => ['IQD', 'USD'].includes(x.cur)) && bal.some((x) => x.cur === 'USD' && x.total === 1000));
 });

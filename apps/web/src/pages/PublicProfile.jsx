@@ -3,7 +3,7 @@ import { Tr } from '../translate.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from 'lucide-react';
 import { useFetch } from '../context.jsx';
-import { Avatar, ErrorBox, Spinner, Stars, fmt } from '../ui.jsx';
+import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel } from '../ui.jsx';
 
 export function ProfileBody({ p }) {
   if (p.role === 'company') {
@@ -39,7 +39,7 @@ export function ProfileBody({ p }) {
         {p.works?.map((w) => (
           <div key={w.id} className="rounded-xl border border-line p-3">
             <div className="flex flex-wrap justify-between gap-2"><b><Tr>{w.title}</Tr></b><Stars v={w.rating} size={14} /></div>
-            <div className="text-sm text-mute"><Tr>{w.company_name}</Tr> · <span className="money">{fmt(w.amount)} {t(w.cur)}</span></div>
+            <div className="text-sm text-mute"><Tr>{w.company_name}</Tr> · <span className="money">{fmt(w.amount)} {curLabel(w.cur)}</span></div>
             <div className="mt-1 text-sm">«<Tr>{t(w.comment)}</Tr>»</div>
           </div>
         ))}

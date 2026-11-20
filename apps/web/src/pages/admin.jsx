@@ -1,11 +1,11 @@
 import { isRtl, t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, Empty, ErrorBox, PageHeader, Spinner, StatCard, dateAr, fmt } from '../ui.jsx';
+import { Avatar, Banner, BarList, Empty, ErrorBox, PageHeader, Spinner, StatCard, dateAr, fmt , curLabel } from '../ui.jsx';
 
 const ROLE = { student: t('مبدع'), company: t('شركة'), admin: t('مدير') };
 
@@ -18,13 +18,13 @@ export function AdminDashboard() {
     <div>
       <Banner title={t('لوحة الإدارة')} sub={t('نظرة عامة على نشاط المنصة وجودة المحتوى.')} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={GraduationCap} label={t('مبدعون مسجلون')} value={s.students} />
-        <StatCard icon={Building2} label={t('شركات مسجلة')} value={s.companies} tone="g" />
-        <StatCard icon={Briefcase} label={t('فرص منشورة')} value={s.postings} hint={<div className="text-xs text-mute">{s.openPostings} {t('مفتوحة')}</div>} />
-        <StatCard icon={ClipboardList} label={t('طلبات تقديم')} value={s.applications} tone="w" hint={<div className="text-xs text-mute">{s.accepted} {t('مقبولة')}</div>} />
+        <StatCard icon={GraduationCap} label={t('مبدعون مسجلون')} value={s.students} to="/app/users?role=student" />
+        <StatCard icon={Building2} label={t('شركات مسجلة')} value={s.companies} tone="g" to="/app/users?role=company" />
+        <StatCard icon={Briefcase} label={t('فرص منشورة')} value={s.postings} to="/app/all-postings" hint={<div className="text-xs text-mute">{s.openPostings} {t('مفتوحة')}</div>} />
+        <StatCard icon={ClipboardList} label={t('طلبات تقديم')} value={s.applications} tone="w" to="/app/all-applications" hint={<div className="text-xs text-mute">{s.accepted} {t('مقبولة')}</div>} />
       </div>
       <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي المبالغ المحوّلة للمبدعين')}</div><div className="money mt-1 text-2xl">{s.volume.length ? s.volume.map((v) => `${fmt(v.total)} ${t(v.cur)}`).join(' + ') : '0'}</div></div>
+        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي المبالغ المحوّلة للمبدعين')}</div><div className="money mt-1 text-2xl">{s.volume.length ? s.volume.map((v) => `${fmt(v.total)} ${curLabel(v.cur)}`).join(' + ') : '0'}</div></div>
         <div className="card p-5"><div className="flex items-center gap-2 text-sm text-mute"><Ban size={16} />{t('حسابات موقوفة')}</div><div className="mt-1 text-2xl font-bold">{s.banned}</div></div>
       </div>
       {ch && (
@@ -47,7 +47,8 @@ export function AdminUsers() {
   const { user: me } = useAuth();
   const toast = useToast();
   const [q, setQ] = useState('');
-  const [role, setRole] = useState('');
+  const [sp] = useSearchParams();
+  const [role, setRole] = useState(['student', 'company'].includes(sp.get('role')) ? sp.get('role') : '');
   const [confirm, setConfirm] = useState(null);
   const { data, loading, error, reload } = useFetch(`/admin/users?q=${encodeURIComponent(q)}${role ? `&role=${role}` : ''}`);
   const setStatus = async (u, status) => { try { await api.patch(`/admin/users/${u.id}`, { status }); toast(status === 'banned' ? t('تم إيقاف الحساب') : t('أُعيد تفعيل الحساب')); reload(); } catch (e) { toast(e.message, 'err'); } };
@@ -104,7 +105,7 @@ export function AdminPostings() {
           {data.map((p) => (
             <div key={p.id} className="card flex flex-wrap items-center gap-3 p-4">
               <span className={`chip ${p.kind === 'job' ? 'chip-b' : 'chip-g'}`}>{p.kind === 'job' ? t('وظيفة') : t('مشروع')}</span>
-              <div className="min-w-0 flex-1"><Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand"><Tr>{p.title}</Tr></Link><div className="text-sm text-mute"><Tr>{p.company.name}</Tr> · <span className="money">{fmt(p.pay)} {t(p.cur)}</span> · {p.applicants} {t('متقدم')}</div></div>
+              <div className="min-w-0 flex-1"><Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand"><Tr>{p.title}</Tr></Link><div className="text-sm text-mute"><Tr>{p.company.name}</Tr> · <span className="money">{fmt(p.pay)} {curLabel(p.cur)}</span> · {p.applicants} {t('متقدم')}</div></div>
               {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
               <button className="btn btn-sm" onClick={() => toggle(p)}>{p.status === 'open' ? t('إغلاق') : t('فتح')}</button>
               <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => del(p.id)}><Trash2 size={14} /></button>
@@ -127,7 +128,7 @@ export function AdminTransactions() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-line text-mute"><th className="p-3 text-start">{t('المبدع')}</th><th className="p-3 text-start">{t('المشروع')}</th><th className="p-3 text-start">{t('التاريخ')}</th><th className="p-3 text-start">{t('المبلغ')}</th></tr></thead>
-            <tbody>{data.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3">{x.user_name}</td><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">{fmt(x.amount)} {t(x.cur)}</td></tr>)}</tbody>
+            <tbody>{data.map((x) => <tr key={x.id} className="border-b border-line last:border-0"><td className="p-3">{x.user_name}</td><td className="p-3"><Tr>{x.title}</Tr></td><td className="p-3 text-mute">{dateAr(x.created_at)}</td><td className="money p-3">{fmt(x.amount)} {curLabel(x.cur)}</td></tr>)}</tbody>
           </table>
         </div>
       ) : <Empty>{t('لا عمليات بعد.')}</Empty>}

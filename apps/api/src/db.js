@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
-import { SCHEMA } from './schema.js';
+import { MIGRATE, SCHEMA } from './schema.js';
 
 /* طبقة قاعدة البيانات: PostgreSQL.
    - الإنتاج: DATABASE_URL (مثلاً Neon) عبر مكتبة pg.
@@ -66,6 +66,7 @@ async function open() {
 
 const backend = await open();
 await backend.exec(SCHEMA);
+await backend.exec(MIGRATE);
 
 export const db = { kind: backend.kind, exec: (sql) => backend.exec(sql), close: () => backend.close() };
 

@@ -340,3 +340,11 @@ select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
   .sp-bar { animation-duration: .01s; animation-delay: 0s !important; } .sp-dot, .splash-name, .splash-sub, .splash-status { animation-duration: .01s; animation-delay: 0s !important; }
   .splash-glow, .splash-ring, .splash-bar span { animation: none; } .splash-ring { display: none; } .splash-bar span { inset-inline-start: 0; width: 100%; }
 }html:has(.splash:not(.splash-out)) { overflow: hidden; }
+
+/* بطاقات إحصائية قابلة للنقر */
+.stat-link { cursor: var(--cur-hand, pointer); transition: transform .2s, border-color .2s, box-shadow .2s; }
+.stat-link:hover { transform: translateY(-2px); border-color: rgb(var(--brand) / .45); box-shadow: 0 18px 34px -18px rgb(var(--brand) / .5), inset 0 1px 0 rgb(255 255 255 / .12); }
+.stat-link:active { transform: scale(.99); }
+.stat-link .stat-go { flex: none; opacity: .55; transition: transform .2s, opacity .2s, color .2s; }
+.stat-link:hover .stat-go { opacity: 1; color: rgb(var(--brand)); transform: translateX(-3px); }
+:root[dir='ltr'] .stat-link:hover .stat-go { transform: translateX(3px) rotate(180deg); }
