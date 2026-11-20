@@ -74,8 +74,8 @@ export default function App() {
           <Route path="workspace" element={<Workspace />} />
           <Route path="workspace/:appId" element={<Workspace />} />
           {/* مبدع */}
-          <Route path="jobs" element={<Role roles={S}><Browse kind="job" /></Role>} />
-          <Route path="projects" element={<Role roles={S}><Browse kind="project" /></Role>} />
+          <Route path="jobs" element={<Role roles={S}><Browse key="job" kind="job" /></Role>} />
+          <Route path="projects" element={<Role roles={S}><Browse key="project" kind="project" /></Role>} />
           <Route path="applications" element={<Role roles={S}><Applications /></Role>} />
           <Route path="wallet" element={<Role roles={S}><Wallet /></Role>} />
           <Route path="portfolio" element={<Role roles={S}><Portfolio /></Role>} />

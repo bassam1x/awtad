@@ -84,7 +84,7 @@ function Chat({ id }) {
           const mine = m.sender_id === user.id;
           return (
             <div key={m.id} className={`flex items-end gap-2 ${mine ? 'flex-row' : 'flex-row-reverse'} justify-end`}>
-              <div className={`max-w-[75%] rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{t(m.text)}</div>
+              <div className={`msg-in max-w-[75%] rounded-2xl border border-line px-3 py-1.5 ${mine ? 'bg-brand text-white dark:text-slate-900' : 'bg-app'}`}>{t(m.text)}</div>
               <Avatar u={who(m.sender_id)} size={28} square={who(m.sender_id)?.role === 'company'} />
             </div>
           );
@@ -92,7 +92,7 @@ function Chat({ id }) {
       </div>
       <div className="flex gap-2 border-t border-line pt-3">
         <input id="chat-in" className="inp" placeholder={t('اكتب رسالة...')} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} />
-        <button className="btn btn-p" onClick={send} aria-label={t('إرسال')}><Send size={16} /></button>
+        <button className="btn btn-p" onClick={send} aria-label={t('إرسال')} data-tip={t('إرسال')}><Send size={16} /></button>
       </div>
       {approve && <Approve a={a} onClose={() => setApprove(false)} done={() => { setApprove(false); reloadApp(); load(); }} />}
     </div>

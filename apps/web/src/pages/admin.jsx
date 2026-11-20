@@ -74,7 +74,7 @@ export function AdminUsers() {
                     {u.id !== me.id && (
                       <div className="flex justify-end gap-2">
                         {u.status === 'banned' ? <button className="btn btn-sm" onClick={() => setStatus(u, 'active')}>{t('تفعيل')}</button> : <button className="btn btn-sm" onClick={() => setStatus(u, 'banned')}><Ban size={13} />{t('إيقاف')}</button>}
-                        {confirm === u.id ? <button className="btn btn-d btn-sm" onClick={() => del(u)}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" aria-label={t('حذف')} onClick={() => setConfirm(u.id)}><Trash2 size={13} /></button>}
+                        {confirm === u.id ? <button className="btn btn-d btn-sm" onClick={() => del(u)}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => setConfirm(u.id)}><Trash2 size={13} /></button>}
                       </div>
                     )}
                   </td>
@@ -106,7 +106,7 @@ export function AdminPostings() {
               <div className="min-w-0 flex-1"><Link to={`/app/opportunity/${p.id}`} className="font-bold hover:text-brand">{p.title}</Link><div className="text-sm text-mute">{p.company.name} · <span className="money">{fmt(p.pay)} {t(p.cur)}</span> · {p.applicants} {t('متقدم')}</div></div>
               {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
               <button className="btn btn-sm" onClick={() => toggle(p)}>{p.status === 'open' ? t('إغلاق') : t('فتح')}</button>
-              <button className="btn btn-d btn-sm" aria-label={t('حذف')} onClick={() => del(p.id)}><Trash2 size={14} /></button>
+              <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => del(p.id)}><Trash2 size={14} /></button>
             </div>
           ))}
         </div>

@@ -1,10 +1,10 @@
 import { t } from '../i18n/index.js';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X } from 'lucide-react';
+import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, StatCard, StatusChip, fmt, dateAr, postingChips } from '../ui.jsx';
+import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 function PostingCard({ p }) {
@@ -69,6 +69,7 @@ export function Browse({ kind }) {
   const mins = kind === 'job' ? [[0, t('أي راتب')], [800000, t('من 800 ألف')], [1000000, t('من مليون')], [1500000, t('من 1.5 مليون')]] : [[0, t('أي مبلغ')], [100000, t('من 100 ألف')], [300000, t('من 300 ألف')], [500000, t('من 500 ألف')]];
   return (
     <div>
+      <div className="mb-5"><SegTabs active={kind === 'job' ? '/app/jobs' : '/app/projects'} items={[{ to: '/app/jobs', label: t('الوظائف الشاغرة'), icon: Briefcase, pre: '/postings?kind=job' }, { to: '/app/projects', label: t('المشاريع والتعاونات'), icon: FolderKanban, pre: '/postings?kind=project' }]} /></div>
       <PageHeader title={kind === 'job' ? t('الوظائف الشاغرة') : t('المشاريع والتعاونات')} sub={kind === 'job' ? t('وظائف برواتب وأوقات وعناوين واضحة، بلا شرط سنوات خبرة.') : t('مشاريع بمبالغ واضحة، تُحوَّل لمحفظتك عند اعتماد التسليم.')} />
       <div className="card mb-5 flex flex-wrap items-center gap-3 p-3">
         <span className="flex items-center gap-2 font-semibold"><SlidersHorizontal size={16} />{t('فلاتر')}</span>
@@ -170,19 +171,19 @@ export function Portfolio() {
           <div className="card p-5">
             <h2 className="mb-3 font-bold">{t('المهارات')}</h2>
             <div className="mb-4 flex flex-wrap gap-2">
-              {user.skills.map((k) => <span key={k.id} className="chip chip-b">{k.name} · {t(k.level)}<button aria-label={t('حذف')} onClick={() => act(() => api.del(`/me/skills/${k.id}`))}><X size={12} /></button></span>)}
+              {user.skills.map((k) => <span key={k.id} className="chip chip-b">{k.name} · {t(k.level)}<button aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/skills/${k.id}`))}><X size={12} /></button></span>)}
               {!user.skills.length && <span className="text-sm text-mute">{t('لا مهارات بعد.')}</span>}
             </div>
             <div className="flex gap-2">
               <input id="sk-name" className="inp" placeholder={t('اسم المهارة')} value={sk.name} onChange={(e) => setSk({ ...sk, name: e.target.value })} />
               <select aria-label={t('مستوى الإتقان')} className="inp !w-32" value={sk.level} onChange={(e) => setSk({ ...sk, level: e.target.value })}><option value="مبتدئ">{t('مبتدئ')}</option><option value="جيد">{t('جيد')}</option><option value="جيد جداً">{t('جيد جداً')}</option><option value="متقدم">{t('متقدم')}</option></select>
-              <button className="btn btn-p" aria-label={t('إضافة')} onClick={() => { if (!sk.name.trim()) return; act(() => api.post('/me/skills', sk)); setSk({ name: '', level: 'مبتدئ' }); }}><Plus size={16} /></button>
+              <button className="btn btn-p" aria-label={t('إضافة')} data-tip={t('إضافة')} onClick={() => { if (!sk.name.trim()) return; act(() => api.post('/me/skills', sk)); setSk({ name: '', level: 'مبتدئ' }); }}><Plus size={16} /></button>
             </div>
           </div>
           <div className="card p-5">
             <h2 className="mb-3 font-bold">{t('مشاريع خارجية')}</h2>
             <div className="mb-4 grid gap-2">
-              {user.portfolio.map((x) => <div key={x.id} className="flex items-center justify-between gap-2 rounded-xl border border-line p-2 text-sm"><span className="truncate">{x.title}</span><button className="btn btn-d btn-sm" aria-label={t('حذف')} onClick={() => act(() => api.del(`/me/portfolio/${x.id}`))}><Trash2 size={14} /></button></div>)}
+              {user.portfolio.map((x) => <div key={x.id} className="flex items-center justify-between gap-2 rounded-xl border border-line p-2 text-sm"><span className="truncate">{x.title}</span><button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => act(() => api.del(`/me/portfolio/${x.id}`))}><Trash2 size={14} /></button></div>)}
               {!user.portfolio.length && <span className="text-sm text-mute">{t('لا مشاريع خارجية بعد.')}</span>}
             </div>
             <div className="grid gap-2">

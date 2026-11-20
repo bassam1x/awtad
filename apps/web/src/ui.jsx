@@ -1,6 +1,9 @@
+import { Link, useLocation } from 'react-router-dom';
 import { locale, t } from './i18n/index.js';
+import { prefetch } from './context.jsx';
+import { routeIcon } from './routeIcons.js';
 import { useEffect, useState } from 'react';
-import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Star, X, Upload, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from 'lucide-react';
 
 export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
@@ -60,15 +63,40 @@ export function StatusChip({ status }) {
   if (status === 'rejected') return <span className="chip chip-r"><XCircle size={13} />{t('مرفوض')}</span>;
   return null;
 }
-export function Spinner() { return <div className="flex justify-center py-16 text-mute"><Loader2 className="animate-spin" /></div>; }
-export function Empty({ children }) { return <div className="card p-10 text-center text-mute">{children}</div>; }
-export function ErrorBox({ children }) { return <div className="card p-6 text-center text-bad">{children}</div>; }
+export function Spinner() {
+  return (
+    <div role="status" aria-busy="true" aria-label={t('جارٍ التحميل…')} className="page-in">
+      <div className="mb-6 flex items-center gap-3"><div className="sk h-12 w-12" /><div className="grid gap-2"><div className="sk h-5 w-48" /><div className="sk h-3 w-72 max-w-[60vw]" /></div></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="sk h-36" />)}</div>
+    </div>
+  );
+}
+export function Empty({ children }) {
+  return (
+    <div className="card no-lift p-10 text-center text-mute">
+      <span className="gicon gicon-lg gicon-float gicon-v mx-auto mb-3"><Inbox size={24} /></span>
+      <div>{children}</div>
+    </div>
+  );
+}
+export function ErrorBox({ children }) {
+  return (
+    <div role="alert" className="card no-lift p-6 text-center text-bad">
+      <span className="gicon gicon-lg gicon-r mx-auto mb-3"><AlertCircle size={24} /></span>
+      <div>{children}</div>
+    </div>
+  );
+}
 export function PageHeader({ title, sub, children }) {
+  const [Icon, tone] = routeIcon(useLocation().pathname);
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {sub && <p className="mt-1 text-mute">{sub}</p>}
+      <div className="flex min-w-0 items-start gap-3">
+        <span className={`gicon gicon-lg page-head-icon ${tone}`}><Icon size={24} /></span>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold">{title}</h1>
+          {sub && <p className="mt-1 text-mute">{sub}</p>}
+        </div>
       </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
     </div>
@@ -89,6 +117,19 @@ export function CountUp({ v }) {
   const d = Number.isInteger(n) ? 0 : 1;
   return Number(x.toFixed(d)).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 }
+/** تبويب مُنزلق للتنقل بين قسمين (مثل الوظائف ⇄ المشاريع) مع تحميل مسبق عند المرور بالمؤشر */
+export function SegTabs({ items, active }) {
+  const i = Math.max(0, items.findIndex((x) => x.to === active));
+  return (
+    <nav className="seg no-lift" data-i={i} aria-label={t('التبديل بين الأقسام')}>
+      {items.map(({ to, label, icon: I, pre }) => (
+        <Link key={to} to={to} replace aria-current={to === active ? 'page' : undefined} onMouseEnter={() => prefetch(pre)} onFocus={() => prefetch(pre)}>
+          <I size={17} />{label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
 export function StatCard({ icon: I, label, value, tone = 'b', hint }) {
   const t = { b: '', g: 'gicon-g', w: 'gicon-w', r: 'gicon-r' }[tone];
   return (
@@ -108,11 +149,11 @@ export function Modal({ title, onClose, children, wide }) {
     return () => document.removeEventListener('keydown', f);
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" onClick={onClose}>
-      <div role="dialog" aria-modal="true" className={`card w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" onClick={onClose}>
+      <div role="dialog" aria-modal="true" className={`card modal-in w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold">{title}</h3>
-          <button className="btn btn-sm" onClick={onClose} aria-label={t('إغلاق')}><X size={16} /></button>
+          <button className="btn btn-sm" onClick={onClose} aria-label={t('إغلاق')} data-tip={t('إغلاق')}><X size={16} /></button>
         </div>
         {children}
       </div>

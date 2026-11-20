@@ -1,12 +1,14 @@
 import { LANGS, lang, setLang, t } from './i18n/index.js';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog,
   ListChecks, PlusCircle, Settings, ClipboardCheck, FolderPlus, Users, Search, Building2, ShieldCheck, FileText, Receipt, LogOut, Menu, X, Sun, Moon, Palette,
 } from 'lucide-react';
-import { useAuth, useFetch, useTheme } from './context.jsx';
-import { Avatar, Logo } from './ui.jsx';
+import { useAuth, useFetch, useTheme, prefetch } from './context.jsx';
+import { onActivity } from './api.js';
+import { PREFETCH } from './routeIcons.js';
+import { Avatar, Logo, Spinner } from './ui.jsx';
 
 const NAV = {
   student: [
@@ -35,7 +37,7 @@ const ROLE_LABEL = { student: t('مبدع'), company: t('شركة'), admin: t('�
 export function ThemeButton({ className = '' }) {
   const { dark, toggle } = useTheme();
   return (
-    <button className={`btn ${className}`} onClick={toggle} aria-label={dark ? t('تفعيل الوضع النهاري') : t('تفعيل الوضع الليلي')} title={dark ? t('الوضع النهاري') : t('الوضع الليلي')}>
+    <button className={`btn ${className}`} onClick={toggle} aria-label={dark ? t('تفعيل الوضع النهاري') : t('تفعيل الوضع الليلي')} data-tip={dark ? t('تفعيل الوضع النهاري') : t('تفعيل الوضع الليلي')} title={dark ? t('الوضع النهاري') : t('الوضع الليلي')}>
       {dark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   );
@@ -55,6 +57,24 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const loc = useLocation();
   useEffect(() => { setOpen(false); }, [loc.pathname, loc.search]);
+  /* شريط تقدّم يظهر فقط إذا استغرق طلب أكثر من لحظة */
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let timer;
+    const off = onActivity((n) => { clearTimeout(timer); if (n > 0) timer = setTimeout(() => setBusy(true), 180); else setBusy(false); });
+    return () => { clearTimeout(timer); off(); };
+  }, []);
+  /* تحميل أجزاء الصفحات مسبقاً أثناء خمول المتصفح فيصير التنقل فورياً */
+  useEffect(() => {
+    const run = () => {
+      import('./pages/Profile.jsx'); import('./pages/Opportunity.jsx'); import('./pages/Workspace.jsx'); import('./pages/PublicProfile.jsx');
+      if (user.role === 'student') import('./pages/student.jsx');
+      if (user.role === 'company') import('./pages/company.jsx');
+      if (user.role === 'admin') import('./pages/admin.jsx');
+    };
+    const id = 'requestIdleCallback' in window ? requestIdleCallback(run, { timeout: 2500 }) : setTimeout(run, 1200);
+    return () => ('cancelIdleCallback' in window ? cancelIdleCallback(id) : clearTimeout(id));
+  }, [user.role]);
   const groups = NAV[user.role];
   const { data: st } = useFetch(user.role === 'admin' ? null : '/stats', [loc.pathname]);
   const counts = st ? (user.role === 'student' ? { '/app/applications': st.invites } : { '/app/applicants': st.pending, '/app/workspace': st.awaiting }) : {};
@@ -66,23 +86,24 @@ export default function Layout() {
   };
   return (
     <div className="min-h-full lg:flex">
+      {busy && <div className="route-bar" aria-hidden="true" />}
       {/* زر القائمة على نفس جهة خروج القائمة: يمين في العربية/الكردية ويسار في الإنكليزية */}
       <div className="sticky top-0 z-30 flex flex-row-reverse items-center justify-between border-b border-line bg-card/60 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Logo size={30} />
-        <button className="btn" onClick={() => setOpen(true)} aria-label={t('القائمة')}><Menu size={18} /></button>
+        <button className="btn" onClick={() => setOpen(true)} aria-label={t('القائمة')} data-tip={t('القائمة')}><Menu size={18} /></button>
       </div>
       {open && <div className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" onClick={() => setOpen(false)} />}
       <aside className={`fixed inset-y-0 start-0 z-50 flex w-72 flex-col border-e border-line bg-card/55 backdrop-blur-2xl transition-transform lg:sticky lg:top-0 lg:h-screen lg:ltr:translate-x-0 lg:rtl:translate-x-0 ${open ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}`}>
         <div className="flex items-center justify-between px-5 py-5">
           <Link to="/app"><Logo size={36} /></Link>
-          <button className="btn btn-sm lg:hidden" onClick={() => setOpen(false)} aria-label={t('إغلاق')}><X size={16} /></button>
+          <button className="btn btn-sm lg:hidden" onClick={() => setOpen(false)} aria-label={t('إغلاق')} data-tip={t('إغلاق')}><X size={16} /></button>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 pb-3" aria-label={t('التنقل الرئيسي')}>
           {groups.map(([title, items]) => (
             <div key={title} className="mb-4">
               <div className="px-3 pb-1 text-xs font-semibold text-mute/80">{title}</div>
               {items.map(([to, label, Icon, end]) => (
-                <NavLink key={to} to={to} className={`nav-link ${isActive(to, end) ? 'active' : ''}`}><span className={`gicon ${toneOf(to)}`}><Icon size={19} /></span><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
+                <NavLink key={to} to={to} onMouseEnter={() => prefetch(PREFETCH[to])} onFocus={() => prefetch(PREFETCH[to])} className={() => `nav-link ${isActive(to, end) ? 'active' : ''}`}><span className={`gicon ${toneOf(to)}`}><Icon size={19} /></span><span className="flex-1">{label}</span>{counts[to] > 0 && <span className="rounded-full bg-bad px-2 text-xs font-bold text-white">{counts[to]}</span>}</NavLink>
               ))}
             </div>
           ))}
@@ -95,12 +116,12 @@ export default function Layout() {
           <LangSwitch className="mt-2 w-full" />
           <div className="mt-2 flex gap-2">
             <ThemeButton />
-            <Link to="/brand" className="btn" title={t('الهوية البصرية')} aria-label={t('الهوية البصرية')}><Palette size={16} /></Link>
+            <Link to="/brand" className="btn" title={t('الهوية البصرية')} aria-label={t('الهوية البصرية')} data-tip={t('الهوية البصرية')}><Palette size={16} /></Link>
             <button className="btn flex-1" onClick={logout}><LogOut size={16} />{t('خروج')}</button>
           </div>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8"><div key={loc.pathname} className="page-in mx-auto max-w-6xl"><Outlet /></div></main>
+      <main className="min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-8"><div key={loc.pathname} className="page-in mx-auto max-w-6xl"><Suspense fallback={<Spinner />}><Outlet /></Suspense></div></main>
     </div>
   );
 }

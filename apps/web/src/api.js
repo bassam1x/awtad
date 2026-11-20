@@ -8,6 +8,12 @@ const TIMEOUT_MS = 20000;
 export const getToken = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 export const setToken = (t) => { try { t ? localStorage.setItem(KEY, t) : localStorage.removeItem(KEY); } catch { /* ignore */ } };
 
+/* عدّاد الطلبات الجارية: يُستخدم لإظهار شريط التقدّم أعلى الصفحة */
+let inflight = 0;
+const subs = new Set();
+const bump = (d) => { inflight += d; subs.forEach((f) => f(inflight)); };
+export const onActivity = (f) => { subs.add(f); return () => subs.delete(f); };
+
 let onUnauthorized = () => {};
 export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
 
@@ -16,6 +22,7 @@ async function req(method, path, body) {
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
+  bump(1);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   let res;
@@ -25,6 +32,7 @@ async function req(method, path, body) {
     throw new Error(t('تعذّر الاتصال بالخادم. تأكد أنه يعمل.'));
   } finally {
     clearTimeout(timer);
+    bump(-1);
   }
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && token && !path.startsWith('/auth')) onUnauthorized();

@@ -15,6 +15,16 @@ document.addEventListener('pointermove', (e) => {
   c.style.setProperty('--my', `${e.clientY - r.top}px`);
 }, { passive: true });
 
+// تموّج عند الضغط على الأزرار الرئيسية
+document.addEventListener('pointerdown', (e) => {
+  const b = e.target.closest?.('.btn-p, .btn-g');
+  if (!b || b.disabled) return;
+  const r = b.getBoundingClientRect();
+  const s = document.createElement('span');
+  s.className = 'rip'; s.style.left = `${e.clientX - r.left}px`; s.style.top = `${e.clientY - r.top}px`;
+  b.appendChild(s); setTimeout(() => s.remove(), 650);
+}, { passive: true });
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>

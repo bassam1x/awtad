@@ -69,8 +69,8 @@ export function MyPostings() {
               <span className="chip"><Users size={13} />{p.applicants} {t('متقدم')}</span>
               {p.pending > 0 && <span className="chip chip-w">{p.pending} {t('جديد')}</span>}
               <Link className="btn" to={`/app/applicants?posting=${p.id}`}>{t('عرض المتقدمين')}</Link>
-              <Link className="btn" to={`/app/my-postings/${p.id}/edit`} aria-label={t('تعديل')}><Pencil size={16} /></Link>
-              <button className="btn btn-d" aria-label={t('حذف')} onClick={() => del(p.id)}><Trash2 size={16} /></button>
+              <Link className="btn" to={`/app/my-postings/${p.id}/edit`} aria-label={t('تعديل')} data-tip={t('تعديل')}><Pencil size={16} /></Link>
+              <button className="btn btn-d" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => del(p.id)}><Trash2 size={16} /></button>
             </div>
           ))}
         </div>

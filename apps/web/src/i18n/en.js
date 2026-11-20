@@ -523,5 +523,7 @@ export default {
   "الزمرد": "Emerald",
   "الملكي": "Royal",
   "الوردي": "Rose",
-  "الذهبي": "Gold"
+  "الذهبي": "Gold",
+  "جارٍ التحميل…": "Loading…",
+  "التبديل بين الأقسام": "Switch section"
 };

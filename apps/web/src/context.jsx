@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 
 /* ---------- Theme ---------- */
@@ -29,16 +30,20 @@ export const useTheme = () => useContext(ThemeCtx);
 const ToastCtx = createContext();
 export function ToastProvider({ children }) {
   const [t, setT] = useState(null);
+  const timer = useRef(0);
   const toast = useCallback((msg, kind = 'ok') => {
+    clearTimeout(timer.current);
     setT({ msg, kind, k: Date.now() });
-    setTimeout(() => setT((x) => (x && Date.now() - x.k >= 2800 ? null : x)), 3000);
+    timer.current = setTimeout(() => setT(null), 3200);
   }, []);
   return (
     <ToastCtx.Provider value={toast}>
       {children}
       {t && (
-        <div role="status" className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] rounded-xl px-5 py-3 font-semibold shadow-lg ${t.kind === 'err' ? 'bg-bad text-white' : 'bg-ink text-app'}`}>
-          {t.msg}
+        <div key={t.k} role="status" aria-live="polite" className={`toast ${t.kind === 'err' ? 'toast-err' : 'toast-ok'}`}>
+          <span className="gicon gicon-sm toast-icon">{t.kind === 'err' ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}</span>
+          <span>{t.msg}</span>
+          <i className="toast-bar" />
         </div>
       )}
     </ToastCtx.Provider>
@@ -46,12 +51,21 @@ export function ToastProvider({ children }) {
 }
 export const useToast = () => useContext(ToastCtx);
 
+/* ---------- Data cache (stale-while-revalidate) ---------- */
+const cache = new Map();
+export const clearFetchCache = () => cache.clear();
+/** تحميل مسبق (عند تمرير المؤشر فوق رابط): يملأ الذاكرة فيفتح الانتقال فوراً */
+export function prefetch(path) {
+  if (!path || cache.has(path) || !getToken()) return;
+  api.get(path).then((d) => cache.set(path, d)).catch(() => {});
+}
+
 /* ---------- Auth ---------- */
 const AuthCtx = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
-  const logout = useCallback(() => { setToken(null); setUser(null); }, []);
+  const logout = useCallback(() => { setToken(null); clearFetchCache(); setUser(null); }, []);
   useEffect(() => {
     setUnauthorizedHandler(logout);
     if (!getToken()) { setReady(true); return; }
@@ -59,7 +73,7 @@ export function AuthProvider({ children }) {
   }, [logout]);
   const value = useMemo(() => ({
     user, ready, logout, setUser,
-    login: (s) => { setToken(s.token); setUser(s.user); },
+    login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); },
     refresh: () => api.get('/me').then(setUser),
   }), [user, ready, logout]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
@@ -67,20 +81,24 @@ export function AuthProvider({ children }) {
 export const useAuth = () => useContext(AuthCtx);
 
 /* ---------- data hook ---------- */
+/** يعرض النسخة المخزّنة فوراً (إن وُجدت) ثم يحدّثها من الخادم بالخلفية، فلا يظهر تحميل عند التنقل المتكرر. */
 export function useFetch(path, deps = []) {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [st, setSt] = useState({ path, data: path ? cache.get(path) ?? null : null, error: '', loading: !!path && !cache.has(path) });
   const [n, setN] = useState(0);
+  const same = st.path === path;
+  const cached = path ? cache.get(path) : undefined;
+  const data = same ? st.data : cached ?? null;
+  const loading = same ? st.loading : !!path && cached === undefined;
+  const error = same ? st.error : '';
   useEffect(() => {
     let live = true;
-    if (!path) { setLoading(false); return undefined; }
-    setLoading(true);
-    api.get(path).then((d) => { if (live) { setData(d); setError(''); } })
-      .catch((e) => { if (live) setError(e.message); })
-      .finally(() => { if (live) setLoading(false); });
+    if (!path) { setSt({ path, data: null, error: '', loading: false }); return undefined; }
+    setSt((s) => ({ path, data: cache.has(path) ? cache.get(path) : s.path === path ? s.data : null, error: '', loading: !cache.has(path) }));
+    api.get(path)
+      .then((d) => { cache.set(path, d); if (live) setSt({ path, data: d, error: '', loading: false }); })
+      .catch((e) => { if (live) setSt((s) => ({ path, data: s.path === path ? s.data : null, error: e.message, loading: false })); });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, n, ...deps]);
-  return { data, error, loading, reload: () => setN((x) => x + 1), setData };
+  return { data, error, loading, reload: () => setN((x) => x + 1) };
 }
