@@ -12,7 +12,7 @@ process.env.RATE_LIMIT_MAX = '1000';
 process.env.SERVE_WEB = 'false';
 
 const { createApp } = await import('../src/app.js');
-const { seedIfEmpty, ADMIN } = await import('../src/seed.js');
+const { seedIfEmpty, syncAdminPassword, ADMIN } = await import('../src/seed.js');
 const dbm = await import('../src/db.js');
 
 let server, base;
@@ -148,4 +148,16 @@ test('تسجيل الشركة والحذف والترجمة المخزّنة', a
   const many = await Promise.all(Array.from({ length: 6 }, (_, i) => call('POST', '/api/auth/register', { role: 'student', name: `طالب ${i}`, email: `par${i}@example.com`, password: 'Passw0rd!', skills: 'a,b,c' })));
   assert.ok(many.every((x) => x.status === 200));
   const ids = new Set(many.map((x) => x.json.user.id)); assert.equal(ids.size, 6);
+});
+
+test('ADMIN_PASSWORD مرجع كلمة مرور المدير: يُطبَّق عند الإقلاع ويُبطل الجلسات القديمة', async () => {
+  const old = await login(ADMIN.email, ADMIN.password);
+  assert.equal(await syncAdminPassword(''), false);          // غير معيّن: لا تغيير
+  assert.equal(await syncAdminPassword('short'), false);     // أقصر من 8: يُتجاهل
+  assert.equal(await syncAdminPassword(ADMIN.password), false); // نفس الكلمة: لا تغيير
+  assert.equal(await syncAdminPassword('New-Admin-Pass-9'), true);
+  assert.equal((await call('POST', '/api/auth/login', { email: ADMIN.email, password: ADMIN.password })).status, 401);
+  assert.ok(await login(ADMIN.email, 'New-Admin-Pass-9'));
+  assert.equal((await call('GET', '/api/me', null, old)).status, 401);  // الجلسة القديمة أُبطلت
+  assert.equal(await syncAdminPassword('New-Admin-Pass-9'), false);     // مكرّر: لا تغيير
 });

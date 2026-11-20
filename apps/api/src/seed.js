@@ -1,11 +1,23 @@
 import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { db, get, run, tx } from './db.js';
-import { hashPassword } from './security.js';
+import { checkPassword, hashPassword } from './security.js';
 
 export const ADMIN = { email: 'admin@awtad.iq', password: 'Admin@12345' };
 export const DEMO_PASSWORD = 'Demo@1234';
 const map = (q) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+
+/** إن عُيّن ADMIN_PASSWORD فهو مرجع كلمة مرور المدير: يُطبَّق عند كل إقلاع إن اختلف عن المخزّنة، وتُبطَل الجلسات القديمة.
+    (لتغييرها من لوحة الاستضافة: عدّل المتغير وأعد النشر.) */
+export async function syncAdminPassword(pw = process.env.ADMIN_PASSWORD) {
+  if (!pw) return false;
+  if (pw.length < 8) { console.warn('ADMIN_PASSWORD أقصر من 8 أحرف: تم تجاهله.'); return false; }
+  const a = await get("SELECT id, password_hash FROM users WHERE email=? AND role='admin'", ADMIN.email);
+  if (!a || checkPassword(pw, a.password_hash)) return false;
+  await run('UPDATE users SET password_hash=?, token_version=token_version+1 WHERE id=?', hashPassword(pw), a.id);
+  console.log('تم تحديث كلمة مرور المدير من ADMIN_PASSWORD.');
+  return true;
+}
 
 export async function seedIfEmpty() {
   if ((await get('SELECT COUNT(*) c FROM users')).c > 0) return;
