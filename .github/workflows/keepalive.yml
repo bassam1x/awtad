@@ -1,0 +1,15 @@
+﻿name: Keep alive
+# يطلب /api/ping كل 10 دقائق حتى لا تنام الخدمة المجانية على Render (تنام بعد 15 دقيقة بلا زيارات).
+# الـ ping لا يلمس قاعدة البيانات، فتنام Neon عند عدم وجود زيارات حقيقية وتبقى ضمن الحد المجاني.
+# لإيقافه: احذف هذا الملف أو عطّل الـ workflow من تبويب Actions.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping the app
+        run: curl -fsS -m 60 --retry 3 --retry-delay 10 https://awtad.onrender.com/api/ping

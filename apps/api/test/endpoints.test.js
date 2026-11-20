@@ -26,6 +26,11 @@ const call = async (method, p, body, token) => {
 const login = async (email, password = 'Demo@1234') => (await call('POST', '/api/auth/login', { email, password })).json?.token;
 const ok = (r, s = 200) => { assert.equal(r.status, s, JSON.stringify(r.json)); return r.json; };
 
+test('ping خفيف بلا مصادقة ولا قاعدة', async () => {
+  const r = await call('GET', '/api/ping');
+  assert.equal(r.status, 200); assert.deepEqual(r.json, { ok: true });
+});
+
 test('القاعدة PostgreSQL وفحص الصحة يلمسها', async () => {
   const h = ok(await call('GET', '/api/health'));
   assert.equal(h.ok, true); assert.equal(h.db, process.env.DATABASE_URL ? 'postgres' : 'pglite');

@@ -34,6 +34,8 @@ export function createApp() {
 
   app.use(express.json({ limit: '1mb' }));
 
+  /* ping خفيف بلا قاعدة بيانات: يُبقي الخدمة مستيقظة دون إيقاظ القاعدة (حدّ ساعات Neon المجاني) */
+  app.get('/api/ping', (_req, res) => res.json({ ok: true }));
   app.get('/api/health', async (_req, res) => {
     try { await get('SELECT 1 AS ok'); res.json({ ok: true, db: db.kind }); }
     catch (e) { console.error('فحص الصحة: القاعدة لا تستجيب:', e.message); res.status(503).json({ ok: false, error: 'قاعدة البيانات لا تستجيب' }); }
