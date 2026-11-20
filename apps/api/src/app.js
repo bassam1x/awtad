@@ -4,6 +4,7 @@ import path from 'node:path';
 import { config } from './config.js';
 import { auth } from './security.js';
 import { bad } from './utils.js';
+import { backupStatus } from './backup.js';
 import authRoutes from './routes/auth.js';
 import meRoutes from './routes/me.js';
 import postingRoutes from './routes/postings.js';
@@ -33,7 +34,7 @@ export function createApp() {
 
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/api/health', (_req, res) => res.json({ ok: true }));
+  app.get('/api/health', (_req, res) => res.json({ ok: true, backup: backupStatus() }));
 
   // مسارات عامة
   app.use('/api', authRoutes);

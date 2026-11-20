@@ -127,11 +127,19 @@ const userCols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name)
 if (!userCols.includes('token_version')) db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
 if (!userCols.includes('email_verified')) db.exec('ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0');
 
+/* خطّاف يُستدعى بعد كل كتابة (يستخدمه الحفظ الخارجي). كتابات جدول الترجمة المؤقت لا تستحق لقطة. */
+let writeHook = null;
+export const setWriteHook = (f) => { writeHook = f; };
+
 export const all = (sql, ...p) => db.prepare(sql).all(...p);
 export const get = (sql, ...p) => db.prepare(sql).get(...p);
-export const run = (sql, ...p) => db.prepare(sql).run(...p);
+export const run = (sql, ...p) => {
+  const r = db.prepare(sql).run(...p);
+  if (writeHook && !/translations/i.test(sql)) writeHook();
+  return r;
+};
 export const tx = (fn) => {
   db.exec('BEGIN');
-  try { const r = fn(); db.exec('COMMIT'); return r; }
+  try { const r = fn(); db.exec('COMMIT'); if (writeHook) writeHook(); return r; }
   catch (e) { db.exec('ROLLBACK'); throw e; }
 };
