@@ -25,6 +25,9 @@ export const config = {
   // بريد استرجاع كلمة المرور عبر واجهة Brevo (مجانية 300 رسالة يومياً؛ SMTP محجوب على الخطط المجانية لذا نستخدم HTTPS)
   brevoApiKey: process.env.BREVO_API_KEY || '',
   mailFrom: process.env.MAIL_FROM || '',
+  // بديل مجاني بلا دومين: سكربت Google Apps Script منشور كتطبيق ويب يرسل من حساب Gmail نفسه (انظر tools/gmail-relay.gs)
+  mailScriptUrl: process.env.MAIL_SCRIPT_URL || '',
+  mailScriptSecret: process.env.MAIL_SCRIPT_SECRET || '',
   mailFromName: process.env.MAIL_FROM_NAME || 'أوتاد',
   // أصول الواجهة المسموح لها باستدعاء الـ API من متصفح آخر (CloudFront مثلاً)، مفصولة بفاصلة
   corsOrigins: list(process.env.CORS_ORIGINS),

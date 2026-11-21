@@ -23,6 +23,10 @@ services:
         sync: false
       - key: LINKEDIN_CLIENT_SECRET
         sync: false
+      - key: MAIL_SCRIPT_URL
+        sync: false
+      - key: MAIL_SCRIPT_SECRET
+        sync: false
       - key: BREVO_API_KEY
         sync: false
       - key: MAIL_FROM
