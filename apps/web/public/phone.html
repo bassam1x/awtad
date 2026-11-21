@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
-  <title>معاينة أوتاد على آيفون</title>
+  <title>معاينة أوتاد على الموبايل</title>
   <style>
     :root { --w: 393px; --h: 852px; --top: 54px; --bottom: 26px; --r: 55px; --bez: 13px; --bar-bg: #0b1220; --bar-fg: #e6edf7; }
     * { box-sizing: border-box; }
@@ -47,15 +47,33 @@
     .se .home { display: none; }
     .se .phone::after { content: ''; position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #3a4152; }
     .se .phone::before { content: ''; position: absolute; top: 26px; left: 50%; transform: translateX(-50%); width: 56px; height: 6px; border-radius: 3px; background: #0a0c11; }
+    /* أندرويد: كاميرا ثقب، حواف رفيعة، أزرار على اليمين، وشريط تنقل بالإيماءات أو بثلاثة أزرار */
+    .android .phone { background: linear-gradient(145deg, #3b4150, #1a1d26 60%, #262a35); }
+    .android .island { top: 12px; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1c2a48, #000 70%); box-shadow: 0 0 0 2px #05070c; }
+    .android .island::after { display: none; }
+    .android .status { padding: 0 24px 9px; font-weight: 500; font-size: 13px; }
+    .android .btn-vol.a, .android .btn-vol.c { display: none; }
+    .android .btn-vol.b { left: auto; right: -8px; top: 150px; height: 84px; }
+    .android .btn-pwr { top: 262px; height: 52px; }
+    .android .home::after { width: 108px; height: 4px; bottom: 9px; }
+    .navbtns { display: none; }
+    .nav3 .home::after { display: none; }
+    .nav3 .navbtns { position: absolute; bottom: 0; left: 0; right: 0; height: var(--bottom); display: flex; align-items: center; justify-content: space-around; padding: 0 56px; z-index: 2; color: var(--bar-fg); opacity: .75; pointer-events: none; }
+    .navbtns svg { width: 15px; height: 15px; }
     .hint { font-size: 12px; color: #7f93b6; text-align: center; max-width: 560px; line-height: 1.7; }
   </style>
 </head>
 <body>
   <div class="panel">
-    <div class="group" role="group" aria-label="الجهاز"><span>الجهاز</span>
-      <button type="button" data-dev="15pro" aria-pressed="true">آيفون 15 برو</button>
+    <div class="group" role="group" aria-label="آيفون"><span>آيفون</span>
+      <button type="button" data-dev="15pro" aria-pressed="true">15 برو</button>
       <button type="button" data-dev="max" aria-pressed="false">برو ماكس</button>
       <button type="button" data-dev="se" aria-pressed="false">SE</button>
+    </div>
+    <div class="group" role="group" aria-label="أندرويد"><span>أندرويد</span>
+      <button type="button" data-dev="pixel" aria-pressed="false">Pixel 8</button>
+      <button type="button" data-dev="s24" aria-pressed="false">Galaxy S24</button>
+      <button type="button" data-dev="small" aria-pressed="false">صغير</button>
     </div>
     <div class="group" role="group" aria-label="الصفحة"><span>الصفحة</span>
       <button type="button" data-path="/" aria-pressed="false">الرئيسية</button>
@@ -90,13 +108,19 @@
         </span></div>
         <iframe id="app" title="أوتاد" src="/login"></iframe>
         <div class="home"></div>
+        <div class="navbtns" dir="ltr" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M12 2v12L3 8z"/></svg>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/></svg>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/></svg>
+        </div>
       </div>
     </div>
   </div>
   <p class="hint">صفحة معاينة للتصميم فقط. التطبيق داخل الإطار يعمل بعرض الجهاز الحقيقي، فتظهر عليه تنسيقات الموبايل نفسها.</p>
 
   <script>
-    const DEV = { '15pro': { w: 393, h: 852, r: 55, top: 54, bottom: 26, bez: 13 }, max: { w: 430, h: 932, r: 55, top: 54, bottom: 26, bez: 13 }, se: { w: 375, h: 667, r: 30, top: 22, bottom: 0, bez: 14 } };
+    const DEV = { '15pro': { w: 393, h: 852, r: 55, top: 54, bottom: 26, bez: 13 }, max: { w: 430, h: 932, r: 55, top: 54, bottom: 26, bez: 13 }, se: { w: 375, h: 667, r: 30, top: 22, bottom: 0, bez: 14 },
+      pixel: { w: 412, h: 915, r: 42, top: 40, bottom: 24, bez: 9, a: 1 }, s24: { w: 360, h: 780, r: 36, top: 38, bottom: 24, bez: 8, a: 1 }, small: { w: 360, h: 640, r: 24, top: 32, bottom: 34, bez: 10, a: 1, nav3: 1 } };
     const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
     const frame = $('#app'), root = document.documentElement, phone = $('#phone'), box = $('#scale');
     let dev = '15pro', path = '/login';
@@ -107,6 +131,7 @@
     function layout() {
       const d = DEV[dev];
       ['w', 'h', 'r', 'top', 'bottom', 'bez'].forEach((k) => root.style.setProperty('--' + k, d[k] + 'px'));
+      document.body.classList.toggle('android', !!d.a); document.body.classList.toggle('nav3', !!d.nav3);
       document.body.classList.toggle('se', dev === 'se');
       phone.classList.toggle('se', dev === 'se');
       // أبعاد الإطار الخارجي (مع الحواف) لضبط التصغير حسب ارتفاع الشاشة
