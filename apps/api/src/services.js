@@ -52,10 +52,10 @@ export async function appAccess(id, user) {
 
 export const addMsg = (appId, sender, text) => run('INSERT INTO messages(application_id,sender_id,text) VALUES(?,?,?)', appId, sender, text);
 
-export async function createUser({ role, name, email, password, googleId, avatar, extra = {} }) {
+export async function createUser({ role, name, email, password, googleId, linkedinId, avatar, extra = {} }) {
   return await tx(async () => {
-    const info = await run('INSERT INTO users(email,password_hash,google_id,role,name,avatar,email_verified) VALUES(?,?,?,?,?,?,?)',
-      email, password ? hashPassword(password) : null, googleId || null, role, name, avatar || null, googleId ? 1 : 0);
+    const info = await run('INSERT INTO users(email,password_hash,google_id,linkedin_id,role,name,avatar,email_verified) VALUES(?,?,?,?,?,?,?,?)',
+      email, password ? hashPassword(password) : null, googleId || null, linkedinId || null, role, name, avatar || null, googleId || linkedinId ? 1 : 0);
     const id = Number(info.lastInsertRowid);
     if (role === 'student') {
       await run('INSERT INTO student_profiles(user_id,spec,status) VALUES(?,?,?)', id,

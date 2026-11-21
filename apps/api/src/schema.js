@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users(
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT,
   google_id TEXT UNIQUE,
+  linkedin_id TEXT UNIQUE,
   role TEXT NOT NULL CHECK(role IN ('student','company','admin')),
   name TEXT NOT NULL,
   avatar TEXT,
@@ -108,6 +109,15 @@ CREATE TABLE IF NOT EXISTS invites(
   created_at TEXT NOT NULL DEFAULT ${NOW},
   UNIQUE(posting_id, student_id)
 );
+CREATE TABLE IF NOT EXISTS password_resets(
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT UNIQUE NOT NULL,
+  expires_at BIGINT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT ${NOW}
+);
+CREATE INDEX IF NOT EXISTS idx_reset_user ON password_resets(user_id);
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS translations(h TEXT NOT NULL, lang TEXT NOT NULL, tr_out TEXT NOT NULL, PRIMARY KEY(h, lang));
 CREATE INDEX IF NOT EXISTS idx_post_company ON postings(company_id);
@@ -118,6 +128,8 @@ CREATE INDEX IF NOT EXISTS idx_msg_app ON messages(application_id);
 
 /* ترحيل العملة: الدينار «د.ع» ← IQD، والريال السعودي «ر.س» ← دولار أمريكي USD (بسعر 3.75). يُنفَّذ عند كل إقلاع وهو آمن للتكرار. */
 export const MIGRATE = `
+ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin_id TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS users_linkedin_id_key ON users(linkedin_id);
 UPDATE postings SET cur='IQD' WHERE cur='د.ع';
 UPDATE works SET cur='IQD' WHERE cur='د.ع';
 UPDATE wallet_tx SET cur='IQD' WHERE cur='د.ع';

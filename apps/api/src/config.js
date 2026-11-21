@@ -17,6 +17,15 @@ export const config = {
   secretFile: path.join(ROOT, 'data', '.jwt-secret'),
   jwtSecret: process.env.JWT_SECRET || '',
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+  // تسجيل الدخول عبر LinkedIn (OpenID Connect): معرّف التطبيق علني، والسر يبقى في الخادم
+  linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
+  linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+  // عنوان المنصة العلني لبناء روابط البريد وعنوان العودة من LinkedIn (RENDER_EXTERNAL_URL يوفّره Render تلقائياً)
+  appUrl: (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${Number(process.env.PORT) || 4000}`).replace(/\/$/, ''),
+  // بريد استرجاع كلمة المرور عبر واجهة Brevo (مجانية 300 رسالة يومياً؛ SMTP محجوب على الخطط المجانية لذا نستخدم HTTPS)
+  brevoApiKey: process.env.BREVO_API_KEY || '',
+  mailFrom: process.env.MAIL_FROM || '',
+  mailFromName: process.env.MAIL_FROM_NAME || 'أوتاد',
   // أصول الواجهة المسموح لها باستدعاء الـ API من متصفح آخر (CloudFront مثلاً)، مفصولة بفاصلة
   corsOrigins: list(process.env.CORS_ORIGINS),
   // مسار مجلد الواجهة المبنية لتقديمها من نفس الخادم (اختياري)

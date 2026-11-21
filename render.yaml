@@ -19,5 +19,13 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false # رابط Neon: postgresql://user:pass@host/db?sslmode=require
+      - key: LINKEDIN_CLIENT_ID
+        sync: false
+      - key: LINKEDIN_CLIENT_SECRET
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
       - key: ADMIN_PASSWORD
         sync: false # تُدخَل يدوياً في لوحة Render

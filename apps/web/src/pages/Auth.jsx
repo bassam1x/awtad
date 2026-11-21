@@ -1,4 +1,4 @@
-import { t } from '../i18n/index.js';
+import { lang, t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
@@ -49,6 +49,116 @@ function GoogleIcon() {
   );
 }
 
+/* ---------- LinkedIn (OpenID Connect) ---------- */
+const LI_STATE = 'awtad-li-state', LI_ROLE = 'awtad-li-role';
+function LinkedInIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#0A66C2" /><path fill="#fff" d="M7.1 9.6H4.4V19h2.7V9.6zM5.75 5.2a1.57 1.57 0 1 0 0 3.14 1.57 1.57 0 0 0 0-3.14zM19.6 13.6c0-2.5-1.3-4.2-3.6-4.2-1.2 0-2 .6-2.4 1.2V9.6h-2.7V19h2.7v-5.1c0-1.1.5-1.9 1.6-1.9 1 0 1.5.8 1.5 1.9V19h2.9v-5.4z" /></svg>
+  );
+}
+/** role اختياري: في صفحة التسجيل يُرسَل مع الطلب فيُنشأ الحساب مباشرة بنوعه المختار */
+export function LinkedInButton({ role }) {
+  const { data: cfg } = useFetch('/config');
+  const toast = useToast();
+  const start = () => {
+    if (!cfg?.linkedinClientId) return toast(t('تسجيل الدخول عبر LinkedIn غير مفعّل بعد.'), 'err');
+    const state = (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()).slice(2);
+    try { sessionStorage.setItem(LI_STATE, state); if (role) sessionStorage.setItem(LI_ROLE, role); else sessionStorage.removeItem(LI_ROLE); } catch { /* التخزين محجوب */ }
+    const q = new URLSearchParams({ response_type: 'code', client_id: cfg.linkedinClientId, redirect_uri: cfg.linkedinRedirect, state, scope: 'openid profile email' });
+    location.href = `https://www.linkedin.com/oauth/v2/authorization?${q}`;
+  };
+  return <button type="button" className="btn mt-2 w-full py-2.5" onClick={start} disabled={!cfg}><LinkedInIcon />{t('المتابعة عبر LinkedIn')}</button>;
+}
+
+/** صفحة العودة من LinkedIn: تتحقق من state ثم تُدخل المستخدم، أو تسأله عن نوع الحساب إن كان جديداً */
+export function LinkedInCallback() {
+  const { login } = useAuth();
+  const toast = useToast();
+  const nav = useNavigate();
+  const [pending, setPending] = useState(null);
+  const ran = useRef(false);
+  const fail = (msg) => { toast(msg, 'err'); nav('/login', { replace: true }); };
+  const done = (s) => { login(s); nav('/app', { replace: true }); };
+  useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
+    const q = new URLSearchParams(location.search);
+    let saved = null, role = null;
+    try { saved = sessionStorage.getItem(LI_STATE); role = sessionStorage.getItem(LI_ROLE); sessionStorage.removeItem(LI_STATE); sessionStorage.removeItem(LI_ROLE); } catch { /* تجاهل */ }
+    if (q.get('error')) return fail(t('أُلغي تسجيل الدخول عبر LinkedIn.'));
+    if (!q.get('code') || !saved || q.get('state') !== saved) return fail(t('تعذّر التحقق من طلب LinkedIn، أعد المحاولة.'));
+    api.post('/auth/linkedin', { code: q.get('code'), ...(role ? { role } : {}) })
+      .then((r) => (r.needsRole ? setPending(r) : done(r)))
+      .catch((e) => fail(e.message));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const choose = async (role) => { try { done(await api.post('/auth/linkedin', { ticket: pending.ticket, role })); } catch (e) { fail(e.message); } };
+  return (
+    <Shell title={t('تسجيل الدخول عبر LinkedIn')} sub={pending ? `${t('أهلاً')} ${pending.name}${t('، اختر نوع حسابك لإكمال التسجيل:')}` : t('جارٍ التحقق من حسابك…')} back={false}>
+      {pending ? (
+        <div className="grid gap-2">
+          <button className="btn btn-p py-3" onClick={() => choose('student')}><GraduationCap size={18} />{t('أنا طالب / خريج / مبرمج')}</button>
+          <button className="btn py-3" onClick={() => choose('company')}><Building2 size={18} />{t('أنا صاحب شركة / عمل')}</button>
+        </div>
+      ) : <div className="splash-bar mx-auto" aria-hidden="true"><span /></div>}
+    </Shell>
+  );
+}
+
+/* ---------- نسيت كلمة المرور / تعيين كلمة جديدة ---------- */
+export function ForgotPage() {
+  const toast = useToast();
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault(); setBusy(true);
+    try { await api.post('/auth/forgot', { email, lang }); setSent(true); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
+  };
+  return (
+    <Shell title={t('نسيت كلمة المرور؟')} sub={t('اكتب بريدك الإلكتروني وسنرسل لك رابطاً لاختيار كلمة مرور جديدة.')}>
+      {sent ? (
+        <div role="status" className="rounded-xl border border-good/40 bg-goodsoft p-4 text-sm">
+          <b className="block text-good">{t('تحقق من بريدك')}</b>
+          {t('إن كان هذا البريد مسجلاً لدينا فقد أرسلنا إليه رابط إعادة التعيين، وهو صالح 30 دقيقة. تفقد صندوق الرسائل غير المرغوبة أيضاً.')}
+        </div>
+      ) : (
+        <form onSubmit={submit}>
+          <Field label={t('البريد الإلكتروني')}><input id="forgot-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus /></Field>
+          <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الإرسال…') : t('أرسل رابط إعادة التعيين')}</button>
+        </form>
+      )}
+      <p className="mt-5 text-center text-sm"><Link className="font-semibold text-brand" to="/login">{t('العودة لتسجيل الدخول')}</Link></p>
+    </Shell>
+  );
+}
+
+export function ResetPage() {
+  const toast = useToast();
+  const nav = useNavigate();
+  const token = new URLSearchParams(location.search).get('token') || '';
+  const [f, setF] = useState({ password: '', again: '' });
+  const [busy, setBusy] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault();
+    if (f.password !== f.again) return toast(t('كلمتا المرور غير متطابقتين'), 'err');
+    setBusy(true);
+    try { await api.post('/auth/reset', { token, password: f.password }); toast(t('تم تعيين كلمة المرور. سجّل الدخول بها.')); nav('/login', { replace: true }); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
+  };
+  return (
+    <Shell title={t('كلمة مرور جديدة')} sub={t('اختر كلمة مرور لا تقل عن 8 أحرف.')}>
+      {!token ? (
+        <p className="text-bad">{t('الرابط غير صالح. اطلب رابطاً جديداً.')} <Link className="font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></p>
+      ) : (
+        <form onSubmit={submit}>
+          <Field label={t('كلمة المرور الجديدة')} hint={t('8 أحرف على الأقل')}><input id="reset-pass" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required autoFocus /></Field>
+          <Field label={t('أعد كتابة كلمة المرور')}><input id="reset-again" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} value={f.again} onChange={(e) => setF({ ...f, again: e.target.value })} required /></Field>
+          <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الحفظ…') : t('حفظ كلمة المرور')}</button>
+        </form>
+      )}
+    </Shell>
+  );
+}
+
 /* ---------- Login form (used on Welcome and /login) ---------- */
 export function LoginForm() {
   const { login } = useAuth();
@@ -89,10 +199,12 @@ export function LoginForm() {
       <form onSubmit={submit}>
         <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
         <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
+        {cfg?.mailEnabled && <div className="-mt-1 mb-3 text-sm"><Link className="font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></div>}
         <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الدخول…') : t('تسجيل الدخول')}</button>
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
       <GoogleButton onCredential={(c) => google(c)} />
+      <LinkedInButton />
       {demo.length > 0 && (
         <div className="mt-5 border-t border-line pt-4">
           <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-mute"><FlaskConical size={13} />{t('جرّب بحساب تجريبي بنقرة واحدة')}</div>
@@ -189,6 +301,7 @@ export function RegisterPage() {
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
       <GoogleButton onCredential={google} />
+      <LinkedInButton role={role} />
       <p className="mt-5 text-center text-sm text-mute">{t('لديك حساب؟')} <Link className="font-semibold text-brand" to="/login">{t('تسجيل الدخول')}</Link></p>
     </Shell>
   );

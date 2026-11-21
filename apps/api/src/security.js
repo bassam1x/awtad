@@ -17,6 +17,10 @@ function loadSecret() {
 }
 const SECRET = loadSecret();
 
+/** تذكرة قصيرة العمر موقّعة (مثلاً بين خطوتي LinkedIn: التحقق ثم اختيار نوع الحساب) */
+export const signTicket = (payload, expiresIn = '10m') => jwt.sign({ ...payload, tk: 1 }, SECRET, { expiresIn });
+export function verifyTicket(token) { try { const p = jwt.verify(String(token || ''), SECRET); return p.tk === 1 ? p : null; } catch { return null; } }
+
 export function hashPassword(pw) {
   const salt = crypto.randomBytes(16).toString('hex');
   return `${salt}:${crypto.scryptSync(pw, salt, 64).toString('hex')}`;

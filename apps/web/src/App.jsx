@@ -9,6 +9,9 @@ const page = (loader, name) => lazy(() => loader().then((m) => ({ default: name 
 const Welcome = page(() => import('./pages/Welcome.jsx'));
 const LoginPage = page(() => import('./pages/Auth.jsx'), 'LoginPage');
 const RegisterPage = page(() => import('./pages/Auth.jsx'), 'RegisterPage');
+const ForgotPage = page(() => import('./pages/Auth.jsx'), 'ForgotPage');
+const ResetPage = page(() => import('./pages/Auth.jsx'), 'ResetPage');
+const LinkedInCallback = page(() => import('./pages/Auth.jsx'), 'LinkedInCallback');
 const Profile = page(() => import('./pages/Profile.jsx'));
 const PublicProfile = page(() => import('./pages/PublicProfile.jsx'));
 const Workspace = page(() => import('./pages/Workspace.jsx'));
@@ -64,6 +67,9 @@ export default function App() {
         <Route path="/" element={<PublicOnly><Welcome /></PublicOnly>} />
         <Route path="/login" element={<PublicOnly><LoginPage /></PublicOnly>} />
         <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
+        <Route path="/forgot" element={<PublicOnly><ForgotPage /></PublicOnly>} />
+        <Route path="/reset-password" element={<ResetPage />} />
+        <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
         <Route path="/app" element={<Gate><Layout /></Gate>}>
           <Route index element={<Index />} />
           <Route path="profile" element={<Profile />} />
