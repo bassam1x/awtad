@@ -348,3 +348,16 @@ select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
 .stat-link .stat-go { flex: none; opacity: .55; transition: transform .2s, opacity .2s, color .2s; }
 .stat-link:hover .stat-go { opacity: 1; color: rgb(var(--brand)); transform: translateX(-3px); }
 :root[dir='ltr'] .stat-link:hover .stat-go { transform: translateX(3px) rotate(180deg); }
+/* ---------- الموبايل: صفحات الدخول والتسجيل واسترجاع كلمة المرور ---------- */
+.auth-shell { min-height: 100vh; min-height: 100dvh; }
+@media (max-width: 640px) {
+  .inp { font-size: 16px; } /* أقل من 16px يجعل آيفون يكبّر الصفحة عند التركيز على الحقل */
+  .auth-shell { padding-top: 18px; padding-bottom: 28px; }
+  .auth-card { padding: 1.25rem 1.1rem; border-radius: 20px; }
+  .auth-card h1 { font-size: 1.45rem; line-height: 1.35; }
+  .auth-card input.inp, .auth-card select.inp { min-height: 48px; }
+  .auth-card .btn:not(.btn-sm) { min-height: 48px; }
+  .auth-card .btn-sm { min-height: 40px; }
+  .auth-card .switcher-item { min-height: 52px; }
+  .auth-card .auth-link, .auth-back { display: inline-flex; align-items: center; min-height: 40px; }
+}

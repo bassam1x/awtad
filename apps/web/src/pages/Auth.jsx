@@ -1,7 +1,7 @@
 import { lang, t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, ChevronDown, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Tr } from '../translate.jsx';
@@ -167,6 +167,8 @@ export function LoginForm() {
   const [f, setF] = useState({ email: '', password: '' });
   const [busy, setBusy] = useState(false);
   const [pendingGoogle, setPendingGoogle] = useState(null);
+  // على الموبايل تُطوى قائمة الحسابات التجريبية حتى لا تدفن رابط إنشاء الحساب تحتها
+  const [demoOpen, setDemoOpen] = useState(() => { try { return matchMedia('(min-width: 640px)').matches; } catch { return true; } });
   const { data: cfg } = useFetch('/config');
   const demo = cfg?.demo || [];
   const go = (s) => { login(s); nav('/app'); };
@@ -197,9 +199,9 @@ export function LoginForm() {
   return (
     <div>
       <form onSubmit={submit}>
-        <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
-        <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
-        {cfg?.mailEnabled && <div className="-mt-1 mb-3 text-sm"><Link className="font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></div>}
+        <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="next" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
+        <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" enterKeyHint="go" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
+        {cfg?.mailEnabled && <div className="-mt-1 mb-3 text-sm"><Link className="auth-link font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></div>}
         <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الدخول…') : t('تسجيل الدخول')}</button>
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>
@@ -207,8 +209,11 @@ export function LoginForm() {
       <LinkedInButton />
       {demo.length > 0 && (
         <div className="mt-5 border-t border-line pt-4">
-          <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-mute"><FlaskConical size={13} />{t('جرّب بحساب تجريبي بنقرة واحدة')}</div>
-          <div className="grid max-h-56 gap-1 overflow-y-auto pe-1">
+          <button type="button" aria-expanded={demoOpen} onClick={() => setDemoOpen((o) => !o)} className="flex min-h-[40px] w-full items-center gap-1.5 text-xs font-bold text-mute">
+            <FlaskConical size={13} />{t('جرّب بحساب تجريبي بنقرة واحدة')}
+            <span className="ms-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-brand" style={{ background: 'rgb(var(--brand) / .12)' }}>{demo.length}<ChevronDown size={14} className={`transition-transform ${demoOpen ? 'rotate-180' : ''}`} /></span>
+          </button>
+          {demoOpen && <div className="mt-1 grid gap-1 sm:max-h-56 sm:overflow-y-auto sm:pe-1">
             {demo.map((d) => {
               const I = d.role === 'admin' ? ShieldCheck : d.role === 'company' ? Building2 : GraduationCap;
               return (
@@ -218,7 +223,7 @@ export function LoginForm() {
                 </button>
               );
             })}
-          </div>
+          </div>}
         </div>
       )}
     </div>
@@ -227,17 +232,17 @@ export function LoginForm() {
 
 function Shell({ title, sub, children, back = true }) {
   return (
-    <div className="flex min-h-full flex-col items-center px-4 py-8">
-      <div className="mb-6 flex w-full max-w-md items-center justify-between">
-        <Link to="/"><Logo size={36} /></Link>
+    <div className="auth-shell flex min-h-full flex-col items-center px-4 py-8">
+      <div className="mb-5 flex w-full max-w-md items-center justify-between sm:mb-6">
+        <Link to="/" aria-label="أوتاد"><Logo size={36} /></Link>
         <div className="flex gap-2"><ThemeButton /><LangSwitch /></div>
       </div>
-      <div className="card w-full max-w-md p-6">
+      <div className="card auth-card w-full max-w-md p-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="mb-5 mt-1 text-mute">{sub}</p>
         {children}
       </div>
-      {back && <Link to="/" className="mt-4 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><ArrowRight size={14} className="ltr:rotate-180" />{t('العودة للصفحة الرئيسية')}</Link>}
+      {back && <Link to="/" className="auth-back mt-4 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><ArrowRight size={14} className="ltr:rotate-180" />{t('العودة للصفحة الرئيسية')}</Link>}
     </div>
   );
 }

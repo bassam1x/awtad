@@ -3,48 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
   <title>معاينة أوتاد على آيفون</title>
   <style>
-    :root { --w: 390px; --h: 844px; }
+    :root { --w: 393px; --h: 852px; --top: 54px; --bottom: 26px; --r: 55px; --bez: 13px; --bar-bg: #0b1220; --bar-fg: #e6edf7; }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0b1220; font-family: system-ui, sans-serif; }
-    .stage { padding: 24px 0; display: grid; gap: 14px; justify-items: center; }
-    .phone { position: relative; padding: 14px; border-radius: 62px; background: #1b1f2a;
-      box-shadow: 0 0 0 2px #3a4152, 0 0 0 6px #10131b, 0 30px 80px rgba(0,0,0,.6); }
-    .phone::before, .phone::after { content: ''; position: absolute; width: 4px; background: #3a4152; border-radius: 2px; }
-    .phone::before { left: -8px; top: 150px; height: 60px; }   /* أزرار الصوت */
-    .phone::after { right: -8px; top: 200px; height: 90px; }   /* زر القفل */
-    .screen { position: relative; width: var(--w); height: var(--h); border-radius: 48px; overflow: hidden; background: #fff; }
-    .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; background: #000; border-radius: 20px; z-index: 2; pointer-events: none; }
-    .home { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 140px; height: 5px; border-radius: 3px; background: rgba(128,128,128,.7); z-index: 2; pointer-events: none; }
-    .screen { background: #0b1220; }
-    .status { position: absolute; top: 0; left: 0; right: 0; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 6px 34px 0; color: #e6edf7; font: 600 15px system-ui; z-index: 1; }
-    iframe { position: absolute; top: 50px; left: 0; width: 100%; height: calc(100% - 50px); border: 0; display: block; }
-    .bar { display: flex; gap: 8px; }
-    button, a { font: 600 13px system-ui; color: #e6edf7; background: #16203a; border: 1px solid #22304d; border-radius: 10px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
-    button:hover, a:hover { background: #1d2a4a; }
-    @media (max-height: 940px) { .phone { zoom: .85; } }
+    html, body { height: 100%; }
+    body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 18px; padding: 18px 12px; overflow: auto;
+      min-height: 100%; } body > :first-child { margin-top: auto; } body > :last-child { margin-bottom: auto; }
+    body {
+      background: radial-gradient(1200px 700px at 50% -10%, #17233f 0%, #0b1220 55%, #070b14 100%); font-family: system-ui, "Segoe UI", Tahoma, sans-serif; color: #e6edf7; }
+
+    /* ---------- لوحة التحكم ---------- */
+    .panel { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: center; align-items: center; max-width: 900px; }
+    .group { display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 12px; background: #111a2e; border: 1px solid #1f2d4a; }
+    .group > span { font-size: 11px; color: #8da2c4; padding: 0 8px; }
+    button, a.btn { font: 600 13px system-ui, Tahoma, sans-serif; color: #cfe0ff; background: transparent; border: 0; border-radius: 9px; padding: 7px 12px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    button:hover, a.btn:hover { background: #1b2a4a; }
+    button[aria-pressed='true'] { background: #2f4f9a; color: #fff; }
+    .act { background: #16203a; border: 1px solid #22304d; }
+
+    /* ---------- الجهاز ---------- */
+    .scale { position: relative; flex: none; }
+    .phone { position: absolute; top: 0; left: 0; transform-origin: top left; padding: var(--bez); border-radius: calc(var(--r) + var(--bez)); background: linear-gradient(145deg, #2b303d, #14171f 55%, #1d212c);
+      box-shadow: 0 0 0 2px #444b5e, 0 0 0 5px #0d0f15, 0 40px 90px rgba(0, 0, 0, .65), inset 0 0 0 2px #0a0c11; }
+    .phone .btn-vol, .phone .btn-pwr { position: absolute; width: 4px; background: #3a4152; border-radius: 2px; }
+    .phone .btn-vol.a { left: -8px; top: 120px; height: 34px; } .phone .btn-vol.b { left: -8px; top: 170px; height: 58px; } .phone .btn-vol.c { left: -8px; top: 240px; height: 58px; }
+    .phone .btn-pwr { right: -8px; top: 190px; height: 92px; }
+    .screen { position: relative; width: var(--w); height: var(--h); border-radius: var(--r); overflow: hidden; background: var(--bar-bg); transition: background .3s; }
+    .island { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 122px; height: 35px; background: #000; border-radius: 20px; z-index: 3; pointer-events: none; }
+    .island::after { content: ''; position: absolute; right: 18px; top: 11px; width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1b2a4a, #05070c 70%); }
+    .status { position: absolute; top: 0; left: 0; right: 0; height: var(--top); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 9px; color: var(--bar-fg); font: 600 15px system-ui; z-index: 2; transition: color .3s; }
+    .status .r { display: flex; gap: 5px; align-items: center; }
+    .home { position: absolute; bottom: 0; left: 0; right: 0; height: var(--bottom); z-index: 2; pointer-events: none; }
+    .home::after { content: ''; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 136px; height: 5px; border-radius: 3px; background: var(--bar-fg); opacity: .55; }
+    iframe { position: absolute; top: var(--top); bottom: var(--bottom); left: 0; width: 100%; height: calc(100% - var(--top) - var(--bottom)); border: 0; display: block; background: transparent; }
+
+    /* آيفون SE: بلا جزيرة، وزر رئيسي */
+    .se { --top: 22px; --bottom: 0px; --r: 30px; }
+    .se .phone { padding: 62px 14px; border-radius: 52px; }
+    .se .island, .se .btn-vol.c { display: none; }
+    .se .status { padding: 0 16px 3px; font-size: 12px; }
+    .se .home { display: none; }
+    .se .phone::after { content: ''; position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #3a4152; }
+    .se .phone::before { content: ''; position: absolute; top: 26px; left: 50%; transform: translateX(-50%); width: 56px; height: 6px; border-radius: 3px; background: #0a0c11; }
+    .hint { font-size: 12px; color: #7f93b6; text-align: center; max-width: 560px; line-height: 1.7; }
   </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="phone">
+  <div class="panel">
+    <div class="group" role="group" aria-label="الجهاز"><span>الجهاز</span>
+      <button type="button" data-dev="15pro" aria-pressed="true">آيفون 15 برو</button>
+      <button type="button" data-dev="max" aria-pressed="false">برو ماكس</button>
+      <button type="button" data-dev="se" aria-pressed="false">SE</button>
+    </div>
+    <div class="group" role="group" aria-label="الصفحة"><span>الصفحة</span>
+      <button type="button" data-path="/" aria-pressed="false">الرئيسية</button>
+      <button type="button" data-path="/login" aria-pressed="true">الدخول</button>
+      <button type="button" data-path="/register" aria-pressed="false">إنشاء حساب</button>
+      <button type="button" data-path="/forgot" aria-pressed="false">نسيت كلمة المرور</button>
+    </div>
+    <div class="group" role="group" aria-label="المظهر"><span>المظهر</span>
+      <button type="button" data-theme="light" aria-pressed="false">فاتح</button>
+      <button type="button" data-theme="dark" aria-pressed="false">داكن</button>
+    </div>
+    <div class="group" role="group" aria-label="اللغة"><span>اللغة</span>
+      <button type="button" data-lang="ar" aria-pressed="false">العربية</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
+      <button type="button" data-lang="ku" aria-pressed="false">کوردی</button>
+    </div>
+    <div class="group">
+      <button type="button" id="intro" class="act">فتح المنصة من البداية (المقدمة)</button>
+      <button type="button" id="reload" class="act">إعادة تحميل</button>
+      <a class="btn act" id="out" href="/login" target="_top">فتح بالمتصفح</a>
+    </div>
+  </div>
+
+  <div class="scale" id="scale">
+    <div class="phone" id="phone">
+      <i class="btn-vol a"></i><i class="btn-vol b"></i><i class="btn-vol c"></i><i class="btn-pwr"></i>
       <div class="screen">
         <div class="island"></div>
-        <div class="status" dir="ltr"><span id="clock">9:41</span><span>5G ▮▮▮</span></div>
-        <iframe id="app" src="/" title="أوتاد"></iframe>
+        <div class="status" dir="ltr"><span id="clock">9:41</span><span class="r"><span>5G</span>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="4" height="4" rx="1"/><rect x="6" y="5" width="4" height="7" rx="1"/><rect x="12" y="2" width="4" height="10" rx="1"/><rect x="18" y="0" width="4" height="12" rx="1"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg>
+        </span></div>
+        <iframe id="app" title="أوتاد" src="/login"></iframe>
         <div class="home"></div>
       </div>
     </div>
-    <div class="bar">
-      <button id="reload" type="button">إعادة تحميل</button>
-      <a href="/" target="_top">فتح بشكل المتصفح</a>
-    </div>
   </div>
+  <p class="hint">صفحة معاينة للتصميم فقط. التطبيق داخل الإطار يعمل بعرض الجهاز الحقيقي، فتظهر عليه تنسيقات الموبايل نفسها.</p>
+
   <script>
-    const tick = () => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }); };
+    const DEV = { '15pro': { w: 393, h: 852, r: 55, top: 54, bottom: 26, bez: 13 }, max: { w: 430, h: 932, r: 55, top: 54, bottom: 26, bez: 13 }, se: { w: 375, h: 667, r: 30, top: 22, bottom: 0, bez: 14 } };
+    const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+    const frame = $('#app'), root = document.documentElement, phone = $('#phone'), box = $('#scale');
+    let dev = '15pro', path = '/login';
+    const press = (attr, val) => $$('[' + attr + ']').forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === val)));
+    const store = (k, v) => { try { frame.contentWindow.localStorage.setItem('awtad-' + k, v); } catch (e) { /* ignore */ } };
+    const stored = (k) => { try { return frame.contentWindow.localStorage.getItem('awtad-' + k); } catch (e) { return null; } };
+
+    function layout() {
+      const d = DEV[dev];
+      ['w', 'h', 'r', 'top', 'bottom', 'bez'].forEach((k) => root.style.setProperty('--' + k, d[k] + 'px'));
+      document.body.classList.toggle('se', dev === 'se');
+      phone.classList.toggle('se', dev === 'se');
+      // أبعاد الإطار الخارجي (مع الحواف) لضبط التصغير حسب ارتفاع الشاشة
+      const padY = dev === 'se' ? 62 : d.bez, padX = dev === 'se' ? 14 : d.bez;
+      const W = d.w + padX * 2, H = d.h + padY * 2;
+      const k = Math.max(.62, Math.min(1, (innerHeight - 120) / H, (innerWidth - 24) / W));
+      phone.style.transform = 'scale(' + k + ')';
+      box.style.width = W * k + 'px'; box.style.height = H * k + 'px';
+      phone.style.width = W + 'px'; phone.style.height = H + 'px';
+    }
+    function go(p, extra) { path = p; $('#out').href = p; frame.src = p + (extra || ''); press('data-path', p); }
+    function syncBars() { // لون الشريط العلوي يتبع خلفية التطبيق
+      try {
+        const doc = frame.contentDocument, c = getComputedStyle(doc.body).backgroundColor, m = c.match(/\d+(\.\d+)?/g);
+        if (!m || (m[3] !== undefined && +m[3] === 0)) return;
+        const [r, g, b] = m.map(Number), lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        root.style.setProperty('--bar-bg', c); root.style.setProperty('--bar-fg', lum > 0.55 ? '#0b1220' : '#e6edf7');
+        const th = doc.documentElement.dataset.theme; if (th) press('data-theme', th);
+        const lg = doc.documentElement.lang; if (lg) press('data-lang', lg);
+        const p = doc.location.pathname; if (p && p !== path && ['/', '/login', '/register', '/forgot'].includes(p)) { path = p; press('data-path', p); $('#out').href = p; }
+      } catch (e) { /* ignore */ }
+    }
+
+    $$('[data-dev]').forEach((b) => b.onclick = () => { dev = b.dataset.dev; press('data-dev', dev); layout(); });
+    $$('[data-path]').forEach((b) => b.onclick = () => go(b.dataset.path));
+    $$('[data-theme]').forEach((b) => b.onclick = () => { store('theme', b.dataset.theme); frame.contentWindow.location.reload(); });
+    $$('[data-lang]').forEach((b) => b.onclick = () => { store('lang', b.dataset.lang); frame.contentWindow.location.reload(); });
+    $('#reload').onclick = () => frame.contentWindow.location.reload();
+    $('#intro').onclick = () => go(path, '?intro=1'); // رابط المصمم لإعادة عرض المقدمة
+    function hideScrollbars() { // iOS يعرض شريط تمرير شفافاً فقط: نحاكي ذلك داخل الإطار
+      try { const d = frame.contentDocument; if (d.getElementById('ios-sb')) return; const s = d.createElement('style'); s.id = 'ios-sb'; s.textContent = 'html{scrollbar-width:none}::-webkit-scrollbar{display:none}'; d.head.appendChild(s); } catch (e) { /* ignore */ }
+    }
+    frame.addEventListener('load', () => { hideScrollbars(); syncBars(); setTimeout(syncBars, 1200); setTimeout(syncBars, 3200); });
+    setInterval(syncBars, 2000);
+    addEventListener('resize', layout);
+
+    const q = new URLSearchParams(location.search);
+    if (DEV[q.get('d')]) { dev = q.get('d'); press('data-dev', dev); }
+    if (q.get('p')) path = q.get('p');
+    layout(); go(path);
+
+    const tick = () => { $('#clock').textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }); };
     tick(); setInterval(tick, 30000);
-    document.getElementById('reload').onclick = () => document.getElementById('app').contentWindow.location.reload();
   </script>
 </body>
 </html>
