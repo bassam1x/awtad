@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from './icons.jsx';
 import { api, getToken, setToken, setUnauthorizedHandler } from './api.js';
 
 /* ---------- Theme ---------- */

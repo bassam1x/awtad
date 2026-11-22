@@ -5,6 +5,7 @@ import App from './App.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import Splash from './Splash.jsx';
 import { AuthProvider, ThemeProvider, ToastProvider } from './context.jsx';
+import './fonts.css';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(

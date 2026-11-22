@@ -1,7 +1,7 @@
 import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from 'lucide-react';
+import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from '../icons.jsx';
 import { useFetch } from '../context.jsx';
 import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel, MapLinks } from '../ui.jsx';
 

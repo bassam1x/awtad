@@ -1,6 +1,6 @@
 import { t } from '../i18n/index.js';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Briefcase, FolderKanban, Wallet, MapPin, MessagesSquare, ShieldCheck, UserPlus, Send, Handshake } from 'lucide-react';
+import { BadgeCheck, Briefcase, FolderKanban, Wallet, MapPin, MessagesSquare, ShieldCheck, UserPlus, Send, Handshake } from '../icons.jsx';
 import { Logo } from '../ui.jsx';
 import { LangSwitch, ThemeButton } from '../Layout.jsx';
 import { LoginForm } from './Auth.jsx';
@@ -45,7 +45,7 @@ export default function Welcome() {
           </p>
 
           <div className="mt-12">
-            <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">
+            <h2 className="display text-3xl font-extrabold leading-tight sm:text-4xl">
               {why[0]}<span className="text-brand">{t('أوتاد')}</span>{why[1]}
             </h2>
             <span className="mt-3 block h-1.5 w-16 rounded-full bg-brand" aria-hidden="true" />
@@ -63,7 +63,7 @@ export default function Welcome() {
           </section>
 
           <section className="mt-12">
-            <h2 className="mb-4 text-xl font-bold">{t('ابدأ في ثلاث خطوات')}</h2>
+            <h2 className="display mb-4 text-xl font-bold">{t('ابدأ في ثلاث خطوات')}</h2>
             <ol className="grid gap-4 sm:grid-cols-3">
               {steps.map(([I, title, d], i) => (
                 <li key={title} className="card p-5">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RotateCcw, RotateCw, ZoomIn, ZoomOut, Check, RefreshCw } from 'lucide-react';
+import { RotateCcw, RotateCw, ZoomIn, ZoomOut, Check, RefreshCw } from './icons.jsx';
 import { t } from './i18n/index.js';
 import { Modal } from './ui.jsx';
 

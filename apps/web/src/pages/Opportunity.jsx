@@ -2,7 +2,7 @@ import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, Briefcase, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from 'lucide-react';
+import { ArrowRight, Briefcase, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel, MapLinks } from '../ui.jsx';
@@ -53,7 +53,7 @@ export default function Opportunity() {
           {(p.map_url || p.address) && (
             <>
               <MapLinks url={p.map_url} address={p.address} full />
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-goodsoft p-4">
                 <span className="gicon"><MapPin size={20} /></span>
                 <div className="min-w-0"><div className="font-semibold"><Tr>{p.company.name}</Tr></div><div className="text-sm text-mute"><Tr>{p.address}</Tr></div></div>
               </div>

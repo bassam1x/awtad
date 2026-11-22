@@ -2,7 +2,7 @@ import { t } from '../i18n/index.js';
 import { Tr, needsTr } from '../translate.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Check, PackageCheck, BadgeDollarSign, Languages, Send } from 'lucide-react';
+import { Check, PackageCheck, BadgeDollarSign, Languages, Send } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt , curLabel } from '../ui.jsx';

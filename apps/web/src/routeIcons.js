@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog, ListChecks, PlusCircle, Pencil,
   ClipboardCheck, Users, Search, ShieldCheck, FileText, Receipt, Settings, UserRound,
-} from 'lucide-react';
+} from './icons.jsx';
 
 /** أيقونة ولون لكل صفحة: تظهر أمام عنوان الصفحة وفي القائمة، فيعرف المستخدم أين هو بنظرة واحدة. */
 const R = {

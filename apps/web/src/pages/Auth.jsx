@@ -1,7 +1,7 @@
 import { lang, t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, ChevronDown, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, ChevronDown, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Tr } from '../translate.jsx';

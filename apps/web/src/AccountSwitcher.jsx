@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Check, ChevronsUpDown, FlaskConical, GraduationCap, LogIn, ShieldCheck, UserPlus, X } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, FlaskConical, GraduationCap, LogIn, ShieldCheck, UserPlus, X } from './icons.jsx';
 import { api } from './api.js';
 import { useAuth, useFetch, useToast } from './context.jsx';
 import { t } from './i18n/index.js';

@@ -2,7 +2,7 @@ import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from 'lucide-react';
+import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';

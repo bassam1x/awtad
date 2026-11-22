@@ -2,7 +2,7 @@ import { isRtl, t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from 'lucide-react';
+import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Banner, BarList, Empty, ErrorBox, PageHeader, Spinner, StatCard, dateAr, fmt , curLabel } from '../ui.jsx';

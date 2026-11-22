@@ -571,7 +571,7 @@ export default {
   "يُحدد لاحقاً": "To be decided",
   "يُستخدم في كل وظيفة لا تحدد عنواناً خاصاً بها.": "Used for every job that doesn't set its own address.",
   "ألوان المنصة": "Platform colors",
-  "الشفق": "Aurora",
+  "الأزرق": "Blue",
   "الغروب": "Sunset",
   "الزمرد": "Emerald",
   "الملكي": "Royal",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { WifiOff, ServerCrash, RefreshCw } from 'lucide-react';
+import { WifiOff, ServerCrash, RefreshCw } from './icons.jsx';
 import { lang, t } from './i18n/index.js';
 import { getToken } from './api.js';
 import { useAuth } from './context.jsx';
@@ -56,10 +56,8 @@ export default function Splash() {
 
   return (
     <div className={`splash ${leaving ? 'splash-out' : ''}`} role="status" aria-live="polite" aria-busy={!done}>
-      <div className="splash-glow" aria-hidden="true" />
       <div className="splash-core">
         <div className="splash-mark" aria-hidden="true">
-          <span className="splash-ring" /><span className="splash-ring r2" />
           <svg width="108" height="166" viewBox="0 0 34 52" style={{ overflow: 'visible' }}>
             <rect className="sp-bar b1" x="0" y="36" width="8" height="14" rx="4" />
             <rect className="sp-bar b2" x="13" y="24" width="8" height="26" rx="4" />
