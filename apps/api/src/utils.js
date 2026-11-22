@@ -7,8 +7,18 @@ export class UserError extends Error {
 export const wrap = (fn) => (req, res, next) => Promise.resolve().then(() => fn(req, res, next)).catch(next);
 
 export const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
-export const str = (v, max = 500) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+// الحرف الصفري (\u0000) غير مسموح في نصوص PostgreSQL ويسبّب خطأ 500، فنحذفه من كل المدخلات
+export const str = (v, max = 500) => (typeof v === 'string' ? v.replace(/\u0000/g, '').trim().slice(0, max) : '');
 export const num = (v) => { const n = Number(v); return Number.isFinite(n) ? Math.round(n) : null; };
+/** معاملات الاستعلام: نصوص فقط (المصفوفات والكائنات من ?a[]=1 تُعامل كفارغة بدل أن تُسقط الاستعلام). */
+export const qs = (v) => (typeof v === 'string' ? v.replace(/\u0000/g, '') : '');
+export const clamp = (n, lo, hi, dflt) => (Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt);
+export const MAX_MONEY = 1_000_000_000; // سقف معقول للمبالغ (ويحمي من تجاوز INTEGER في القاعدة)
+/** اسم حساب إنستغرام من @name أو name أو رابط كامل؛ فارغ إن لم يكن صالحاً (يمنع حقن روابط أخرى). */
+export const igHandle = (v) => {
+  const s = str(v, 120).replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/^@/, '').split(/[/?#]/)[0];
+  return /^[A-Za-z0-9._]{1,30}$/.test(s) ? s : '';
+};
 export const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 /** يقبل روابط http/https فقط (يمنع javascript: وغيرها) أو نصاً فارغاً. */

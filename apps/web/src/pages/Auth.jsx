@@ -1,7 +1,7 @@
 import { lang, t } from '../i18n/index.js';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, ChevronDown, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from '../icons.jsx';
+import { Building2, Headset, ChevronDown, FlaskConical, GraduationCap, ArrowRight, ShieldCheck } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Tr } from '../translate.jsx';
@@ -150,7 +150,7 @@ export function ResetPage() {
         <p className="text-bad">{t('الرابط غير صالح. اطلب رابطاً جديداً.')} <Link className="font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></p>
       ) : (
         <form onSubmit={submit}>
-          <Field label={t('كلمة المرور الجديدة')} hint={t('8 أحرف على الأقل')}><input id="reset-pass" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required autoFocus /></Field>
+          <Field label={t('كلمة المرور الجديدة')} hint={t('8 أحرف على الأقل')}><input id="reset-pass" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} maxLength={128} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required autoFocus /></Field>
           <Field label={t('أعد كتابة كلمة المرور')}><input id="reset-again" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} value={f.again} onChange={(e) => setF({ ...f, again: e.target.value })} required /></Field>
           <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الحفظ…') : t('حفظ كلمة المرور')}</button>
         </form>
@@ -243,6 +243,7 @@ function Shell({ title, sub, children, back = true }) {
         {children}
       </div>
       {back && <Link to="/" className="auth-back mt-4 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><ArrowRight size={14} className="ltr:rotate-180" />{t('العودة للصفحة الرئيسية')}</Link>}
+      <Link to="/support" className="mt-2 inline-flex items-center gap-1 text-sm text-mute hover:text-ink"><Headset size={14} />{t('تحتاج مساعدة؟ تواصل مع الدعم')}</Link>
     </div>
   );
 }
@@ -284,7 +285,7 @@ export function RegisterPage() {
         </Field>
         <Field label={role === 'student' ? t('الاسم الكامل') : t('اسم الشركة')}><input id="reg-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>
         <Field label={role === 'company' ? t('البريد الرسمي') : t('البريد الإلكتروني')}><input id="reg-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
-        <Field label={t('كلمة المرور')} hint={t('8 أحرف على الأقل')}><input id="reg-pass" type="password" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => set('password', e.target.value)} minLength={8} required /></Field>
+        <Field label={t('كلمة المرور')} hint={t('8 أحرف على الأقل')}><input id="reg-pass" type="password" dir="ltr" autoComplete="new-password" className="inp text-left" value={f.password} onChange={(e) => set('password', e.target.value)} minLength={8} maxLength={128} required /></Field>
         {role === 'student' ? (
           <>
             <div className="grid grid-cols-2 gap-3">

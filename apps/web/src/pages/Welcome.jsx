@@ -1,6 +1,6 @@
 import { t } from '../i18n/index.js';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Briefcase, FolderKanban, Wallet, MapPin, MessagesSquare, ShieldCheck, UserPlus, Send, Handshake } from '../icons.jsx';
+import { BadgeCheck, Headset, Briefcase, FolderKanban, Wallet, MapPin, MessagesSquare, ShieldCheck, UserPlus, Send, Handshake } from '../icons.jsx';
 import { Logo } from '../ui.jsx';
 import { LangSwitch, ThemeButton } from '../Layout.jsx';
 import { LoginForm } from './Auth.jsx';
@@ -89,6 +89,9 @@ export default function Welcome() {
           <p className="mt-5 text-center text-sm text-mute">{t('ليس لديك حساب؟')} <Link className="font-semibold text-brand" to="/register">{t('إنشاء حساب جديد')}</Link></p>
         </aside>
       </div>
+      <footer className="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+        <Link to="/support" className="inline-flex items-center gap-2 text-sm text-mute hover:text-ink"><Headset size={16} />{t('الدعم الفني والتواصل')}</Link>
+      </footer>
     </div>
   );
 }

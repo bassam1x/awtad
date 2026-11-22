@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { config } from '../config.js';
 import { all, get, run } from '../db.js';
 import { role } from '../security.js';
-import { POSTING_SQL, postingOut } from '../services.js';
-import { bad, str } from '../utils.js';
+import { POSTING_SQL, getSupport, postingOut } from '../services.js';
+import { bad, emailOk, igHandle, qs, str } from '../utils.js';
 import { getGoogleId } from './auth.js';
 
 const r = Router();
@@ -11,7 +11,7 @@ r.use(role('admin'));
 
 r.get('/users', async (req, res) => {
   const q = `%${str(req.query.q, 60)}%`;
-  const rl = req.query.role;
+  const rl = ['student', 'company', 'admin'].includes(qs(req.query.role)) ? req.query.role : '';
   res.json(await all(`SELECT id,name,email,role,avatar,status,created_at FROM users WHERE (name ILIKE ? OR email ILIKE ?) ${rl ? 'AND role=?' : ''} ORDER BY id DESC`, q, q, ...(rl ? [rl] : [])));
 });
 r.patch('/users/:id', async (req, res) => {
@@ -34,14 +34,45 @@ r.get('/postings', async (_req, res) => {
   res.json(await Promise.all(rows.map(async (x) => ({ ...postingOut(x), applicants: (await get('SELECT COUNT(*) c FROM applications WHERE posting_id=?', x.id)).c }))));
 });
 r.get('/settings', async (_req, res) => {
-  res.json({ googleClientId: await getGoogleId(), fromEnv: !!config.googleClientId && !await get("SELECT 1 FROM settings WHERE key='google_client_id'") });
+  const sp = await getSupport();
+  res.json({ googleClientId: await getGoogleId(), fromEnv: !!config.googleClientId && !await get("SELECT 1 FROM settings WHERE key='google_client_id'"), supportEmail: sp.email, supportInstagram: sp.instagram });
 });
+const putSetting = (k, v) => (v ? run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', k, v) : run('DELETE FROM settings WHERE key=?', k));
 r.put('/settings', async (req, res) => {
-  const id = str(req.body?.googleClientId, 200);
-  if (id && !/\.apps\.googleusercontent\.com$/.test(id)) return bad(res, 'المعرّف يجب أن ينتهي بـ .apps.googleusercontent.com');
-  if (id) await run("INSERT INTO settings(key,value) VALUES('google_client_id',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", id);
-  else await run("DELETE FROM settings WHERE key='google_client_id'");
-  res.json({ googleClientId: await getGoogleId() });
+  const b = req.body || {};
+  // كل حقل يُحدَّث فقط إن أُرسل (حتى لا يمسح حفظ قنوات الدعم إعداد Google أو العكس)
+  if ('googleClientId' in b) {
+    const id = str(b.googleClientId, 200);
+    if (id && !/\.apps\.googleusercontent\.com$/.test(id)) return bad(res, 'المعرّف يجب أن ينتهي بـ .apps.googleusercontent.com');
+    await putSetting('google_client_id', id);
+  }
+  if ('supportEmail' in b) {
+    const e = str(b.supportEmail, 120).toLowerCase();
+    if (e && !emailOk(e)) return bad(res, 'بريد الدعم غير صحيح');
+    await putSetting('support_email', e);
+  }
+  if ('supportInstagram' in b) {
+    const raw = str(b.supportInstagram, 120), h = igHandle(raw);
+    if (raw && !h) return bad(res, 'حساب إنستغرام غير صالح. اكتب الاسم فقط مثل awtad.iq أو الرابط.');
+    await putSetting('support_instagram', h);
+  }
+  const sp = await getSupport();
+  res.json({ googleClientId: await getGoogleId(), supportEmail: sp.email, supportInstagram: sp.instagram });
+});
+
+/* ---- رسائل الدعم الفني ---- */
+r.get('/support/count', async (_req, res) => res.json({ open: (await get("SELECT COUNT(*) c FROM support_tickets WHERE status='open'")).c }));
+r.get('/support', async (_req, res) => {
+  res.json(await all('SELECT id,user_id,name,email,topic,message,status,created_at FROM support_tickets ORDER BY (status=\'open\') DESC, id DESC LIMIT 300'));
+});
+r.patch('/support/:id', async (req, res) => {
+  if (!['open', 'closed'].includes(req.body?.status)) return bad(res, 'حالة غير صالحة');
+  const x = await run('UPDATE support_tickets SET status=? WHERE id=?', req.body.status, req.params.id);
+  return x.changes ? res.json({ ok: true }) : bad(res, 'غير موجود', 404);
+});
+r.delete('/support/:id', async (req, res) => {
+  const x = await run('DELETE FROM support_tickets WHERE id=?', req.params.id);
+  return x.changes ? res.json({ ok: true }) : bad(res, 'غير موجود', 404);
 });
 r.get('/charts', async (_req, res) => {
   res.json({

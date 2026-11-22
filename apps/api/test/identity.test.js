@@ -120,6 +120,9 @@ test('استرجاع كلمة المرور: رابط جديد يُبطل الق�
   mails.length = 0;
   await call('POST', '/api/auth/register', { role: 'company', name: 'شركة', email: 'two@example.com', password: 'Old-Password-1' });
   await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();
+  await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();   // خلال الدقيقة: يُتجاهل (حماية من إغراق البريد)
+  assert.equal(mails.length, 1, 'طلب ثانٍ خلال دقيقة لا يرسل رسالة جديدة');
+  await dbm.run('UPDATE password_resets SET expires_at=expires_at-?', 2 * 60 * 1000);   // نحاكي مرور دقيقتين
   await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();
   const tokens = mails.map((m) => m.text.match(/token=([\w-]+)/)[1]);
   assert.equal(tokens.length, 2);

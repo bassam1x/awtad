@@ -10,7 +10,7 @@ import { MIGRATE, SCHEMA } from './schema.js';
    الواجهة غير متزامنة: all/get/run/tx، وتكتب الاستعلامات بعلامات «؟» فتُحوَّل إلى $1,$2... */
 
 const als = new AsyncLocalStorage();
-const ID_TABLES = new Set(['users', 'skills', 'portfolio', 'postings', 'applications', 'messages', 'works', 'wallet_tx', 'invites']);
+const ID_TABLES = new Set(['users', 'skills', 'portfolio', 'postings', 'applications', 'messages', 'works', 'wallet_tx', 'invites', 'support_tickets']);
 /* مدخلات غير صالحة لنوع العمود (مثل رقم تعريف غير رقمي في الرابط): نعاملها «لا نتيجة» كما كان سلوك SQLite، لا خطأ 500 */
 const SOFT_ERRORS = new Set(['22P02', '22003', '22001']);
 

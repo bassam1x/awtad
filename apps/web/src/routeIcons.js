@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog, ListChecks, PlusCircle, Pencil,
-  ClipboardCheck, Users, Search, ShieldCheck, FileText, Receipt, Settings, UserRound,
+  ClipboardCheck, Users, Search, ShieldCheck, FileText, Receipt, Settings, UserRound, Headset, Inbox,
 } from './icons.jsx';
 
 /** أيقونة ولون لكل صفحة: تظهر أمام عنوان الصفحة وفي القائمة، فيعرف المستخدم أين هو بنظرة واحدة. */
@@ -24,6 +24,8 @@ const R = {
   '/app/all-applications': [ClipboardCheck, 'gicon-v'],
   '/app/transactions': [Receipt, 'gicon-w'],
   '/app/settings': [Settings, 'gicon-s'],
+  '/app/support-inbox': [Inbox, 'gicon-w'],
+  '/app/support': [Headset, 'gicon-t'],
 };
 const KEYS = Object.keys(R).sort((a, b) => b.length - a.length);
 
@@ -47,4 +49,5 @@ export const PREFETCH = {
   '/app/all-postings': '/admin/postings',
   '/app/all-applications': '/applications',
   '/app/transactions': '/admin/transactions',
+  '/app/support-inbox': '/admin/support',
 };

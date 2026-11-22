@@ -119,6 +119,18 @@ CREATE TABLE IF NOT EXISTS password_resets(
   created_at TEXT NOT NULL DEFAULT ${NOW}
 );
 CREATE INDEX IF NOT EXISTS idx_reset_user ON password_resets(user_id);
+/* رسائل الدعم الفني والتواصل (من الزوار والمستخدمين). تبقى الرسالة حتى لو حُذف الحساب (user_id يصير NULL). */
+CREATE TABLE IF NOT EXISTS support_tickets(
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  topic TEXT NOT NULL DEFAULT 'other',
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open',
+  created_at TEXT NOT NULL DEFAULT ${NOW}
+);
+CREATE INDEX IF NOT EXISTS idx_support_status ON support_tickets(status, id);
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS translations(h TEXT NOT NULL, lang TEXT NOT NULL, tr_out TEXT NOT NULL, PRIMARY KEY(h, lang));
 CREATE INDEX IF NOT EXISTS idx_post_company ON postings(company_id);

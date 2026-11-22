@@ -3,12 +3,12 @@ import { OAuth2Client } from 'google-auth-library';
 import { config } from '../config.js';
 import { all, get, run, tx } from '../db.js';
 import crypto from 'node:crypto';
-import { checkPassword, hashPassword, rateLimit, signTicket, verifyTicket } from '../security.js';
+import { checkPasswordAsync, hashPasswordAsync, loginGuard, passwordOk, rateLimit, signTicket, verifyTicket } from '../security.js';
 import { exchangeLinkedinCode, linkedinEnabled, linkedinRedirect } from '../linkedin.js';
 import { mailEnabled, resetEmail, sendMail } from '../mailer.js';
-import { createUser, session } from '../services.js';
+import { createUser, getSupport, session } from '../services.js';
 import { ADMIN, DEMO_DOMAIN, DEMO_PASSWORD, demoEnabled } from '../seed.js';
-import { bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
+import { UserError, bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
 
 export const getGoogleId = async () => (await get("SELECT value FROM settings WHERE key='google_client_id'"))?.value || config.googleClientId;
 const clients = new Map();
@@ -29,6 +29,7 @@ r.get('/config', async (_req, res) => res.json({
   googleClientId: await getGoogleId(), demo: await demoAccounts(),
   linkedinClientId: linkedinEnabled() ? config.linkedinClientId : '', linkedinRedirect: linkedinRedirect(),
   mailEnabled: mailEnabled() || config.env !== 'production',
+  support: await getSupport(),
 }));
 r.post('/auth/register', limit, wrap(async (req, res) => {
   const b = req.body || {};
@@ -37,7 +38,7 @@ r.post('/auth/register', limit, wrap(async (req, res) => {
   if (!name) return bad(res, 'أدخل الاسم');
   if (!emailOk(email)) return bad(res, 'البريد الإلكتروني غير صحيح');
   if (email.endsWith(DEMO_DOMAIN)) return bad(res, 'هذا النطاق محجوز للحسابات التجريبية');
-  if (password.length < 8) return bad(res, 'كلمة المرور 8 أحرف على الأقل');
+  if (!passwordOk(password)) return bad(res, 'كلمة المرور بين 8 و128 حرفاً');
   if (await get('SELECT 1 FROM users WHERE email=?', email)) return bad(res, 'هذا البريد مسجّل مسبقاً', 409);
   const id = await createUser({ role: b.role, name, email, password, avatar: safeAvatar(b.avatar), extra: b });
   res.json(await session(id));
@@ -45,8 +46,13 @@ r.post('/auth/register', limit, wrap(async (req, res) => {
 
 r.post('/auth/login', limit, wrap(async (req, res) => {
   const email = str(req.body?.email, 120).toLowerCase();
+  // تقييد المحاولات الفاشلة لكل (بريد + عنوان): لا يستطيع مهاجم من عنوان آخر قفل حساب الضحية، ولا تخمين مستمر من عنوان واحد
+  const gk = `${email}|${req.ip}`;
+  if (loginGuard.blocked(gk)) return bad(res, 'محاولات كثيرة، حاول بعد 15 دقيقة', 429);
   const u = await get('SELECT id,password_hash,status FROM users WHERE email=?', email);
-  if (!u || !checkPassword(String(req.body?.password || ''), u.password_hash)) return bad(res, 'البريد أو كلمة المرور غير صحيحة', 401);
+  // checkPasswordAsync يستغرق الزمن نفسه سواء وُجد الحساب أم لا، ولا يحجب حلقة الأحداث
+  if (!(await checkPasswordAsync(String(req.body?.password || ''), u?.password_hash)) || !u) { loginGuard.fail(gk); return bad(res, 'البريد أو كلمة المرور غير صحيحة', 401); }
+  loginGuard.ok(gk);
   if (u.status === 'banned') return bad(res, 'هذا الحساب موقوف من الإدارة', 403);
   res.json(await session(u.id));
 }));
@@ -107,15 +113,18 @@ r.post('/auth/linkedin', limit, wrap(async (req, res) => {
    forgot: نردّ دائماً بنفس الجواب سواء وُجد الحساب أم لا (منعاً لتخمين البريدات المسجّلة).
    الرابط صالح 30 دقيقة ولمرة واحدة، ونخزّن بصمته (sha256) لا الرمز نفسه. */
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
-const mailLimit = rateLimit({ max: 8 });
-const RESET_TTL_MS = 30 * 60 * 1000;
+/* الحد حسب العنوان فقط واسع (يشترك كثيرون بعنوان واحد)، والحماية الفعلية من الإغراق بطلب واحد في الدقيقة لكل حساب أدناه */
+const mailLimit = rateLimit({ max: 40 });
+const RESET_TTL_MS = 30 * 60 * 1000, RESET_COOLDOWN_MS = 60 * 1000;
 
 r.post('/auth/forgot', mailLimit, wrap(async (req, res) => {
   if (!mailEnabled() && config.env === 'production') return bad(res, 'استرجاع كلمة المرور بالبريد غير مفعّل بعد.', 503);
   const email = str(req.body?.email, 120).toLowerCase();
   const lang = ['ar', 'en', 'ku'].includes(req.body?.lang) ? req.body.lang : 'ar';
   const u = emailOk(email) ? await get("SELECT id,name,status FROM users WHERE email=? AND status<>'banned'", email) : null;
-  if (u && !email.endsWith(DEMO_DOMAIN)) {
+  // لا نرسل أكثر من رسالة في الدقيقة للحساب الواحد (يمنع إغراق بريد الضحية بطلبات متكررة) مع بقاء الرد نفسه
+  const recent = u ? await get('SELECT expires_at FROM password_resets WHERE user_id=? AND used=0 ORDER BY id DESC LIMIT 1', u.id) : null;
+  if (u && !email.endsWith(DEMO_DOMAIN) && !(recent && recent.expires_at > Date.now() + RESET_TTL_MS - RESET_COOLDOWN_MS)) {
     const raw = crypto.randomBytes(32).toString('base64url');
     await run('DELETE FROM password_resets WHERE user_id=? AND used=0', u.id);
     await run('INSERT INTO password_resets(user_id,token_hash,expires_at) VALUES(?,?,?)', u.id, sha(raw), Date.now() + RESET_TTL_MS);
@@ -131,13 +140,16 @@ r.post('/auth/forgot', mailLimit, wrap(async (req, res) => {
 
 r.post('/auth/reset', mailLimit, wrap(async (req, res) => {
   const password = String(req.body?.password || '');
-  if (password.length < 8) return bad(res, 'كلمة المرور 8 أحرف على الأقل');
+  if (!passwordOk(password)) return bad(res, 'كلمة المرور بين 8 و128 حرفاً');
   const row = await get('SELECT id,user_id,expires_at,used FROM password_resets WHERE token_hash=?', sha(String(req.body?.token || '')));
   if (!row || row.used || row.expires_at < Date.now()) return bad(res, 'الرابط غير صالح أو منتهي. اطلب رابطاً جديداً.', 400);
+  const ph = await hashPasswordAsync(password);
   await tx(async () => {
-    await run('UPDATE password_resets SET used=1 WHERE id=?', row.id);
+    // استهلاك ذرّي: لو وصل طلبان بنفس الرابط معاً ينجح أحدهما فقط
+    if (!(await run('UPDATE password_resets SET used=1 WHERE id=? AND used=0', row.id)).changes) throw new UserError('الرابط غير صالح أو منتهي. اطلب رابطاً جديداً.', 400);
     // رفع نسخة التوكن يُبطل كل الجلسات القديمة؛ ووصول المستخدم للبريد يثبت ملكيته
-    await run('UPDATE users SET password_hash=?, token_version=token_version+1, email_verified=1 WHERE id=?', hashPassword(password), row.user_id);
+    await run('UPDATE users SET password_hash=?, token_version=token_version+1, email_verified=1 WHERE id=?', ph, row.user_id);
+    await run('DELETE FROM password_resets WHERE user_id=? AND used=0', row.user_id);
   });
   res.json({ ok: true });
 }));

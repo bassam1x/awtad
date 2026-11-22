@@ -132,7 +132,8 @@ test('التحقق من المدخلات: الروابط والصور والدع
 });
 
 test('إبطال الجلسات عند تغيير كلمة المرور', async () => {
-  const old = await login('ali@demo.iq');
+  // حساب عادي (الحسابات التجريبية لا يُسمح بتغيير كلمة مرورها، وهذا مختبر في security.test.js)
+  const old = (await call('POST', '/api/auth/register', { role: 'student', name: 'جلسة', email: 'session-test@example.com', password: 'Demo@1234' })).json.token;
   const r = await call('PUT', '/api/me/password', { current: 'Demo@1234', next: 'NewPass@123' }, old);
   assert.equal(r.status, 200);
   assert.equal((await call('GET', '/api/me', null, old)).status, 401);

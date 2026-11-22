@@ -3,7 +3,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, FolderKanban, ClipboardList, MessagesSquare, Wallet, Award, UserCog,
-  ListChecks, PlusCircle, Settings, ClipboardCheck, FolderPlus, Users, Search, Building2, ShieldCheck, FileText, Receipt, LogOut, Menu, X, Sun, Moon,
+  ListChecks, PlusCircle, Settings, ClipboardCheck, FolderPlus, Users, Search, Building2, ShieldCheck, FileText, Receipt, LogOut, Menu, X, Sun, Moon, Headset, Inbox,
 } from './icons.jsx';
 import { useAuth, useFetch, useTheme, prefetch } from './context.jsx';
 import { onActivity } from './api.js';
@@ -16,18 +16,18 @@ const NAV = {
     [t('الرئيسية'), [['/app', t('لوحة التحكم'), LayoutDashboard, true]]],
     [t('الفرص'), [['/app/jobs', t('الوظائف الشاغرة'), Briefcase], ['/app/projects', t('المشاريع والتعاونات'), FolderKanban], ['/app/applications', t('طلباتي ودعواتي'), ClipboardList]]],
     [t('العمل'), [['/app/workspace', t('مساحة العمل'), MessagesSquare], ['/app/wallet', t('المحفظة'), Wallet]]],
-    [t('حسابي'), [['/app/portfolio', t('ملفي المهني'), Award], ['/app/profile', t('إعدادات الحساب'), UserCog]]],
+    [t('حسابي'), [['/app/portfolio', t('ملفي المهني'), Award], ['/app/profile', t('إعدادات الحساب'), UserCog], ['/app/support', t('الدعم الفني'), Headset]]],
   ],
   company: [
     [t('الرئيسية'), [['/app', t('لوحة التحكم'), LayoutDashboard, true]]],
     [t('التوظيف'), [['/app/my-postings', t('الوظائف والمشاريع'), ListChecks, true], ['/app/my-postings/new?kind=job', t('نشر وظيفة'), PlusCircle], ['/app/my-postings/new?kind=project', t('نشر مشروع'), FolderPlus], ['/app/applicants', t('مراجعة المتقدمين'), Users]]],
     [t('التواصل'), [['/app/workspace', t('مساحة العمل'), MessagesSquare], ['/app/talent', t('تصفح المبدعين'), Search]]],
-    [t('الشركة'), [['/app/profile', t('ملف الشركة والحساب'), Building2]]],
+    [t('الشركة'), [['/app/profile', t('ملف الشركة والحساب'), Building2], ['/app/support', t('الدعم الفني'), Headset]]],
   ],
   admin: [
     [t('الرئيسية'), [['/app', t('لوحة الإدارة'), ShieldCheck, true]]],
     [t('الإدارة'), [['/app/users', t('المستخدمون'), Users], ['/app/all-postings', t('الفرص المنشورة'), FileText], ['/app/all-applications', t('طلبات التقديم'), ClipboardCheck], ['/app/transactions', t('التعاملات المالية'), Receipt]]],
-    [t('النظام'), [['/app/settings', t('إعدادات المنصة'), Settings]]],
+    [t('النظام'), [['/app/support-inbox', t('رسائل الدعم'), Inbox], ['/app/settings', t('إعدادات المنصة'), Settings]]],
     [t('حسابي'), [['/app/profile', t('إعدادات الحساب'), UserCog]]],
   ],
 };
@@ -76,7 +76,8 @@ export default function Layout() {
   }, [user.role]);
   const groups = NAV[user.role];
   const { data: st } = useFetch(user.role === 'admin' ? null : '/stats', [loc.pathname]);
-  const counts = st ? (user.role === 'student' ? { '/app/applications': st.invites } : { '/app/applicants': st.pending, '/app/workspace': st.awaiting }) : {};
+  const { data: sup } = useFetch(user.role === 'admin' ? '/admin/support/count' : null, [loc.pathname]);
+  const counts = user.role === 'admin' ? { '/app/support-inbox': sup?.open || 0 } : st ? (user.role === 'student' ? { '/app/applications': st.invites } : { '/app/applicants': st.pending, '/app/workspace': st.awaiting }) : {};
   const isActive = (to, end) => {
     const [p, q] = to.split('?');
     if (q) return loc.pathname === p && loc.search.includes(q);

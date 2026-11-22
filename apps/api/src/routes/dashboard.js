@@ -52,10 +52,12 @@ r.get('/stats', async (req, res) => {
 });
 
 /* ترجمة محتوى المستخدمين إلى لغة الواجهة (مخزّنة دائماً). للمسجّلين فقط. */
-r.post('/translate', rateLimit({ windowMs: 60 * 1000, max: 90 }), wrap(async (req, res) => {
+r.post('/translate', rateLimit({ windowMs: 60 * 1000, max: 120, key: (req) => `tr${req.user.id}` }), wrap(async (req, res) => {
   const { lang, texts } = req.body || {};
   if (!LANGS.includes(lang)) return bad(res, 'لغة غير مدعومة');
   if (!Array.isArray(texts) || !texts.length || texts.length > 40 || texts.some((x) => typeof x !== 'string' || x.length > 2000)) return bad(res, 'طلب غير صالح');
+  // سقف إجمالي لحجم الطلب: يحمي من إغراق جدول الترجمات واستهلاك واجهة الترجمة الخارجية
+  if (texts.reduce((n, x) => n + x.length, 0) > 8000) return bad(res, 'النصوص طويلة جداً في طلب واحد');
   res.json({ translations: await translateMany(texts, lang) });
 }));
 

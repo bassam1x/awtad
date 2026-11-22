@@ -2,7 +2,7 @@ import { isRtl, t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from '../icons.jsx';
+import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Mail, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Banner, BarList, Empty, ErrorBox, PageHeader, Spinner, StatCard, dateAr, fmt , curLabel } from '../ui.jsx';
@@ -160,15 +160,31 @@ export function AdminSettings() {
   const toast = useToast();
   const { data, loading } = useFetch('/admin/settings');
   const [id, setId] = useState(null);
+  const [sup, setSup] = useState(null); // { email, instagram } قيد التعديل
   if (loading) return <Spinner />;
   const val = id ?? data.googleClientId;
+  const supVal = sup ?? { email: data.supportEmail || '', instagram: data.supportInstagram || '' };
   const save = async (e) => {
     e.preventDefault();
     try { await api.put('/admin/settings', { googleClientId: val }); toast(val ? t('فُعّل تسجيل الدخول عبر Google') : t('عُطّل تسجيل الدخول عبر Google')); } catch (err) { toast(err.message, 'err'); }
   };
+  const saveSupport = async (e) => {
+    e.preventDefault();
+    try { const r = await api.put('/admin/settings', { supportEmail: supVal.email, supportInstagram: supVal.instagram }); setSup({ email: r.supportEmail, instagram: r.supportInstagram }); toast(t('تم حفظ قنوات الدعم')); } catch (err) { toast(err.message, 'err'); }
+  };
   return (
     <div>
-      <PageHeader title={t('إعدادات المنصة')} sub={t('تفعيل تسجيل الدخول عبر Google للمستخدمين.')} />
+      <PageHeader title={t('إعدادات المنصة')} sub={t('تسجيل الدخول عبر Google وقنوات الدعم والتواصل.')} />
+      <form onSubmit={saveSupport} className="card mb-5 max-w-2xl p-5">
+        <h2 className="mb-1 font-bold">{t('قنوات الدعم والتواصل')}</h2>
+        <p className="mb-4 text-sm text-mute">{t('تظهر في صفحة الدعم الفني لكل المستخدمين، ويصلك إشعار على بريد الدعم عند كل رسالة جديدة. اتركها فارغة لإخفائها.')}</p>
+        <label className="lbl" htmlFor="sup-email">{t('بريد الدعم')}</label>
+        <input id="sup-email" type="email" dir="ltr" className="inp mb-3 text-left" placeholder="support@example.com" maxLength={120} value={supVal.email} onChange={(e) => setSup({ ...supVal, email: e.target.value })} />
+        <label className="lbl" htmlFor="sup-ig">{t('حساب إنستغرام')}</label>
+        <input id="sup-ig" dir="ltr" className="inp mb-4 text-left" placeholder="awtad.iq" maxLength={120} value={supVal.instagram} onChange={(e) => setSup({ ...supVal, instagram: e.target.value })} />
+        <p className="mb-4 text-xs text-mute">{t('للإنستغرام اكتب اسم الحساب فقط (مثل awtad.iq) أو الصق رابطه.')}</p>
+        <button className="btn btn-p"><Save size={16} />{t('حفظ')}</button>
+      </form>
       <form onSubmit={save} className="card max-w-2xl p-5">
         <h2 className="mb-1 font-bold">Google Sign-In</h2>
         <p className="mb-4 text-sm text-mute">{t('الصق معرّف العميل (OAuth Client ID) من Google Cloud Console. اتركه فارغاً لتعطيل الخدمة.')}</p>
@@ -181,6 +197,44 @@ export function AdminSettings() {
         </ol>
         <button className="btn btn-p"><Save size={16} />{t('حفظ')}</button>
       </form>
+    </div>
+  );
+}
+
+const TOPIC_LABEL = { technical: 'مشكلة تقنية', account: 'حسابي', payment: 'المبالغ والمحفظة', suggestion: 'اقتراح', report: 'بلاغ عن مخالفة', other: 'أخرى' };
+
+/** وارد رسائل الدعم الفني: المفتوحة أولاً، ويمكن إغلاقها أو حذفها. نص الرسالة يُعرض كنص عادي (React يهرّب أي وسوم). */
+export function AdminSupport() {
+  const toast = useToast();
+  const { data, loading, error, reload } = useFetch('/admin/support');
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox>{error}</ErrorBox>;
+  const act = async (fn) => { try { await fn(); await reload?.(); } catch (e) { toast(e.message, 'err'); } };
+  return (
+    <div>
+      <PageHeader title={t('رسائل الدعم')} sub={t('رسائل الزوار والمستخدمين من صفحة الدعم الفني.')} />
+      {!data.length ? <Empty>{t('لا توجد رسائل دعم بعد.')}</Empty> : (
+        <div className="grid gap-3">
+          {data.map((m) => (
+            <article key={m.id} className={`card p-4 ${m.status === 'open' ? '' : 'opacity-70'}`}>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className="font-bold">{m.name}</span>
+                <a className="text-sm text-brand hover:underline" dir="ltr" href={`mailto:${m.email}`}>{m.email}</a>
+                {m.user_id && <Link className="chip" to={`/app/people/${m.user_id}`}>{t('مسجّل')}</Link>}
+                <span className="chip chip-b">{t(TOPIC_LABEL[m.topic] || 'أخرى')}</span>
+                <span className={`chip ${m.status === 'open' ? 'chip-w' : 'chip-g'}`}>{m.status === 'open' ? t('مفتوحة') : t('مغلقة')}</span>
+                <span className="ms-auto text-xs text-mute">#{m.id} · {dateAr(m.created_at)}</span>
+              </div>
+              <p className="whitespace-pre-wrap break-words">{m.message}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a className="btn btn-sm" href={`mailto:${m.email}`}><Mail size={14} />{t('رد بالبريد')}</a>
+                <button className="btn btn-sm" onClick={() => act(() => api.patch(`/admin/support/${m.id}`, { status: m.status === 'open' ? 'closed' : 'open' }))}>{m.status === 'open' ? t('إغلاق') : t('إعادة فتح')}</button>
+                <button className="btn btn-sm btn-d" onClick={() => { if (window.confirm(t('حذف هذه الرسالة نهائياً؟'))) act(() => api.del(`/admin/support/${m.id}`)); }}><Trash2 size={14} />{t('حذف')}</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

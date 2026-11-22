@@ -18,13 +18,17 @@ export default function Profile() {
     sector: user.sector, city: user.city, about: user.about, address: user.address, map_url: user.map_url, contact_email: user.contact_email,
   });
   const [pw, setPw] = useState({ current: '', next: '' });
+  const [curPw, setCurPw] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
 
+  // تغيير البريد يتطلب كلمة المرور الحالية لمن لديه كلمة (حماية من الاستيلاء بجلسة مسروقة)
+  const emailChanged = f.email.trim().toLowerCase() !== String(user.email).toLowerCase();
+  const needCur = emailChanged && !!user.has_password;
   const save = async (e) => {
     e.preventDefault(); setBusy(true);
-    try { setUser(await api.put('/me', f)); toast(t('تم حفظ التغييرات')); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
+    try { setUser(await api.put('/me', emailChanged ? { ...f, current_password: curPw } : f)); setCurPw(''); toast(t('تم حفظ التغييرات')); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
   };
   /** الصورة تُحفظ في الحساب فور اعتمادها، دون انتظار زر حفظ بقية الحقول */
   const saveAvatar = async (v) => {
@@ -60,6 +64,7 @@ export default function Profile() {
             <Field label={isC ? t('اسم الشركة') : t('الاسم')}><input id="pf-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>
             <Field label={t('رقم الهاتف')}><input id="pf-phone" dir="ltr" className="inp text-left" value={f.phone} onChange={(e) => set('phone', e.target.value)} /></Field>
             <Field label={t('البريد الإلكتروني (لتسجيل الدخول)')}><input id="pf-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
+            {needCur && <Field label={t('كلمة المرور الحالية')} hint={t('مطلوبة لتأكيد تغيير البريد.')}><input id="pf-cur" type="password" dir="ltr" autoComplete="current-password" maxLength={128} className="inp text-left" value={curPw} onChange={(e) => setCurPw(e.target.value)} required /></Field>}
             {isS && (
               <>
                 <Field label={t('التخصص')}><select id="pf-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
@@ -90,7 +95,7 @@ export default function Profile() {
             <h2 className="mb-3 flex items-center gap-2 font-bold"><KeyRound size={18} />{user.has_password ? t('تغيير كلمة المرور') : t('تعيين كلمة مرور')}</h2>
             {!!user.has_google && <p className="mb-3 flex items-center gap-1 text-sm text-mute"><Link2 size={14} />{t('حسابك مرتبط بـ Google.')}</p>}
             {!!user.has_password && <Field label={t('كلمة المرور الحالية')}><input id="pw-cur" type="password" dir="ltr" className="inp text-left" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>}
-            <Field label={t('كلمة المرور الجديدة')}><input id="pw-new" type="password" dir="ltr" className="inp text-left" minLength={8} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
+            <Field label={t('كلمة المرور الجديدة')}><input id="pw-new" type="password" dir="ltr" className="inp text-left" minLength={8} maxLength={128} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
             <button className="btn w-full">{t('تحديث')}</button>
             {canForgot && (
               <div className="mt-4 border-t border-line pt-3 text-sm">

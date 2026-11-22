@@ -2,15 +2,16 @@ import { Router } from 'express';
 import { all, get, run } from '../db.js';
 import { role } from '../security.js';
 import { POSTING_SQL, postingOut, toIQD } from '../services.js';
-import { JOB_TYPES, SPECS, bad, num, parseList, safeUrl, str, wrap } from '../utils.js';
+import { JOB_TYPES, MAX_MONEY, SPECS, bad, clamp, num, parseList, qs, safeUrl, str, wrap } from '../utils.js';
 
 const r = Router();
 
 r.get('/postings', async (req, res) => {
-  const { kind, spec, type, shift, min } = req.query;
+  // معاملات الاستعلام نصوص فقط (?a[]=1 أو التكرار لا يُسقطان الاستعلام)
+  const kind = qs(req.query.kind), spec = qs(req.query.spec), type = qs(req.query.type), shift = qs(req.query.shift), min = qs(req.query.min);
   const filters = [['p.kind', kind], ['p.spec', spec], ['p.type', type], ['p.shift', shift]].filter(([, v]) => v);
   let rows = await all(`${POSTING_SQL} WHERE p.status='open' AND u.status='active' ${filters.map(([c]) => `AND ${c}=?`).join(' ')} ORDER BY p.id DESC`, ...filters.map(([, v]) => v));
-  if (min) rows = rows.filter((x) => toIQD(x.pay, x.cur) >= Number(min));
+  if (min && Number.isFinite(Number(min))) rows = rows.filter((x) => toIQD(x.pay, x.cur) >= Number(min));
   const mine = req.user.role === 'student' ? await all('SELECT posting_id,status FROM applications WHERE student_id=?', req.user.id) : [];
   res.json(rows.map((x) => ({ ...postingOut(x), my_status: mine.find((m) => m.posting_id === x.id)?.status || null })));
 });
@@ -34,14 +35,14 @@ r.get('/postings/:id', async (req, res) => {
 /** يتحقق من حقول المنشور ويعيدها جاهزة للحفظ. */
 function readPosting(b, kind, fallbackSpec = 'برمجة') {
   const title = str(b.title, 120), pay = num(b.pay);
-  if (!title || !pay || pay <= 0) return null;
+  if (!title || !pay || pay <= 0 || pay > MAX_MONEY) return null;
   const job = kind === 'job';
   const remote = job && b.type === 'عن بعد';
   return [
     title, str(b.description, 1500), SPECS.includes(b.spec) ? b.spec : fallbackSpec, pay, b.cur === 'USD' ? 'USD' : 'IQD',
-    job ? num(b.hours) || 6 : null, job ? str(b.schedule, 120) || 'يُحدد لاحقاً' : null,
+    job ? clamp(num(b.hours), 1, 24, 6) : null, job ? str(b.schedule, 120) || 'يُحدد لاحقاً' : null,
     job ? (b.shift === 'مسائي' ? 'مسائي' : 'صباحي') : null, job ? (JOB_TYPES.includes(b.type) ? b.type : 'دوام جزئي') : null,
-    job ? null : num(b.days) || 7, remote ? '' : str(b.address, 250), remote ? '' : safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)), str(b.suitable_for, 80),
+    job ? null : clamp(num(b.days), 1, 365, 7), remote ? '' : str(b.address, 250), remote ? '' : safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)), str(b.suitable_for, 80),
   ];
 }
 
@@ -84,7 +85,8 @@ r.post('/postings/:id/apply', role('student'), wrap(async (req, res) => {
   const message = str(req.body?.message, 800); if (!message) return bad(res, 'اكتب رسالة قصيرة');
   if (await get('SELECT 1 FROM applications WHERE posting_id=? AND student_id=?', p.id, req.user.id)) return bad(res, 'قدّمت على هذه الفرصة مسبقاً', 409);
   const projects = (Array.isArray(req.body?.projects) ? req.body.projects : []).map((x) => str(x, 100)).filter(Boolean).slice(0, 2);
-  await run('INSERT INTO applications(posting_id,student_id,message,projects) VALUES(?,?,?,?)', p.id, req.user.id, message, JSON.stringify(projects));
+  try { await run('INSERT INTO applications(posting_id,student_id,message,projects) VALUES(?,?,?,?)', p.id, req.user.id, message, JSON.stringify(projects)); }
+  catch (e) { if (e.code === '23505') return bad(res, 'قدّمت على هذه الفرصة مسبقاً', 409); throw e; } // طلبان متزامنان: يمنعهما القيد الفريد
   res.json({ ok: true });
 }));
 

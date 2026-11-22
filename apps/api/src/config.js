@@ -29,11 +29,17 @@ export const config = {
   mailScriptUrl: process.env.MAIL_SCRIPT_URL || '',
   mailScriptSecret: process.env.MAIL_SCRIPT_SECRET || '',
   mailFromName: process.env.MAIL_FROM_NAME || 'أوتاد',
+  // قنوات الدعم (تُضبط من لوحة المدير أيضاً؛ ما في لوحة المدير يغلب هذه القيم)
+  supportEmail: process.env.SUPPORT_EMAIL || '',
+  supportInstagram: process.env.SUPPORT_INSTAGRAM || '',
   // أصول الواجهة المسموح لها باستدعاء الـ API من متصفح آخر (CloudFront مثلاً)، مفصولة بفاصلة
   corsOrigins: list(process.env.CORS_ORIGINS),
   // مسار مجلد الواجهة المبنية لتقديمها من نفس الخادم (اختياري)
   webDist: process.env.WEB_DIST || path.join(ROOT, '..', 'web', 'dist'),
   serveWeb: process.env.SERVE_WEB !== 'false',
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 20,
+  // حدود الطلبات في الدقيقة: لكل عنوان (واسع) ولكل مستخدم مسجّل
+  ipRateMax: Number(process.env.IP_RATE_MAX) || 1500,
+  userRateMax: Number(process.env.USER_RATE_MAX) || 600,
   trustProxy: process.env.TRUST_PROXY === 'true',
 };

@@ -1,6 +1,7 @@
 import { all, get, run, tx } from './db.js';
-import { hashPassword, signToken } from './security.js';
-import { SPECS, str } from './utils.js';
+import { hashPasswordAsync, signToken } from './security.js';
+import { config } from './config.js';
+import { SPECS, emailOk, igHandle, str } from './utils.js';
 
 export function badges(works) {
   const b = [];
@@ -53,9 +54,10 @@ export async function appAccess(id, user) {
 export const addMsg = (appId, sender, text) => run('INSERT INTO messages(application_id,sender_id,text) VALUES(?,?,?)', appId, sender, text);
 
 export async function createUser({ role, name, email, password, googleId, linkedinId, avatar, extra = {} }) {
+  const ph = password ? await hashPasswordAsync(password) : null;
   return await tx(async () => {
     const info = await run('INSERT INTO users(email,password_hash,google_id,linkedin_id,role,name,avatar,email_verified) VALUES(?,?,?,?,?,?,?,?)',
-      email, password ? hashPassword(password) : null, googleId || null, linkedinId || null, role, name, avatar || null, googleId || linkedinId ? 1 : 0);
+      email, ph, googleId || null, linkedinId || null, role, name, avatar || null, googleId || linkedinId ? 1 : 0);
     const id = Number(info.lastInsertRowid);
     if (role === 'student') {
       await run('INSERT INTO student_profiles(user_id,spec,status) VALUES(?,?,?)', id,
@@ -69,6 +71,15 @@ export async function createUser({ role, name, email, password, googleId, linked
     }
     return id;
   });
+}
+
+/** قنوات الدعم المعروضة للجميع: ما في إعدادات المدير يغلب متغيرات البيئة. فارغة إن لم تُضبط بعد. */
+export async function getSupport() {
+  const rows = await all("SELECT key,value FROM settings WHERE key IN ('support_email','support_instagram')");
+  const m = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  const email = String(m.support_email ?? config.supportEmail ?? '').trim().toLowerCase();
+  const instagram = igHandle(m.support_instagram ?? config.supportInstagram);
+  return { email: emailOk(email) ? email : '', instagram, instagramUrl: instagram ? `https://www.instagram.com/${instagram}/` : '' };
 }
 
 export const session = async (id) => ({ token: await signToken(id), user: await fullUser(id, { forSelf: true }) });

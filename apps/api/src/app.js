@@ -1,8 +1,9 @@
 import express from 'express';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
-import { auth } from './security.js';
+import { auth, rateLimit } from './security.js';
 import { bad } from './utils.js';
 import { db, get } from './db.js';
 import authRoutes from './routes/auth.js';
@@ -11,14 +12,47 @@ import postingRoutes from './routes/postings.js';
 import applicationRoutes from './routes/applications.js';
 import dashboardRoutes from './routes/dashboard.js';
 import adminRoutes from './routes/admin.js';
+import supportRoutes from './routes/support.js';
+
+/** سياسة أمان المحتوى (CSP). السكربتات: من نفس الأصل فقط + بصمات السكربتات المضمّنة في index.html (تُحسب عند الإقلاع) + Google Identity.
+ *  الأنماط تسمح بـ inline لأن الواجهة تستعمل style="" كثيراً (لا يُنفَّذ بها كود). */
+function inlineScriptHashes() {
+  try {
+    const html = fs.readFileSync(path.join(config.webDist, 'index.html'), 'utf8');
+    return [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => `'sha256-${crypto.createHash('sha256').update(m[1]).digest('base64')}'`);
+  } catch { return []; }
+}
+export function buildCsp() {
+  return [
+    "default-src 'self'",
+    `script-src 'self' ${inlineScriptHashes().join(' ')} https://accounts.google.com/gsi/client`.replace(/\s+/g, ' '),
+    "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://accounts.google.com",
+    'frame-src https://accounts.google.com',
+    "frame-ancestors 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'",
+    ...(config.env === 'production' ? ['upgrade-insecure-requests'] : []),
+  ].join('; ');
+}
+/** صفحة المعاينة الداخلية (phone.html) تحتاج سكربتاً مضمّناً، فلها سياسة خاصة (لا تُحمّل شيئاً من الخارج). */
+const PREVIEW_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'";
 
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
   if (config.trustProxy) app.set('trust proxy', 1);
 
-  app.use((_req, res, next) => {
-    res.set({ 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin' });
+  const csp = buildCsp();
+  app.use((req, res, next) => {
+    res.set({
+      'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups', // يسمح بنافذة تسجيل Google المنبثقة
+      'Content-Security-Policy': req.path === '/phone.html' ? PREVIEW_CSP : csp,
+    });
+    if (config.env === 'production') res.set('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+    if (req.path.startsWith('/api')) res.set('Cache-Control', 'no-store'); // بيانات المستخدمين لا تُخزَّن في متصفح ولا وسيط
     next();
   });
 
@@ -41,11 +75,15 @@ export function createApp() {
     catch (e) { console.error('فحص الصحة: القاعدة لا تستجيب:', e.message); res.status(503).json({ ok: false, error: 'قاعدة البيانات لا تستجيب' }); }
   });
 
+  // حماية عامة من الإغراق حسب العنوان (واسعة لأن كثيرين يشتركون بعنوان واحد)، ثم حدّ حسب المستخدم بعد تسجيل الدخول
+  app.use('/api', rateLimit({ windowMs: 60 * 1000, max: config.ipRateMax, key: (req) => `ip${req.ip}` }));
+  const userLimit = rateLimit({ windowMs: 60 * 1000, max: config.userRateMax, key: (req) => `u${req.user.id}` });
+
   // مسارات عامة
-  app.use('/api', authRoutes);
+  app.use('/api', authRoutes, supportRoutes);
   // كل ما بعده يتطلب تسجيل الدخول
-  app.use('/api/admin', auth(), adminRoutes);
-  app.use('/api', auth(), meRoutes, postingRoutes, applicationRoutes, dashboardRoutes);
+  app.use('/api/admin', auth(), userLimit, adminRoutes);
+  app.use('/api', auth(), userLimit, meRoutes, postingRoutes, applicationRoutes, dashboardRoutes);
 
   // أي مسار /api غير معروف يرجع JSON
   app.use('/api', (_req, res) => bad(res, 'المسار غير موجود', 404));

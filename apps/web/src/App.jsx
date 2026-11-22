@@ -12,6 +12,8 @@ const RegisterPage = page(() => import('./pages/Auth.jsx'), 'RegisterPage');
 const ForgotPage = page(() => import('./pages/Auth.jsx'), 'ForgotPage');
 const ResetPage = page(() => import('./pages/Auth.jsx'), 'ResetPage');
 const LinkedInCallback = page(() => import('./pages/Auth.jsx'), 'LinkedInCallback');
+const SupportPublic = page(() => import('./pages/Support.jsx'));
+const SupportInApp = page(() => import('./pages/Support.jsx'), 'SupportInApp');
 const Profile = page(() => import('./pages/Profile.jsx'));
 const PublicProfile = page(() => import('./pages/PublicProfile.jsx'));
 const Workspace = page(() => import('./pages/Workspace.jsx'));
@@ -32,6 +34,7 @@ const AdminPostings = page(() => import('./pages/admin.jsx'), 'AdminPostings');
 const AdminTransactions = page(() => import('./pages/admin.jsx'), 'AdminTransactions');
 const AdminApplications = page(() => import('./pages/admin.jsx'), 'AdminApplications');
 const AdminSettings = page(() => import('./pages/admin.jsx'), 'AdminSettings');
+const AdminSupport = page(() => import('./pages/admin.jsx'), 'AdminSupport');
 
 function Gate({ children }) {
   const { user, ready } = useAuth();
@@ -69,12 +72,14 @@ export default function App() {
         <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
         <Route path="/forgot" element={<PublicOnly><ForgotPage /></PublicOnly>} />
         <Route path="/reset-password" element={<ResetPage />} />
+        <Route path="/support" element={<SupportPublic />} />
         <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
         <Route path="/app" element={<Gate><Layout /></Gate>}>
           <Route index element={<Index />} />
           <Route path="profile" element={<Profile />} />
           <Route path="people/:id" element={<PublicProfile />} />
           <Route path="opportunity/:id" element={<Opportunity />} />
+          <Route path="support" element={<SupportInApp />} />
           <Route path="workspace" element={<Workspace />} />
           <Route path="workspace/:appId" element={<Workspace />} />
           {/* مبدع */}
@@ -94,6 +99,7 @@ export default function App() {
           <Route path="all-postings" element={<Role roles={A}><AdminPostings /></Role>} />
           <Route path="all-applications" element={<Role roles={A}><AdminApplications /></Role>} />
           <Route path="settings" element={<Role roles={A}><AdminSettings /></Role>} />
+          <Route path="support-inbox" element={<Role roles={A}><AdminSupport /></Role>} />
           <Route path="transactions" element={<Role roles={A}><AdminTransactions /></Role>} />
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Route>
