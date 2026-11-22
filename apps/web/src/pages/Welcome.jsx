@@ -6,15 +6,15 @@ import { LangSwitch, ThemeButton } from '../Layout.jsx';
 import { LoginForm } from './Auth.jsx';
 
 const features = [
-  [BadgeCheck, t('بلا سنوات خبرة'), t('أعمالك ومهاراتك هي الدليل، لا عدد السنين.')],
+  [BadgeCheck, t('بدون خبرة سابقة'), t('المهم مهارتك وأعمالك، وليس سنوات الخبرة.')],
   [Briefcase, t('وظائف واضحة'), t('الراتب والدوام والعنوان مكتوبة من البداية.')],
   [FolderKanban, t('مشاريع تبني سجلّك'), t('نفّذ مشاريع صغيرة بمبالغ محددة وأضفها إلى ملفك.')],
   [Wallet, t('مبلغ وتقييم عند التسليم'), t('عند اعتماد العمل يصل المبلغ إلى محفظتك مع تقييم.')],
   [MessagesSquare, t('محادثة مباشرة'), t('تابع العمل مع الشركة في مكان واحد.')],
-  [ShieldCheck, t('حسابات وفرص مراجَعة'), t('نراجع الحسابات والفرص للحفاظ على الجودة.')],
+  [ShieldCheck, t('فرص وحسابات موثوقة'), t('نراجع الحسابات والفرص حتى تطمئن.')],
 ];
 const steps = [
-  [UserPlus, t('أنشئ حسابك'), t('كمبدع أو كشركة، أو عبر Google.')],
+  [UserPlus, t('أنشئ حسابك'), t('مبدع أو صاحب عمل، بالإيميل أو Google أو LinkedIn.')],
   [Send, t('قدّم أو انشر'), t('قدّم بمشروعين من أعمالك، أو انشر فرصتك.')],
   [Handshake, t('اعمل واكسب'), t('تحادثا، سلّم العمل، واستلم المبلغ مع تقييم.')],
 ];
@@ -36,12 +36,12 @@ export default function Welcome() {
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1fr_400px] lg:items-start">
         <div className="min-w-0">
-          <span className="chip chip-g mb-4"><MapPin size={13} />{t('منصة عراقية وعربية للطلاب والخريجين')}</span>
+          <span className="chip chip-g mb-4"><MapPin size={13} />{t('منصة عراقية للمبتدئين والمبدعين')}</span>
           <h1 className="max-w-2xl text-3xl font-bold leading-snug sm:text-5xl" style={{ textWrap: 'balance' }}>
-            {t('مهاراتك تفتح لك أول فرصة.. بلا شرط سنوات الخبرة')}
+            {t('مبتدئ أو مبدع؟ ابدأ شغلك من هنا')}
           </h1>
           <p className="mt-4 max-w-xl text-lg text-mute">
-            {t('أوتاد تجمع الطلاب والخريجين مع الشركات في مكان واحد: وظائف للمبتدئين، ومشاريع صغيرة بمبالغ واضحة.')}
+            {t('أوتاد تربطك بالشركات والمطاعم وأصحاب الأعمال: وظائف ومشاريع صغيرة، والمبلغ مكتوب من البداية، ولا تحتاج خبرة سابقة.')}
           </p>
 
           <div className="mt-12">
@@ -76,8 +76,8 @@ export default function Welcome() {
           </section>
 
           <section className="mt-12 grid gap-4 sm:grid-cols-2">
-            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للطلاب والخريجين')}</h3><p className="mt-1 text-sm text-mute">{t('ملف يثبت مهاراتك، ووظائف ومشاريع مناسبة للمبتدئين.')}</p></div>
-            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('انشر فرصتك، وراجع أعمال المتقدمين بدل سنوات الخبرة.')}</p></div>
+            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للمبتدئين والمبدعين')}</h3><p className="mt-1 text-sm text-mute">{t('أنشئ ملفاً يُظهر مهارتك، وابدأ بوظائف ومشاريع تناسب المبتدئين.')}</p></div>
+            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات والمطاعم وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('انشر وظيفة أو مشروعاً صغيراً، وراجع أعمال المتقدمين، واختر الأنسب.')}</p></div>
           </section>
         </div>
 
