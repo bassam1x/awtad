@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* نظام التصميم: «زجاج منظّم». الخطوط: Kufam للعناوين وVazirmatn للنص وBricolage Grotesque للاتيني.
+/* نظام التصميم: «زجاج منظّم». الخط: Zain للعربي والكوردي وOutfit للاتيني.
    كل الأسطح زجاج مغبّش بحافة رفيعة لامعة وظل عميق ناعم؛ لون واحد رئيسي للأفعال؛ وأيقونات في مربعات زجاجية
    بنظام ألوان محدود ومقصود (6 درجات تنسجم مع الثيم) وحجم وسماكة موحّدة. الحركات هادئة، والجهاز الضعيف يحصل
    تلقائياً على وضع خفيف (data-fx='lite') بلا تغبيش ثقيل. */
@@ -39,8 +39,8 @@
 :root[data-theme='dark'][data-accent='sunset'] { --brand: 251 146 60; --soft: 60 34 14; --a1: 200 90 20; --a2: 190 50 100; --a3: 200 150 20; }
 
 html, body, #root { height: 100%; }
-body { @apply bg-app text-ink font-sans antialiased; font-size: 15px; line-height: 1.7; accent-color: rgb(var(--brand)); caret-color: rgb(var(--brand)); font-variant-numeric: tabular-nums; }
-h1, .display { font-family: 'Bricolage Grotesque', Kufam, Vazirmatn, system-ui, sans-serif; letter-spacing: 0; }
+body { @apply bg-app text-ink font-sans antialiased; font-size: 16px; line-height: 1.7; accent-color: rgb(var(--brand)); caret-color: rgb(var(--brand)); font-variant-numeric: tabular-nums; }
+h1, .display { font-family: Outfit, Zain, system-ui, sans-serif; font-weight: 800; letter-spacing: 0; }
 h2, h3 { letter-spacing: 0; }
 ::selection { background: rgb(var(--brand) / .22); }
 :focus-visible { outline: 2px solid rgb(var(--brand)); outline-offset: 2px; border-radius: 6px; }
