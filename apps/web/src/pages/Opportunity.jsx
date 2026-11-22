@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Briefcase, Laptop, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel, MapLinks } from '../ui.jsx';
+import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, SuitableChip, fmt , curLabel, MapLinks } from '../ui.jsx';
 
 function Row({ icon: I, label, value }) {
   return (
@@ -42,7 +42,7 @@ export default function Opportunity() {
             </div>
           </div>
           <div className="mb-4 flex flex-wrap gap-2">
-            <span className="chip chip-g"><Sprout size={14} />{t('مناسب للخريجين الجدد والطلاب')}</span>
+            <SuitableChip value={p.suitable_for} size={14} />
             {p.status === 'closed' && <span className="chip chip-r">{t('مغلق')}</span>}
           </div>
           <p className="mb-5"><Tr>{p.description}</Tr></p>

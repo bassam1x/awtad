@@ -36,7 +36,7 @@ export const POSTING_SQL = `SELECT p.*, u.name AS company_name, u.avatar AS comp
 export const postingOut = (r) => ({
   id: r.id, kind: r.kind, title: r.title, description: r.description, spec: r.spec, pay: r.pay, cur: r.cur,
   hours: r.hours, schedule: r.schedule, shift: r.shift, type: r.type, days: r.days, status: r.status,
-  reqs: JSON.parse(r.reqs || '[]'), created_at: r.created_at,
+  reqs: JSON.parse(r.reqs || '[]'), suitable_for: r.suitable_for || '', created_at: r.created_at,
   address: r.address || r.caddress || '', map_url: r.map_url || r.cmap || '',
   company: { id: r.company_id, name: r.company_name, avatar: r.company_avatar, city: r.city, sector: r.sector },
 });

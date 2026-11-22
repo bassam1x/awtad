@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { lang, locale, t } from './i18n/index.js';
 import { prefetch } from './context.jsx';
 import { routeIcon } from './routeIcons.js';
-import { tr, useTrVersion } from './translate.jsx';
+import { Tr, tr, useTrVersion } from './translate.jsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronLeft, Map as MapIcon, Navigation, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle } from './icons.jsx';
+import { ChevronLeft, Map as MapIcon, Navigation, Star, X, Upload, Crop, Clock, CheckCircle2, XCircle, Loader2, Inbox, AlertCircle, Sprout } from './icons.jsx';
 import ImageEditor from './ImageEditor.jsx';
 import { mapKind, mapLinks } from './maps.js';
 
@@ -13,6 +13,14 @@ export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 export const curLabel = (c) => ({ IQD: t('د.ع'), USD: t('دولار') }[c] ?? t(c));
 export const CURRENCIES = [['IQD', 'دينار عراقي (IQD)'], ['USD', 'دولار أمريكي (USD)']];
 export const SPECS = ['برمجة', 'تصميم', 'هندسة', 'تسويق ومحتوى', 'مبيعات وكاشير', 'مطاعم وكافيهات', 'خدمة عملاء', 'محاسبة وإدارة', 'توصيل ونقل', 'تعليم وتدريب', 'أخرى'];
+/** مقترحات حقل «مناسب لـ» (اختياري، ويمكن كتابة أي نص آخر) */
+export const SUITABLE = ['مناسب للطلاب', 'مناسب للخريجين الجدد', 'مناسب للخريجين الجدد والطلاب', 'مناسب للمبتدئين', 'لا يشترط خبرة', 'يفضّل من لديه خبرة'];
+/** شارة «مناسب لـ»: النص المقترح يُترجم من القاموس، وما كتبه صاحب العمل بنفسه يمرّ عبر ترجمة المحتوى. لا شيء إن كان فارغاً. */
+export function SuitableChip({ value, size = 13 }) {
+  if (!value) return null;
+  const k = t(value);
+  return <span className="chip chip-g"><Sprout size={size} />{k !== value ? k : <Tr>{value}</Tr>}</span>;
+}
 export const JOB_TYPES = ['دوام كامل', 'دوام جزئي', 'عن بعد'];
 export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, Empty, ErrorBox, Field, JOB_TYPES, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';
+import { Avatar, Banner, Empty, ErrorBox, Field, JOB_TYPES, SuitableChip, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 function PostingCard({ p }) {
@@ -18,7 +18,7 @@ function PostingCard({ p }) {
       <div className="money text-lg">{fmt(p.pay)} {curLabel(p.cur)}<span className="text-sm font-medium text-mute">{p.kind === 'job' ? t(' / شهرياً') : t(' / للمشروع')}</span></div>
       <div className="flex flex-wrap gap-1.5"><span className="chip chip-b">{t(p.spec)}</span>{postingChips(p).map((c) => <span key={c} className="chip">{c}</span>)}</div>
       <div className="mt-auto flex items-center justify-between pt-1">
-        {p.my_status ? <StatusChip status={p.my_status} /> : <span className="chip chip-g"><Sprout size={13} />{t('مناسب للخريجين الجدد')}</span>}
+        {p.my_status ? <StatusChip status={p.my_status} /> : p.suitable_for ? <SuitableChip value={p.suitable_for} /> : <span />}
         <Link to={`/app/opportunity/${p.id}`} className="btn btn-p">{t('التفاصيل')}</Link>
       </div>
     </div>

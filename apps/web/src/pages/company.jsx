@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Briefcase, DotsThree, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
+import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, SUITABLE, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 /* ---------- Dashboard ---------- */
@@ -160,10 +160,10 @@ export function PostingForm() {
   const ex = id ? loaded : null; // لا نعيد استخدام بيانات منشور سابق عند فتح نموذج جديد
   const kind = ex ? ex.kind : sp.get('kind') === 'project' ? 'project' : 'job';
   const isJob = kind === 'job';
-  const [f, setF] = useState({ title: '', spec: 'برمجة', pay: '', cur: 'IQD', hours: 6, schedule: '', shift: 'صباحي', type: 'دوام جزئي', address: '', map_url: '', reqs: '', description: '', days: 7 });
+  const [f, setF] = useState({ title: '', spec: 'برمجة', pay: '', cur: 'IQD', hours: 6, schedule: '', shift: 'صباحي', type: 'دوام جزئي', address: '', map_url: '', reqs: '', description: '', days: 7, suitable_for: '' });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (ex) setF({ title: ex.title, spec: ex.spec, pay: ex.pay, cur: ex.cur, hours: ex.hours || 6, schedule: ex.schedule || '', shift: ex.shift || 'صباحي', type: ex.type || 'دوام جزئي', address: ex.address || '', map_url: ex.map_url || '', reqs: ex.reqs.join(', '), description: ex.description, days: ex.days || 7 });
+    if (ex) setF({ title: ex.title, spec: ex.spec, pay: ex.pay, cur: ex.cur, hours: ex.hours || 6, schedule: ex.schedule || '', shift: ex.shift || 'صباحي', type: ex.type || 'دوام جزئي', address: ex.address || '', map_url: ex.map_url || '', reqs: ex.reqs.join(', '), description: ex.description, days: ex.days || 7, suitable_for: ex.suitable_for || '' });
   }, [ex]);  const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const submit = async (e) => {
     e.preventDefault(); setBusy(true);
@@ -208,6 +208,12 @@ export function PostingForm() {
         )}
         <Field label={t('المتطلبات: مهارات وأدوات فقط')} hint={t('افصل بينها بفاصلة')}><input id="np-reqs" className="inp" value={f.reqs} onChange={(e) => set('reqs', e.target.value)} /></Field>
         <Field label={t('الوصف')}><textarea id="np-desc" rows="3" className="inp" value={f.description} onChange={(e) => set('description', e.target.value)} /></Field>
+        <Field label={t('مناسب لـ (اختياري)')} hint={t('يظهر كشارة على بطاقة الفرصة. اختر من المقترحات أو اكتب ما تشاء، أو اتركه فارغاً.')}>
+          <input id="np-suit" className="inp" maxLength={80} value={f.suitable_for} onChange={(e) => set('suitable_for', e.target.value)} placeholder={t('مثلاً: مناسب للطلاب')} />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {SUITABLE.map((s) => <button type="button" key={s} aria-pressed={f.suitable_for === s} className={`chip ${f.suitable_for === s ? 'chip-g' : ''}`} onClick={() => set('suitable_for', f.suitable_for === s ? '' : s)}>{t(s)}</button>)}
+          </div>
+        </Field>
         <div className="flex gap-2"><button className="btn btn-p" disabled={busy}><Send size={16} />{id ? t('حفظ') : t('نشر')}</button><Link to="/app/my-postings" className="btn">{t('إلغاء')}</Link></div>
       </form>
     </div>

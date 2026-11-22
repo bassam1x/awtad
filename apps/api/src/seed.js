@@ -93,7 +93,7 @@ export async function seedDemo() {
       [['اختبار تطبيق توصيل', 4, 'تقارير أخطاء دقيقة.', 'نبراس للحلول التقنية', 260000]], [['نماذج حالات اختبار', 'https://example.com']]);
 
     const job = async (c, title, spec, pay, cur, hours, schedule, shift, type, reqs, d) =>
-      Number((await run('INSERT INTO postings(company_id,kind,title,description,spec,pay,cur,hours,schedule,shift,type,reqs) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', c, 'job', title, d, spec, pay, cur, hours, schedule, shift, type, JSON.stringify(reqs))).lastInsertRowid);
+      Number((await run('INSERT INTO postings(company_id,kind,title,description,spec,pay,cur,hours,schedule,shift,type,reqs,suitable_for) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)', c, 'job', title, d, spec, pay, cur, hours, schedule, shift, type, JSON.stringify(reqs), 'مناسب للخريجين الجدد')).lastInsertRowid);
     const proj = async (c, title, spec, pay, cur, days, reqs, d) =>
       Number((await run('INSERT INTO postings(company_id,kind,title,description,spec,pay,cur,days,reqs) VALUES(?,?,?,?,?,?,?,?,?)', c, 'project', title, d, spec, pay, cur, days, JSON.stringify(reqs))).lastInsertRowid);
 

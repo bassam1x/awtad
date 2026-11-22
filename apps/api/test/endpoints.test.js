@@ -85,6 +85,12 @@ test('تخصصات الخدمات ونوع الدوام «عن بعد»: تُح�
   assert.equal(r.type, 'عن بعد'); assert.equal(r.spec, 'خدمة عملاء'); assert.ok(!r.address.includes('لا يُحفظ'), 'العنوان لا يُحفظ لوظيفة عن بعد'); assert.ok(!r.map_url.includes('x'), 'ولا رابط الموقع');
   const w = ok(await call('GET', `/api/postings/${rest.id}`, null, st)); assert.equal(w.spec, 'مطاعم وكافيهات'); assert.equal(w.address, 'الكرادة');
   const o = ok(await call('GET', `/api/postings/${odd.id}`, null, st)); assert.equal(o.spec, 'برمجة'); assert.equal(o.type, 'دوام جزئي');
+  assert.equal(o.suitable_for, '', 'الشارة اختيارية: فارغة إن لم يحددها صاحب العمل');
+  const sf = ok(await call('POST', '/api/postings', { kind: 'job', title: 'للطلاب', pay: 400000, suitable_for: 'مناسب للطلاب' }, co));
+  assert.equal(ok(await call('GET', `/api/postings/${sf.id}`, null, st)).suitable_for, 'مناسب للطلاب');
+  ok(await call('PUT', `/api/postings/${sf.id}`, { title: 'للطلاب', pay: 400000, suitable_for: 'نص حر كتبه صاحب العمل' }, co));
+  assert.equal(ok(await call('GET', `/api/postings/${sf.id}`, null, st)).suitable_for, 'نص حر كتبه صاحب العمل');
+  assert.ok(ok(await call('GET', '/api/postings?kind=job', null, st)).some((j) => j.suitable_for === 'مناسب للخريجين الجدد'), 'الفرص التجريبية تحتفظ بشارتها');
   assert.ok(ok(await call('GET', '/api/postings?type=' + encodeURIComponent('عن بعد'), null, st)).some((j) => j.id === remote.id));
   assert.ok(ok(await call('GET', '/api/postings?spec=' + encodeURIComponent('مطاعم وكافيهات'), null, st)).every((j) => j.spec === 'مطاعم وكافيهات'));
 });

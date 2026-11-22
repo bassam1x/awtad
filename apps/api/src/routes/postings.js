@@ -41,7 +41,7 @@ function readPosting(b, kind, fallbackSpec = 'برمجة') {
     title, str(b.description, 1500), SPECS.includes(b.spec) ? b.spec : fallbackSpec, pay, b.cur === 'USD' ? 'USD' : 'IQD',
     job ? num(b.hours) || 6 : null, job ? str(b.schedule, 120) || 'يُحدد لاحقاً' : null,
     job ? (b.shift === 'مسائي' ? 'مسائي' : 'صباحي') : null, job ? (JOB_TYPES.includes(b.type) ? b.type : 'دوام جزئي') : null,
-    job ? null : num(b.days) || 7, remote ? '' : str(b.address, 250), remote ? '' : safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)),
+    job ? null : num(b.days) || 7, remote ? '' : str(b.address, 250), remote ? '' : safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)), str(b.suitable_for, 80),
   ];
 }
 
@@ -50,7 +50,7 @@ r.post('/postings', role('company'), wrap(async (req, res) => {
   const kind = b.kind === 'project' ? 'project' : 'job';
   const v = readPosting(b, kind);
   if (!v) return bad(res, 'أكمل العنوان والمبلغ');
-  const info = await run(`INSERT INTO postings(company_id,kind,title,description,spec,pay,cur,hours,schedule,shift,type,days,address,map_url,reqs) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, req.user.id, kind, ...v);
+  const info = await run(`INSERT INTO postings(company_id,kind,title,description,spec,pay,cur,hours,schedule,shift,type,days,address,map_url,reqs,suitable_for) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, req.user.id, kind, ...v);
   res.json({ id: Number(info.lastInsertRowid) });
 }));
 
@@ -59,7 +59,7 @@ r.put('/postings/:id', role('company'), wrap(async (req, res) => {
   if (!p) return bad(res, 'غير مصرّح', 403);
   const v = readPosting(req.body || {}, p.kind, p.spec);
   if (!v) return bad(res, 'أكمل العنوان والمبلغ');
-  await run(`UPDATE postings SET title=?,description=?,spec=?,pay=?,cur=?,hours=?,schedule=?,shift=?,type=?,days=?,address=?,map_url=?,reqs=? WHERE id=?`, ...v, p.id);
+  await run(`UPDATE postings SET title=?,description=?,spec=?,pay=?,cur=?,hours=?,schedule=?,shift=?,type=?,days=?,address=?,map_url=?,reqs=?,suitable_for=? WHERE id=?`, ...v, p.id);
   res.json({ id: p.id });
 }));
 

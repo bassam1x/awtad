@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS postings(
   address TEXT NOT NULL DEFAULT '',
   map_url TEXT NOT NULL DEFAULT '',
   reqs TEXT NOT NULL DEFAULT '[]',
+  suitable_for TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'open',
   created_at TEXT NOT NULL DEFAULT ${NOW}
 );
@@ -130,6 +131,9 @@ CREATE INDEX IF NOT EXISTS idx_msg_app ON messages(application_id);
 export const MIGRATE = `
 ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin_id TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS users_linkedin_id_key ON users(linkedin_id);
+/* «مناسب لـ»: كان شارة ثابتة على كل فرصة. للقواعد القديمة تحتفظ الصفوف الموجودة بالشارة السابقة، وتبدأ الجديدة فارغة. */
+ALTER TABLE postings ADD COLUMN IF NOT EXISTS suitable_for TEXT NOT NULL DEFAULT 'مناسب للخريجين الجدد';
+ALTER TABLE postings ALTER COLUMN suitable_for SET DEFAULT '';
 UPDATE postings SET cur='IQD' WHERE cur='د.ع';
 UPDATE works SET cur='IQD' WHERE cur='د.ع';
 UPDATE wallet_tx SET cur='IQD' WHERE cur='د.ع';
