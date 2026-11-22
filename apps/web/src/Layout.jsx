@@ -87,12 +87,12 @@ export default function Layout() {
     <div className="min-h-full lg:flex">
       {busy && <div className="route-bar" aria-hidden="true" />}
       {/* زر القائمة على نفس جهة خروج القائمة: يمين في العربية/الكردية ويسار في الإنكليزية */}
-      <div className="sticky top-0 z-30 flex flex-row-reverse items-center justify-between border-b border-line bg-card px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-30 flex flex-row-reverse items-center justify-between border-b border-line bg-card/60 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Logo size={30} />
         <button className="btn" onClick={() => setOpen(true)} aria-label={t('القائمة')} data-tip={t('القائمة')}><Menu size={18} /></button>
       </div>
       {open && <div className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed inset-y-0 start-0 z-50 flex w-72 flex-col border-e border-line bg-card transition-transform lg:sticky lg:top-0 lg:h-screen lg:ltr:translate-x-0 lg:rtl:translate-x-0 ${open ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 start-0 z-50 flex w-72 flex-col border-e border-line bg-card/55 backdrop-blur-2xl transition-transform lg:sticky lg:top-0 lg:h-screen lg:ltr:translate-x-0 lg:rtl:translate-x-0 ${open ? 'translate-x-0' : 'ltr:-translate-x-full rtl:translate-x-full'}`}>
         <div className="flex items-center justify-between px-5 py-5">
           <Link to="/app"><Logo size={36} /></Link>
           <button className="btn btn-sm lg:hidden" onClick={() => setOpen(false)} aria-label={t('إغلاق')} data-tip={t('إغلاق')}><X size={16} /></button>

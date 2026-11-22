@@ -212,7 +212,7 @@ export function Modal({ title, onClose, children, wide }) {
     return () => document.removeEventListener('keydown', f);
   }, [onClose]);
   return (
-    <div className="modal-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6" onClick={onClose}>
+    <div className="modal-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/55 p-3 backdrop-blur-sm sm:p-6" onClick={onClose}>
       <div role="dialog" aria-modal="true" className={`card modal-in w-full p-5 ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h3 className="text-lg font-bold">{title}</h3>
@@ -266,7 +266,7 @@ export const postingChips = (p) => (p.kind === 'job' ? [t(p.type), t(p.shift), t
 /* ---------- dashboard pieces ---------- */
 export function Banner({ title, sub, children }) {
   return (
-    <div className="banner-anim mb-6 p-6 text-white sm:p-8">
+    <div className="banner-anim mb-6 rounded-2xl p-6 text-white shadow-card sm:p-8">
       <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
       {sub && <p className="mt-1 max-w-xl text-white/85">{sub}</p>}
       {children && <div className="mt-4 flex flex-wrap gap-2">{children}</div>}

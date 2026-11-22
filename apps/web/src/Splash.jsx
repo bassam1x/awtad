@@ -59,6 +59,7 @@ export default function Splash() {
       <div className="splash-glow" aria-hidden="true" />
       <div className="splash-core">
         <div className="splash-mark" aria-hidden="true">
+          <span className="splash-ring" /><span className="splash-ring r2" />
           <svg width="108" height="166" viewBox="0 0 34 52" style={{ overflow: 'visible' }}>
             <rect className="sp-bar b1" x="0" y="36" width="8" height="14" rx="4" />
             <rect className="sp-bar b2" x="13" y="24" width="8" height="26" rx="4" />

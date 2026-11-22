@@ -53,7 +53,7 @@ export default function Opportunity() {
           {(p.map_url || p.address) && (
             <>
               <MapLinks url={p.map_url} address={p.address} full />
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-goodsoft p-4">
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">
                 <span className="gicon"><MapPin size={20} /></span>
                 <div className="min-w-0"><div className="font-semibold"><Tr>{p.company.name}</Tr></div><div className="text-sm text-mute"><Tr>{p.address}</Tr></div></div>
               </div>
