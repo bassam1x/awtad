@@ -630,6 +630,7 @@ export default {
   "الأحد – الخميس، 4 م إلى 8 م": "Sunday – Thursday, 4 PM to 8 PM",
   "لغة إنجليزية, صبر": "English, patience",
   "تدريس مجموعات صغيرة من الطلاب وتحضير الدروس والتمارين.": "Teach small groups of students and prepare lessons and exercises.",
+  "المزيد من القوالب": "More templates",
   "أوتاد": "Awtad",
   "أوتاد تربط الطلاب والخريجين الجدد والمبرمجين والمهندسين بالشركات وأصحاب الأعمال عبر مسارين: التوظيف، والمشاريع التعاونية.": "Awtad connects students, new graduates, developers and engineers with companies and business owners through two tracks: hiring and collaborative projects.",
   "موقع": "Website",

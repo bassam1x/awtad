@@ -1,8 +1,8 @@
 import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from '../icons.jsx';
+import { Briefcase, DotsThree, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
@@ -119,6 +119,38 @@ const JOB_TEMPLATES = [
   { k: t('محاسب'), title: t('محاسب مبتدئ'), spec: 'محاسبة وإدارة', pay: 900000, hours: 7, shift: 'صباحي', type: 'دوام كامل', schedule: t('السبت – الخميس، 9 ص إلى 4 م'), reqs: t('Excel, محاسبة'), description: t('تسجيل القيود اليومية وإعداد كشوف بسيطة ومتابعة الفواتير.') },
   { k: t('مدرّس'), title: t('مدرّس لغة إنجليزية'), spec: 'تعليم وتدريب', pay: 500000, hours: 4, shift: 'مسائي', type: 'دوام جزئي', schedule: t('الأحد – الخميس، 4 م إلى 8 م'), reqs: t('لغة إنجليزية, صبر'), description: t('تدريس مجموعات صغيرة من الطلاب وتحضير الدروس والتمارين.') },
 ].map((x) => ({ cur: 'IQD', ...x }));
+/** قوالب جاهزة: أول 4 ظاهرة، والباقي في قائمة (⋯) حتى لا يزدحم النموذج. */
+function TemplatePicker({ items, onPick, visible = 4 }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const away = (e) => { if (box.current && !box.current.contains(e.target)) setOpen(false); };
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', away); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
+  }, [open]);
+  const shown = items.slice(0, visible), rest = items.slice(visible);
+  const pick = (tp) => { const { k, ...vals } = tp; onPick(vals); setOpen(false); };
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {shown.map((tp) => <button type="button" key={tp.k} className="btn" onClick={() => pick(tp)}><Zap size={14} />{tp.k}</button>)}
+      {rest.length > 0 && (
+        <div className="relative" ref={box}>
+          <button type="button" className="btn" aria-haspopup="menu" aria-expanded={open} aria-label={t('المزيد من القوالب')} data-tip={t('المزيد من القوالب')} onClick={() => setOpen((o) => !o)}>
+            <DotsThree size={20} />
+            <span className="text-xs text-mute">{rest.length}</span>
+          </button>
+          {open && (
+            <div role="menu" className="more-menu">
+              {rest.map((tp) => <button type="button" role="menuitem" key={tp.k} className="switcher-item" onClick={() => pick(tp)}><Zap size={14} className="text-mute" /><span className="truncate text-sm font-semibold">{tp.k}</span></button>)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 export function PostingForm() {
   const { user } = useAuth();
   const toast = useToast();
@@ -146,7 +178,7 @@ export function PostingForm() {
         {!id && (
           <div className="mb-4">
             <div className="lbl">{t('قوالب جاهزة بضغطة')}</div>
-            <div className="flex flex-wrap gap-2">{(isJob ? JOB_TEMPLATES : PROJECT_TEMPLATES).map(({ k, ...tp }) => <button type="button" key={k} className="btn" onClick={() => setF((x) => ({ ...x, ...tp }))}><Zap size={14} />{k}</button>)}</div>
+            <TemplatePicker items={isJob ? JOB_TEMPLATES : PROJECT_TEMPLATES} onPick={(vals) => setF((x) => ({ ...x, ...vals }))} />
           </div>
         )}
         <Field label={isJob ? t('المسمى الوظيفي') : t('عنوان المشروع')}><input id="np-title" className="inp" value={f.title} onChange={(e) => set('title', e.target.value)} required /></Field>
