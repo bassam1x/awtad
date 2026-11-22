@@ -1,9 +1,9 @@
-import { t } from '../i18n/index.js';
+import { t, lang } from '../i18n/index.js';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Save, KeyRound, Trash2, Link2 } from '../icons.jsx';
 import { api, setToken } from '../api.js';
-import { useAuth, useToast, useTheme } from '../context.jsx';
+import { useAuth, useFetch, useToast, useTheme } from '../context.jsx';
 import { AvatarUpload, Field, MapKindHint, PageHeader, SPECS } from '../ui.jsx';
 
 export default function Profile() {
@@ -34,6 +34,15 @@ export default function Profile() {
   const changePw = async (e) => {
     e.preventDefault();
     try { const r = await api.put('/me/password', pw); if (r.token) setToken(r.token); setPw({ current: '', next: '' }); toast(t('تم تحديث كلمة المرور')); } catch (err) { toast(err.message, 'err'); }
+  };
+  /** نسيت كلمة المرور الحالية: نرسل رابط إعادة التعيين لبريد الحساب نفسه (يتطلب أن يكون البريد مفعّلاً في الخادم). */
+  const { data: cfg } = useFetch('/config');
+  const [sending, setSending] = useState(false);
+  const canForgot = !!user.has_password && !!cfg?.mailEnabled && !String(user.email).endsWith('@demo.iq');
+  const forgot = async () => {
+    setSending(true);
+    try { await api.post('/auth/forgot', { email: user.email, lang }); toast(t('أرسلنا رابط إعادة التعيين إلى {email}. تفقد بريدك وصندوق الرسائل غير المرغوبة.', { email: user.email })); }
+    catch (err) { toast(err.message, 'err'); } finally { setSending(false); }
   };
   const del = async () => { try { await api.del('/me'); logout(); nav('/'); } catch (err) { toast(err.message, 'err'); } };
 
@@ -83,6 +92,14 @@ export default function Profile() {
             {!!user.has_password && <Field label={t('كلمة المرور الحالية')}><input id="pw-cur" type="password" dir="ltr" className="inp text-left" value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} required /></Field>}
             <Field label={t('كلمة المرور الجديدة')}><input id="pw-new" type="password" dir="ltr" className="inp text-left" minLength={8} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} required /></Field>
             <button className="btn w-full">{t('تحديث')}</button>
+            {canForgot && (
+              <div className="mt-4 border-t border-line pt-3 text-sm">
+                <button type="button" className="font-semibold text-brand hover:underline disabled:opacity-60" onClick={forgot} disabled={sending}>
+                  {sending ? t('جارٍ الإرسال…') : t('نسيت كلمة المرور الحالية؟')}
+                </button>
+                <p className="mt-1 text-mute">{t('نرسل رابطاً لاختيار كلمة جديدة إلى بريدك المسجّل. بعد التغيير تحتاج الدخول من جديد.')}</p>
+              </div>
+            )}
           </form>
 
           <div className="card p-5">
