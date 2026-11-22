@@ -14,7 +14,7 @@ const features = [
   [ShieldCheck, t('فرص وحسابات موثوقة'), t('نراجع الحسابات والفرص حتى تطمئن.')],
 ];
 const steps = [
-  [UserPlus, t('أنشئ حسابك'), t('مبدع أو صاحب عمل، بالإيميل أو Google أو LinkedIn.')],
+  [UserPlus, t('أنشئ حسابك'), t('مبدع أو طالب أو صاحب عمل، بالإيميل أو Google أو LinkedIn.')],
   [Send, t('قدّم أو انشر'), t('قدّم بمشروعين من أعمالك، أو انشر فرصتك.')],
   [Handshake, t('اعمل واكسب'), t('تحادثا، سلّم العمل، واستلم المبلغ مع تقييم.')],
 ];
@@ -36,12 +36,12 @@ export default function Welcome() {
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[1fr_400px] lg:items-start">
         <div className="min-w-0">
-          <span className="chip chip-g mb-4"><MapPin size={13} />{t('منصة عراقية للمبتدئين والمبدعين')}</span>
+          <span className="chip chip-g mb-4"><MapPin size={13} />{t('منصة عراقية للمبدعين والطلاب والشركات')}</span>
           <h1 className="max-w-2xl text-3xl font-bold leading-snug sm:text-5xl" style={{ textWrap: 'balance' }}>
-            {t('مبتدئ أو مبدع؟ ابدأ شغلك من هنا')}
+            {t('مبدع أو طالب أو شركة؟ ابدأ من هنا')}
           </h1>
           <p className="mt-4 max-w-xl text-lg text-mute">
-            {t('أوتاد تربطك بالشركات وسوق العمل: وظائف ومشاريع صغيرة، والمبلغ مكتوب من البداية، ولا تحتاج خبرة سابقة.')}
+            {t('أوتاد تجمع المبدعين والطلاب مع الشركات في مكان واحد: وظائف ومشاريع صغيرة، والمبلغ مكتوب من البداية، ولا تحتاج خبرة سابقة.')}
           </p>
 
           <div className="mt-12">
@@ -75,9 +75,10 @@ export default function Welcome() {
             </ol>
           </section>
 
-          <section className="mt-12 grid gap-4 sm:grid-cols-2">
-            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للمبتدئين والمبدعين')}</h3><p className="mt-1 text-sm text-mute">{t('أنشئ ملفاً يُظهر مهارتك، وابدأ بوظائف ومشاريع تناسب المبتدئين.')}</p></div>
-            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات والمطاعم وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('انشر وظيفة أو مشروعاً صغيراً، وراجع أعمال المتقدمين، واختر الأنسب.')}</p></div>
+          <section className="mt-12 grid gap-4 sm:grid-cols-3">
+            <div className="card bg-soft p-5"><h3 className="font-bold">{t('للمبدعين')}</h3><p className="mt-1 text-sm text-mute">{t('اعرض أعمالك في ملف واحد، وقدّم على وظائف ومشاريع تناسب مهارتك.')}</p></div>
+            <div className="card p-5"><h3 className="font-bold">{t('للطلاب والخريجين')}</h3><p className="mt-1 text-sm text-mute">{t('ابدأ بأول وظيفة أو مشروع بلا خبرة سابقة، وابنِ سجلّك بعمل حقيقي.')}</p></div>
+            <div className="card bg-goodsoft p-5"><h3 className="font-bold">{t('للشركات وأصحاب الأعمال')}</h3><p className="mt-1 text-sm text-mute">{t('شركة أو مطعم أو متجر؟ انشر وظيفة أو مشروعاً صغيراً، وراجع أعمال المتقدمين، واختر الأنسب.')}</p></div>
           </section>
         </div>
 
