@@ -89,12 +89,36 @@ export function MyPostings() {
 }
 
 /* ---------- New posting form (own page) ---------- */
-const TEMPLATES = [
+/* قوالب جاهزة بضغطة: تعبّئ النموذج ويعدّل صاحب العمل ما يشاء. المبالغ بالدينار العراقي، ومرجعها أسعار السوق للأعمال الصغيرة. */
+const PROJECT_TEMPLATES = [
   { k: t('منيو مطعم'), title: t('تصميم منيو رقمي'), spec: 'تصميم', pay: 150000, days: 5, reqs: 'Illustrator, Figma', description: t('منيو من 4 صفحات بألوان تناسب هوية المكان.') },
   { k: t('شعار'), title: t('تصميم شعار'), spec: 'تصميم', pay: 100000, days: 4, reqs: 'Illustrator', description: t('ثلاثة مقترحات أولية وتعديلان مجانيان.') },
   { k: t('موقع'), title: t('موقع تعريفي'), spec: 'برمجة', pay: 400000, days: 7, reqs: 'HTML/CSS, JavaScript', description: t('موقع من 3 صفحات متجاوب مع الجوال.') },
   { k: t('نظام كاشير'), title: t('نظام كاشير بسيط'), spec: 'برمجة', pay: 600000, days: 14, reqs: t('SQL, واجهة ويب'), description: t('تسجيل الطلبات والفواتير وتقرير يومي.') },
-];
+  { k: t('منشورات سوشال'), title: t('تصميم 10 منشورات سوشال ميديا'), spec: 'تصميم', pay: 120000, days: 5, reqs: 'Photoshop, Canva', description: t('عشرة تصاميم بقياسات إنستغرام وفيسبوك بهوية موحّدة.') },
+  { k: t('فلاير'), title: t('تصميم فلاير وبروشور'), spec: 'تصميم', pay: 80000, days: 3, reqs: 'Photoshop, Illustrator', description: t('تصميم جاهز للطباعة بقياس A5 وجهين.') },
+  { k: t('عرض تقديمي'), title: t('تصميم عرض تقديمي'), spec: 'تصميم', pay: 90000, days: 3, reqs: 'PowerPoint, Canva', description: t('عرض من 15 شريحة بتصميم احترافي.') },
+  { k: t('تصوير منتجات'), title: t('تصوير منتجات للمتجر'), spec: 'تسويق ومحتوى', pay: 150000, days: 4, reqs: t('تصوير, تعديل صور'), description: t('تصوير 20 منتجاً بخلفية نظيفة وتعديل الألوان.') },
+  { k: t('مونتاج فيديو'), title: t('مونتاج فيديو ترويجي'), spec: 'تسويق ومحتوى', pay: 200000, days: 5, reqs: 'Premiere, CapCut', description: t('فيديو من 30 إلى 60 ثانية مع موسيقى وعناوين.') },
+  { k: t('كتابة محتوى'), title: t('كتابة محتوى لصفحات التواصل'), spec: 'تسويق ومحتوى', pay: 100000, days: 5, reqs: t('كتابة, تدقيق لغوي'), description: t('خمسة عشر منشوراً بلغة بسيطة تناسب جمهور المكان.') },
+  { k: t('إدارة صفحة'), title: t('إدارة صفحة إنستغرام لمدة شهر'), spec: 'تسويق ومحتوى', pay: 250000, days: 30, reqs: t('إدارة حسابات, Canva'), description: t('نشر منتظم والرد على الرسائل وتقرير أسبوعي.') },
+  { k: t('تطبيق جوال'), title: t('تطبيق جوال بسيط'), spec: 'برمجة', pay: 900000, days: 21, reqs: 'Flutter, Firebase', description: t('تطبيق من 4 شاشات يعمل على أندرويد وآيفون.') },
+  { k: t('متجر إلكتروني'), title: t('متجر إلكتروني صغير'), spec: 'برمجة', pay: 700000, days: 14, reqs: 'Shopify, HTML/CSS', description: t('عرض المنتجات وسلة الشراء وطلب عبر واتساب.') },
+  { k: t('مخطط هندسي'), title: t('رسم مخطط هندسي'), spec: 'هندسة', pay: 200000, days: 6, reqs: 'AutoCAD', description: t('رسم مخطط تنفيذي من الكروكي مع الأبعاد.') },
+  { k: t('ترجمة'), title: t('ترجمة مستند'), spec: 'أخرى', pay: 80000, days: 3, reqs: t('ترجمة, تدقيق'), description: t('ترجمة بين العربية والإنجليزية لعشر صفحات.') },
+  { k: t('إدخال بيانات'), title: t('إدخال وتنظيم بيانات'), spec: 'محاسبة وإدارة', pay: 70000, days: 3, reqs: 'Excel', description: t('نقل بيانات من ورق أو صور إلى جدول منظم.') },
+].map((x) => ({ cur: 'IQD', ...x }));
+const JOB_TEMPLATES = [
+  { k: t('ويتر'), title: t('ويتر / نادل'), spec: 'مطاعم وكافيهات', pay: 600000, hours: 8, shift: 'مسائي', type: 'دوام كامل', schedule: t('يومياً عدا الجمعة، 4 م إلى 12 ص'), reqs: t('خدمة الزبائن, نظافة'), description: t('استقبال الزبائن وأخذ الطلبات وتقديمها بسرعة وأدب.') },
+  { k: t('مساعد طباخ'), title: t('مساعد طباخ'), spec: 'مطاعم وكافيهات', pay: 650000, hours: 8, shift: 'صباحي', type: 'دوام كامل', schedule: t('يومياً عدا الجمعة، 12 ظ إلى 8 م'), reqs: t('نظافة, سرعة'), description: t('تجهيز المكونات وتنظيف المطبخ ومساعدة الطباخ الرئيسي.') },
+  { k: t('كاشير'), title: t('كاشير'), spec: 'مبيعات وكاشير', pay: 650000, hours: 8, shift: 'صباحي', type: 'دوام كامل', schedule: t('السبت – الخميس، 9 ص إلى 5 م'), reqs: t('دقة, حاسبة'), description: t('استلام المبالغ وإصدار الفواتير وإغلاق الصندوق آخر اليوم.') },
+  { k: t('مندوب مبيعات'), title: t('مندوب مبيعات'), spec: 'مبيعات وكاشير', pay: 700000, hours: 8, shift: 'صباحي', type: 'دوام كامل', schedule: t('السبت – الخميس، 10 ص إلى 6 م'), reqs: t('إقناع, تواصل'), description: t('زيارة المحلات وعرض المنتجات وتسجيل الطلبات.') },
+  { k: t('مندوب توصيل'), title: t('مندوب توصيل'), spec: 'توصيل ونقل', pay: 700000, hours: 8, shift: 'صباحي', type: 'دوام كامل', schedule: t('يومياً، 11 ص إلى 7 م'), reqs: t('دراجة نارية, معرفة بالمدينة'), description: t('توصيل الطلبات للزبائن في وقتها مع المحافظة على جودتها.') },
+  { k: t('خدمة عملاء'), title: t('موظف خدمة عملاء عن بعد'), spec: 'خدمة عملاء', pay: 600000, hours: 6, shift: 'مسائي', type: 'عن بعد', schedule: t('الأحد – الخميس، 3 م إلى 9 م'), reqs: t('مهارات تواصل, واتساب'), description: t('الرد على استفسارات الزبائن عبر الرسائل والمكالمات.') },
+  { k: t('سوشال ميديا'), title: t('مسؤول سوشال ميديا عن بعد'), spec: 'تسويق ومحتوى', pay: 650000, hours: 5, shift: 'صباحي', type: 'عن بعد', schedule: t('الأحد – الخميس، 10 ص إلى 3 م'), reqs: t('Canva, كتابة'), description: t('نشر المحتوى والرد على التعليقات وإعداد تقرير شهري.') },
+  { k: t('محاسب'), title: t('محاسب مبتدئ'), spec: 'محاسبة وإدارة', pay: 900000, hours: 7, shift: 'صباحي', type: 'دوام كامل', schedule: t('السبت – الخميس، 9 ص إلى 4 م'), reqs: t('Excel, محاسبة'), description: t('تسجيل القيود اليومية وإعداد كشوف بسيطة ومتابعة الفواتير.') },
+  { k: t('مدرّس'), title: t('مدرّس لغة إنجليزية'), spec: 'تعليم وتدريب', pay: 500000, hours: 4, shift: 'مسائي', type: 'دوام جزئي', schedule: t('الأحد – الخميس، 4 م إلى 8 م'), reqs: t('لغة إنجليزية, صبر'), description: t('تدريس مجموعات صغيرة من الطلاب وتحضير الدروس والتمارين.') },
+].map((x) => ({ cur: 'IQD', ...x }));
 export function PostingForm() {
   const { user } = useAuth();
   const toast = useToast();
@@ -119,10 +143,10 @@ export function PostingForm() {
     <div>
       <PageHeader title={id ? t('تعديل المنشور') : isJob ? t('وظيفة شاغرة جديدة') : t('مشروع / تعاون جديد')} sub={isJob ? t('كل التفاصيل واضحة للمتقدمين: الراتب والأوقات والموقع.') : t('حدّد المبلغ ومدة التسليم، ويُحوَّل المبلغ عند اعتمادك للتسليم.')} />
       <form onSubmit={submit} className="card max-w-3xl p-5">
-        {!isJob && !id && (
+        {!id && (
           <div className="mb-4">
             <div className="lbl">{t('قوالب جاهزة بضغطة')}</div>
-            <div className="flex flex-wrap gap-2">{TEMPLATES.map((tp) => <button type="button" key={tp.k} className="btn" onClick={() => setF((x) => ({ ...x, ...tp }))}><Zap size={14} />{tp.k}</button>)}</div>
+            <div className="flex flex-wrap gap-2">{(isJob ? JOB_TEMPLATES : PROJECT_TEMPLATES).map(({ k, ...tp }) => <button type="button" key={k} className="btn" onClick={() => setF((x) => ({ ...x, ...tp }))}><Zap size={14} />{k}</button>)}</div>
           </div>
         )}
         <Field label={isJob ? t('المسمى الوظيفي') : t('عنوان المشروع')}><input id="np-title" className="inp" value={f.title} onChange={(e) => set('title', e.target.value)} required /></Field>
