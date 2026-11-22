@@ -96,7 +96,6 @@ const PROJECT_TEMPLATES = [
   { k: t('موقع'), title: t('موقع تعريفي'), spec: 'برمجة', pay: 400000, days: 7, reqs: 'HTML/CSS, JavaScript', description: t('موقع من 3 صفحات متجاوب مع الجوال.') },
   { k: t('نظام كاشير'), title: t('نظام كاشير بسيط'), spec: 'برمجة', pay: 600000, days: 14, reqs: t('SQL, واجهة ويب'), description: t('تسجيل الطلبات والفواتير وتقرير يومي.') },
   { k: t('منشورات سوشال'), title: t('تصميم 10 منشورات سوشال ميديا'), spec: 'تصميم', pay: 120000, days: 5, reqs: 'Photoshop, Canva', description: t('عشرة تصاميم بقياسات إنستغرام وفيسبوك بهوية موحّدة.') },
-  { k: t('فلاير'), title: t('تصميم فلاير وبروشور'), spec: 'تصميم', pay: 80000, days: 3, reqs: 'Photoshop, Illustrator', description: t('تصميم جاهز للطباعة بقياس A5 وجهين.') },
   { k: t('عرض تقديمي'), title: t('تصميم عرض تقديمي'), spec: 'تصميم', pay: 90000, days: 3, reqs: 'PowerPoint, Canva', description: t('عرض من 15 شريحة بتصميم احترافي.') },
   { k: t('تصوير منتجات'), title: t('تصوير منتجات للمتجر'), spec: 'تسويق ومحتوى', pay: 150000, days: 4, reqs: t('تصوير, تعديل صور'), description: t('تصوير 20 منتجاً بخلفية نظيفة وتعديل الألوان.') },
   { k: t('مونتاج فيديو'), title: t('مونتاج فيديو ترويجي'), spec: 'تسويق ومحتوى', pay: 200000, days: 5, reqs: 'Premiere, CapCut', description: t('فيديو من 30 إلى 60 ثانية مع موسيقى وعناوين.') },
