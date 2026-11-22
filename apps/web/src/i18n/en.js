@@ -522,7 +522,7 @@ export default {
   "حفظ كلمة المرور": "Save password",
   "منصة عراقية للمبتدئين والمبدعين": "An Iraqi platform for beginners and creators",
   "مبتدئ أو مبدع؟ ابدأ شغلك من هنا": "Beginner or creator? Start your work here",
-  "أوتاد تربطك بالشركات والمطاعم وأصحاب الأعمال: وظائف ومشاريع صغيرة، والمبلغ مكتوب من البداية، ولا تحتاج خبرة سابقة.": "Awtad connects you with companies, restaurants and business owners: jobs and small projects, with the pay written up front, and no previous experience needed.",
+  "أوتاد تربطك بالشركات وسوق العمل: وظائف ومشاريع صغيرة، والمبلغ مكتوب من البداية، ولا تحتاج خبرة سابقة.": "Awtad connects you with companies and the job market: jobs and small projects, with the pay written up front, and no previous experience needed.",
   "بدون خبرة سابقة": "No previous experience",
   "المهم مهارتك وأعمالك، وليس سنوات الخبرة.": "What matters is your skills and your work, not years of experience.",
   "فرص وحسابات موثوقة": "Trusted opportunities and accounts",
