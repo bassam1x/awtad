@@ -2,39 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* نظام التصميم: «مطبوعة مسطّحة».
+/* نظام التصميم: أسطح مسطّحة فوق خلفية لونية حيّة.
    أسطح صلبة بلا زجاج ولا تغبيش ولا توهج ولا تدرجات؛ حدود واضحة، زوايا معتدلة، لون رئيسي واحد للأفعال،
    وأيقونات في مربعات ملوّنة مسطّحة بنظام ألوان محدود. الخط: Kufam للعناوين وVazirmatn للنص وBricolage Grotesque للاتيني. */
 :root {
-  --bg: 246 245 241; --card: 255 255 255; --line: 224 221 212; --ink: 27 28 31; --mute: 100 104 114;
+  --bg: 239 243 252; --card: 255 255 255; --line: 214 221 236; --ink: 15 23 42; --mute: 88 100 126;
   --brand: 30 64 175; --soft: 232 238 252;
   --good: 4 120 87; --goodsoft: 222 245 235; --warn: 161 98 7; --warnsoft: 252 243 214; --bad: 185 28 28; --badsoft: 253 232 232;
   --b1: 30 58 138; --b2: 22 78 99;                                /* لون البانر */
-  --shadow-c: 27 28 31;
+  --a1: 125 165 255; --a2: 95 205 195; --a3: 185 155 250; --aurora-a: .5;  /* هالات الخلفية */
+  --shadow-c: 30 41 82;
   /* درجات الأيقونات (ثابتة ومنسجمة) */
   --tn-teal: 13 135 125; --tn-violet: 109 40 217; --tn-amber: 180 83 9; --tn-slate: 71 85 105; --tn-rose: 190 24 93;
   --r-card: 14px; --r-ctl: 10px;
   color-scheme: light;
 }
 :root[data-theme='dark'] {
-  --bg: 15 16 19; --card: 24 25 29; --line: 43 45 52; --ink: 236 237 240; --mute: 146 150 160;
+  --bg: 8 12 22; --card: 24 33 54; --line: 46 58 86; --ink: 232 237 247; --mute: 148 161 187;
   --brand: 132 168 255; --soft: 31 38 58;
   --good: 74 222 160; --goodsoft: 14 46 38; --warn: 251 191 36; --warnsoft: 52 40 10; --bad: 248 113 113; --badsoft: 60 22 28;
-  --shadow-c: 0 0 0;
+  --a1: 59 100 215; --a2: 20 150 140; --a3: 120 90 215; --aurora-a: .62; --shadow-c: 0 0 0;
   --tn-teal: 45 212 191; --tn-violet: 178 155 252; --tn-amber: 251 191 36; --tn-slate: 160 174 196; --tn-rose: 251 130 170;
   color-scheme: dark;
 }
 /* ثيمات الألوان (من إعدادات الحساب) */
-:root[data-accent='emerald'] { --brand: 4 120 87; --soft: 220 243 232; --b1: 6 78 59; --b2: 19 78 74; }
-:root[data-theme='dark'][data-accent='emerald'] { --brand: 74 222 160; --soft: 12 46 36; }
-:root[data-accent='gold'] { --brand: 161 98 7; --soft: 250 240 212; --b1: 120 53 15; --b2: 146 84 9; }
-:root[data-theme='dark'][data-accent='gold'] { --brand: 251 191 36; --soft: 56 42 10; }
-:root[data-accent='royal'] { --brand: 91 33 182; --soft: 237 232 253; --b1: 76 29 149; --b2: 49 46 129; }
-:root[data-theme='dark'][data-accent='royal'] { --brand: 178 155 252; --soft: 36 28 72; }
-:root[data-accent='rose'] { --brand: 190 24 93; --soft: 252 228 236; --b1: 136 19 55; --b2: 159 18 57; }
-:root[data-theme='dark'][data-accent='rose'] { --brand: 251 130 160; --soft: 62 22 36; }
-:root[data-accent='sunset'] { --brand: 194 65 12; --soft: 254 236 218; --b1: 154 52 18; --b2: 124 45 18; }
-:root[data-theme='dark'][data-accent='sunset'] { --brand: 251 146 60; --soft: 60 34 14; }
+:root[data-accent='emerald'] { --brand: 4 120 87; --soft: 220 243 232; --a1: 110 210 170; --a2: 120 195 220; --a3: 190 230 140; --b1: 6 78 59; --b2: 19 78 74; }
+:root[data-theme='dark'][data-accent='emerald'] { --brand: 74 222 160; --soft: 12 46 36; --a1: 16 150 110; --a2: 8 120 150; --a3: 90 150 30; }
+:root[data-accent='gold'] { --brand: 161 98 7; --soft: 250 240 212; --a1: 245 200 110; --a2: 240 170 110; --a3: 250 225 150; --b1: 120 53 15; --b2: 146 84 9; }
+:root[data-theme='dark'][data-accent='gold'] { --brand: 251 191 36; --soft: 56 42 10; --a1: 200 140 20; --a2: 180 100 20; --a3: 200 170 40; }
+:root[data-accent='royal'] { --brand: 91 33 182; --soft: 237 232 253; --a1: 180 160 250; --a2: 140 150 245; --a3: 230 160 240; --b1: 76 29 149; --b2: 49 46 129; }
+:root[data-theme='dark'][data-accent='royal'] { --brand: 178 155 252; --soft: 36 28 72; --a1: 120 80 220; --a2: 80 90 220; --a3: 170 50 190; }
+:root[data-accent='rose'] { --brand: 190 24 93; --soft: 252 228 236; --a1: 250 150 175; --a2: 240 140 190; --a3: 250 185 135; --b1: 136 19 55; --b2: 159 18 57; }
+:root[data-theme='dark'][data-accent='rose'] { --brand: 251 130 160; --soft: 62 22 36; --a1: 200 40 80; --a2: 190 40 120; --a3: 210 100 40; }
+:root[data-accent='sunset'] { --brand: 194 65 12; --soft: 254 236 218; --a1: 250 175 120; --a2: 245 150 185; --a3: 250 210 110; --b1: 154 52 18; --b2: 124 45 18; }
+:root[data-theme='dark'][data-accent='sunset'] { --brand: 251 146 60; --soft: 60 34 14; --a1: 200 90 20; --a2: 190 50 100; --a3: 200 150 20; }
 
 html, body, #root { height: 100%; }
 body { @apply bg-app text-ink font-sans antialiased; font-size: 15px; line-height: 1.75; accent-color: rgb(var(--brand)); caret-color: rgb(var(--brand)); font-variant-numeric: tabular-nums; }
@@ -53,6 +54,17 @@ input:not([type='checkbox']):not([type='radio']):not([type='file']), textarea { 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: rgb(var(--mute) / .32); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
 ::-webkit-scrollbar-thumb:hover { background: rgb(var(--mute) / .5); background-clip: content-box; border: 3px solid transparent; }
+
+/* ---------- الخلفية: هالات لونية تنساب ببطء ---------- */
+body::before { content: ''; position: fixed; inset: -20%; z-index: -1; pointer-events: none; will-change: transform;
+  background:
+    radial-gradient(44% 44% at 14% 16%, rgb(var(--a1) / var(--aurora-a)), transparent 70%),
+    radial-gradient(40% 40% at 88% 26%, rgb(var(--a2) / calc(var(--aurora-a) * .85)), transparent 70%),
+    radial-gradient(46% 46% at 58% 96%, rgb(var(--a3) / calc(var(--aurora-a) * .8)), transparent 70%);
+  animation: drift 36s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+@keyframes drift { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+:root[data-fx='lite'] body::before { animation: none; }
 
 @layer components {
   /* ---------- البطاقات ---------- */
@@ -242,6 +254,12 @@ select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
 /* ---------- شاشة البداية ---------- */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; overflow: hidden; padding: 24px;
   background: rgb(var(--bg)); transition: opacity .55s ease, transform .55s ease, visibility 0s linear .55s; }
+.splash-glow { position: absolute; inset: -20%; pointer-events: none;
+  background:
+    radial-gradient(40% 40% at 50% 42%, rgb(var(--brand) / .22), transparent 70%),
+    radial-gradient(34% 34% at 18% 18%, rgb(var(--a1) / calc(var(--aurora-a) * .9)), transparent 70%),
+    radial-gradient(34% 34% at 84% 80%, rgb(var(--a2) / calc(var(--aurora-a) * .8)), transparent 70%);
+  animation: sp-glow 5s ease-in-out infinite alternate; }
 .splash-out { opacity: 0; transform: scale(1.035); visibility: hidden; pointer-events: none; }
 .splash-core { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: min(320px, 100%); }
 .splash-mark { position: relative; display: grid; place-items: center; width: 170px; height: 190px; }
@@ -257,6 +275,8 @@ select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
 .splash-msg { margin-top: 12px; font-size: .9rem; color: rgb(var(--mute)); max-width: 300px; }
 .splash-problem { max-width: 320px; animation: sp-fade .4s ease both; }
 .splash-pico { display: inline-grid; place-items: center; width: 46px; height: 46px; margin-bottom: 8px; border-radius: 14px; color: rgb(var(--warn)); background: rgb(var(--warn) / .14); }
+@keyframes sp-glow { from { transform: translate3d(-2%, -1%, 0) scale(1); } to { transform: translate3d(2%, 2%, 0) scale(1.06); } }
+:root[data-fx='lite'] .splash-glow { animation: none; }
 @keyframes sp-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes sp-drop { 0% { opacity: 0; transform: translateY(-34px) scale(.5); } 100% { opacity: 1; transform: none; } }
 @keyframes sp-up { to { opacity: 1; transform: none; } }
@@ -265,6 +285,7 @@ select option:checked { background-color: rgb(var(--soft)); font-weight: 700; }
 @keyframes sp-slide { 0% { inset-inline-start: -45%; } 100% { inset-inline-start: 105%; } }
 @media (prefers-reduced-motion: reduce) {
   .sp-bar { animation-duration: .01s; animation-delay: 0s !important; } .sp-dot, .splash-name, .splash-sub, .splash-status { animation-duration: .01s; animation-delay: 0s !important; }
+  .splash-glow { animation: none; }
   .splash-bar span { animation: none; inset-inline-start: 0; width: 100%; }
 }
 html:has(.splash:not(.splash-out)) { overflow: hidden; }

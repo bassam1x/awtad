@@ -56,6 +56,7 @@ export default function Splash() {
 
   return (
     <div className={`splash ${leaving ? 'splash-out' : ''}`} role="status" aria-live="polite" aria-busy={!done}>
+      <div className="splash-glow" aria-hidden="true" />
       <div className="splash-core">
         <div className="splash-mark" aria-hidden="true">
           <svg width="108" height="166" viewBox="0 0 34 52" style={{ overflow: 'visible' }}>
