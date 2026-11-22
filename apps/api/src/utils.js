@@ -21,6 +21,9 @@ export const safeUrl = (v, max = 600) => {
 export const safeAvatar = (v) =>
   (typeof v === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(v) && v.length <= 700000 ? v : null);
 
-export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
+/** التخصصات: تغطي المهن التقنية والخدمية (مطاعم، كاشير، توصيل…) مع «أخرى» لما لا يناسب أياً منها. */
+export const SPECS = ['برمجة', 'تصميم', 'هندسة', 'تسويق ومحتوى', 'مبيعات وكاشير', 'مطاعم وكافيهات', 'خدمة عملاء', 'محاسبة وإدارة', 'توصيل ونقل', 'تعليم وتدريب', 'أخرى'];
+/** أنواع الدوام؛ «عن بعد» لا يحتاج عنواناً ولا موقعاً. */
+export const JOB_TYPES = ['دوام كامل', 'دوام جزئي', 'عن بعد'];
 export const parseList = (v, max = 15, len = 40) =>
   (Array.isArray(v) ? v : String(v || '').split(/[,،]/)).map((x) => str(x, len)).filter(Boolean).slice(0, max);

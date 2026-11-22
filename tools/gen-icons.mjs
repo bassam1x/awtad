@@ -5,7 +5,7 @@ const ROOT = REPO + 'apps/web/';
 const MAP = `AlertCircle:WarningCircle AlertTriangle:Warning ArrowRight:ArrowRight Award:Medal BadgeCheck:SealCheck BadgeDollarSign:Coins Ban:Prohibit Briefcase:Briefcase Building2:Buildings
 CalendarDays:CalendarBlank Check:Check CheckCircle2:CheckCircle CheckSquare:CheckSquare ChevronDown:CaretDown ChevronLeft:CaretLeft ChevronsUpDown:CaretUpDown ClipboardCheck:ClipboardText
 ClipboardList:ClipboardText Clock:Clock Crop:Crop ExternalLink:ArrowSquareOut FileText:FileText FlaskConical:Flask FolderKanban:Kanban FolderPlus:FolderPlus GraduationCap:GraduationCap
-Handshake:Handshake Inbox:Tray KeyRound:Key Languages:Translate Layers:Stack LayoutDashboard:SquaresFour Link2:LinkSimple ListChecks:ListChecks Loader2:CircleNotch LogIn:SignIn LogOut:SignOut
+Handshake:Handshake Inbox:Tray KeyRound:Key Languages:Translate Laptop:Laptop Layers:Stack LayoutDashboard:SquaresFour Link2:LinkSimple ListChecks:ListChecks Loader2:CircleNotch LogIn:SignIn LogOut:SignOut
 Mail:EnvelopeSimple Map:MapTrifold MapPin:MapPin Menu:List MessagesSquare:ChatsCircle Moon:Moon Navigation:NavigationArrow PackageCheck:Package Paperclip:Paperclip Pencil:PencilSimple
 Plus:Plus PlusCircle:PlusCircle Receipt:Receipt RefreshCw:ArrowsClockwise RotateCcw:ArrowCounterClockwise RotateCw:ArrowClockwise Save:FloppyDisk Search:MagnifyingGlass Send:PaperPlaneTilt
 ServerCrash:HardDrives Settings:GearSix ShieldCheck:ShieldCheck SlidersHorizontal:SlidersHorizontal Sprout:Plant Square:Square Star:Star Sun:Sun Trash2:Trash Upload:UploadSimple

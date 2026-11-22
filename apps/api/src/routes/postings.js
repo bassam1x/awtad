@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { all, get, run } from '../db.js';
 import { role } from '../security.js';
 import { POSTING_SQL, postingOut, toIQD } from '../services.js';
-import { SPECS, bad, num, parseList, safeUrl, str, wrap } from '../utils.js';
+import { JOB_TYPES, SPECS, bad, num, parseList, safeUrl, str, wrap } from '../utils.js';
 
 const r = Router();
 
@@ -36,11 +36,12 @@ function readPosting(b, kind, fallbackSpec = 'برمجة') {
   const title = str(b.title, 120), pay = num(b.pay);
   if (!title || !pay || pay <= 0) return null;
   const job = kind === 'job';
+  const remote = job && b.type === 'عن بعد';
   return [
     title, str(b.description, 1500), SPECS.includes(b.spec) ? b.spec : fallbackSpec, pay, b.cur === 'USD' ? 'USD' : 'IQD',
     job ? num(b.hours) || 6 : null, job ? str(b.schedule, 120) || 'يُحدد لاحقاً' : null,
-    job ? (b.shift === 'مسائي' ? 'مسائي' : 'صباحي') : null, job ? (b.type === 'دوام كامل' ? 'دوام كامل' : 'دوام جزئي') : null,
-    job ? null : num(b.days) || 7, str(b.address, 250), safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)),
+    job ? (b.shift === 'مسائي' ? 'مسائي' : 'صباحي') : null, job ? (JOB_TYPES.includes(b.type) ? b.type : 'دوام جزئي') : null,
+    job ? null : num(b.days) || 7, remote ? '' : str(b.address, 250), remote ? '' : safeUrl(b.map_url), JSON.stringify(parseList(b.reqs)),
   ];
 }
 

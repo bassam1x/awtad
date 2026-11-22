@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Award, Briefcase, CheckCircle2, ClipboardList, Mail, Plus, SlidersHorizontal, Sprout, Star, Trash2, Wallet as WalletIcon, X, FolderKanban } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, Empty, ErrorBox, Field, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';
+import { Avatar, Banner, Empty, ErrorBox, Field, JOB_TYPES, PageHeader, Spinner, SPECS, SegTabs, StatCard, StatusChip, fmt, dateAr, postingChips , curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 function PostingCard({ p }) {
@@ -77,7 +77,7 @@ export function Browse({ kind }) {
         <select aria-label={t('التخصص')} className="inp !w-auto" value={f.spec} onChange={(e) => set('spec', e.target.value)}><option value="">{t('كل التخصصات')}</option>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select>
         {kind === 'job' && (
           <>
-            <select aria-label={t('نوع الدوام')} className="inp !w-auto" value={f.type} onChange={(e) => set('type', e.target.value)}><option value="">{t('كل أنواع الدوام')}</option><option value="دوام كامل">{t('دوام كامل')}</option><option value="دوام جزئي">{t('دوام جزئي')}</option></select>
+            <select aria-label={t('نوع الدوام')} className="inp !w-auto" value={f.type} onChange={(e) => set('type', e.target.value)}><option value="">{t('كل أنواع الدوام')}</option>{JOB_TYPES.map((v) => <option key={v} value={v}>{t(v)}</option>)}</select>
             <select aria-label={t('الفترة')} className="inp !w-auto" value={f.shift} onChange={(e) => set('shift', e.target.value)}><option value="">{t('صباحي ومسائي')}</option><option value="صباحي">{t('صباحي')}</option><option value="مسائي">{t('مسائي')}</option></select>
           </>
         )}

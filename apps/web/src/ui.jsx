@@ -12,7 +12,8 @@ export const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 /** رمز العملة بلغة الواجهة: IQD دينار عراقي، USD دولار أمريكي (والقيم القديمة تُعرض كما هي) */
 export const curLabel = (c) => ({ IQD: t('د.ع'), USD: t('دولار') }[c] ?? t(c));
 export const CURRENCIES = [['IQD', 'دينار عراقي (IQD)'], ['USD', 'دولار أمريكي (USD)']];
-export const SPECS = ['برمجة', 'تصميم', 'هندسة'];
+export const SPECS = ['برمجة', 'تصميم', 'هندسة', 'تسويق ومحتوى', 'مبيعات وكاشير', 'مطاعم وكافيهات', 'خدمة عملاء', 'محاسبة وإدارة', 'توصيل ونقل', 'تعليم وتدريب', 'أخرى'];
+export const JOB_TYPES = ['دوام كامل', 'دوام جزئي', 'عن بعد'];
 export const dateAr = (s) => (s ? new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) : '');
 
 /* ---------- Brand ---------- */

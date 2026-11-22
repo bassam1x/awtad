@@ -2,7 +2,7 @@ import { t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, Briefcase, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from '../icons.jsx';
+import { ArrowRight, Briefcase, Laptop, CalendarDays, Clock, FolderKanban, Layers, MapPin, Send, Sprout, Sun, Square, CheckSquare, Trash2, Users, Pencil } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, ErrorBox, Field, Modal, Spinner, StatusChip, fmt , curLabel, MapLinks } from '../ui.jsx';
@@ -49,8 +49,9 @@ export default function Opportunity() {
           <h3 className="mb-2 font-bold">{t('المتطلبات (مهارات وأدوات)')}</h3>
           <div className="mb-5 flex flex-wrap gap-2">{p.reqs.map((r) => <span key={r} className="chip chip-b"><Tr>{r}</Tr></span>)}</div>
           <h3 className="mb-2 font-bold">{t('الموقع')}</h3>
-          <div className="mb-3 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address || t('غير محدد')}</Tr></div>
-          {(p.map_url || p.address) && (
+          {p.type === 'عن بعد' && <div className="mb-3 flex items-start gap-2"><Laptop size={18} className="mt-1" />{t('العمل عن بعد: لا حاجة للحضور إلى مكان محدد.')}</div>}
+          {p.type !== 'عن بعد' && <div className="mb-3 flex items-start gap-2"><MapPin size={18} className="mt-1" /><Tr>{p.address || t('غير محدد')}</Tr></div>}
+          {p.type !== 'عن بعد' && (p.map_url || p.address) && (
             <>
               <MapLinks url={p.map_url} address={p.address} full />
               <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-gradient-to-l from-goodsoft to-soft p-4">

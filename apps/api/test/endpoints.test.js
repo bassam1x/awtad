@@ -76,6 +76,19 @@ test('مسارات المدير: مستخدمون (بحث بلا حساسية ل
   assert.equal((await call('PATCH', '/api/admin/users/abc', { status: 'active' }, adm)).status, 404);
 });
 
+test('تخصصات الخدمات ونوع الدوام «عن بعد»: تُحفظ وتُفلتر، والقيم الغريبة تعود للافتراضي', async () => {
+  const st = await login('sara@demo.iq'), co = await login('nibras@demo.iq');
+  const remote = ok(await call('POST', '/api/postings', { kind: 'job', title: 'موظف دعم عن بعد', pay: 600000, spec: 'خدمة عملاء', type: 'عن بعد', address: 'عنوان لا يُحفظ', map_url: 'https://maps.google.com/?q=x' }, co));
+  const rest = ok(await call('POST', '/api/postings', { kind: 'job', title: 'ويتر', pay: 500000, spec: 'مطاعم وكافيهات', type: 'دوام كامل', address: 'الكرادة' }, co));
+  const odd = ok(await call('POST', '/api/postings', { kind: 'job', title: 'وظيفة غريبة', pay: 400000, spec: 'ليست موجودة', type: 'نوع مخترع' }, co));
+  const r = ok(await call('GET', `/api/postings/${remote.id}`, null, st));
+  assert.equal(r.type, 'عن بعد'); assert.equal(r.spec, 'خدمة عملاء'); assert.ok(!r.address.includes('لا يُحفظ'), 'العنوان لا يُحفظ لوظيفة عن بعد'); assert.ok(!r.map_url.includes('x'), 'ولا رابط الموقع');
+  const w = ok(await call('GET', `/api/postings/${rest.id}`, null, st)); assert.equal(w.spec, 'مطاعم وكافيهات'); assert.equal(w.address, 'الكرادة');
+  const o = ok(await call('GET', `/api/postings/${odd.id}`, null, st)); assert.equal(o.spec, 'برمجة'); assert.equal(o.type, 'دوام جزئي');
+  assert.ok(ok(await call('GET', '/api/postings?type=' + encodeURIComponent('عن بعد'), null, st)).some((j) => j.id === remote.id));
+  assert.ok(ok(await call('GET', '/api/postings?spec=' + encodeURIComponent('مطاعم وكافيهات'), null, st)).every((j) => j.spec === 'مطاعم وكافيهات'));
+});
+
 test('الفرص: قوائم وفلاتر وminimum وmine وتعديل وحذف', async () => {
   const st = await login('sara@demo.iq'), co = await login('nibras@demo.iq');
   const jobs = ok(await call('GET', '/api/postings?kind=job', null, st));

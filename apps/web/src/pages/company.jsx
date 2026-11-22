@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Briefcase, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, CURRENCIES, Empty, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
+import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 /* ---------- Dashboard ---------- */
@@ -133,7 +133,7 @@ export function PostingForm() {
           {isJob ? (
             <>
               <Field label={t('ساعات العمل يومياً')}><input id="np-hours" type="number" min="1" max="16" className="inp" value={f.hours} onChange={(e) => set('hours', e.target.value)} /></Field>
-              <Field label={t('نوع الدوام')}><select id="np-type" className="inp" value={f.type} onChange={(e) => set('type', e.target.value)}><option value="دوام كامل">{t('دوام كامل')}</option><option value="دوام جزئي">{t('دوام جزئي')}</option></select></Field>
+              <Field label={t('نوع الدوام')}><select id="np-type" className="inp" value={f.type} onChange={(e) => set('type', e.target.value)}>{JOB_TYPES.map((v) => <option key={v} value={v}>{t(v)}</option>)}</select></Field>
               <Field label={t('الفترة')}><select id="np-shift" className="inp" value={f.shift} onChange={(e) => set('shift', e.target.value)}><option value="صباحي">{t('صباحي')}</option><option value="مسائي">{t('مسائي')}</option></select></Field>
             </>
           ) : <Field label={t('مدة التسليم (أيام)')}><input id="np-days" type="number" min="1" className="inp" value={f.days} onChange={(e) => set('days', e.target.value)} /></Field>}
@@ -141,8 +141,14 @@ export function PostingForm() {
         {isJob && (
           <>
             <Field label={t('أوقات العمل')}><input id="np-sched" className="inp" value={f.schedule} onChange={(e) => set('schedule', e.target.value)} placeholder={t('السبت – الخميس، 9 ص إلى 3 م')} /></Field>
-            <Field label={t('العنوان النصي')} hint={t('اتركه فارغاً لاستخدام عنوان الشركة من ملفها.')}><input id="np-addr" className="inp" value={f.address} onChange={(e) => set('address', e.target.value)} placeholder={user.address} /></Field>
-            <Field label={t('رابط الموقع: Google Maps أو Waze (اختياري)')} hint={<span className="flex flex-wrap items-center gap-2">{t('الصق رابط المشاركة من Google Maps أو Waze. إن تركته فارغاً نبني الأزرار من العنوان.')}<MapKindHint url={f.map_url} /></span>}><input id="np-map" dir="ltr" className="inp text-left" inputMode="url" placeholder="https://waze.com/ul?..." value={f.map_url} onChange={(e) => set('map_url', e.target.value)} /></Field>
+            {f.type === 'عن بعد' ? (
+              <p className="mb-3 rounded-xl border border-line bg-soft p-3 text-sm text-mute">{t('الوظيفة عن بعد، فلا حاجة للعنوان ولا لرابط الموقع.')}</p>
+            ) : (
+              <>
+                <Field label={t('العنوان النصي')} hint={t('اتركه فارغاً لاستخدام عنوان الشركة من ملفها.')}><input id="np-addr" className="inp" value={f.address} onChange={(e) => set('address', e.target.value)} placeholder={user.address} /></Field>
+                <Field label={t('رابط الموقع: Google Maps أو Waze (اختياري)')} hint={<span className="flex flex-wrap items-center gap-2">{t('الصق رابط المشاركة من Google Maps أو Waze. إن تركته فارغاً نبني الأزرار من العنوان.')}<MapKindHint url={f.map_url} /></span>}><input id="np-map" dir="ltr" className="inp text-left" inputMode="url" placeholder="https://waze.com/ul?..." value={f.map_url} onChange={(e) => set('map_url', e.target.value)} /></Field>
+              </>
+            )}
           </>
         )}
         <Field label={t('المتطلبات: مهارات وأدوات فقط')} hint={t('افصل بينها بفاصلة')}><input id="np-reqs" className="inp" value={f.reqs} onChange={(e) => set('reqs', e.target.value)} /></Field>
