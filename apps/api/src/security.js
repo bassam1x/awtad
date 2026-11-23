@@ -61,6 +61,12 @@ export const signToken = async (userId) => {
   return jwt.sign({ id: userId, v }, SECRET, { expiresIn: '14d', algorithm: 'HS256' });
 };
 
+/** دخول المدير بحساب مستخدم: توكن قصير (ساعتان) يحمل رقم المدير imp، ويُتحقق من أن المدير ما زال مديراً فعالاً عند كل طلب. */
+export const signImpersonation = async (userId, adminId) => {
+  const v = (await get('SELECT token_version v FROM users WHERE id=?', userId))?.v || 0;
+  return jwt.sign({ id: userId, v, imp: adminId }, SECRET, { expiresIn: '2h', algorithm: 'HS256' });
+};
+
 export function auth() {
   return async (req, res, next) => {
     const h = req.headers.authorization || '';
@@ -74,6 +80,10 @@ export function auth() {
       if (!u) return res.status(401).json({ error: 'الحساب غير موجود' });
       if ((claims.v || 0) !== u.token_version) return res.status(401).json({ error: 'انتهت الجلسة، سجّل الدخول مجدداً' });
       if (u.status === 'banned') return res.status(403).json({ error: 'هذا الحساب موقوف من الإدارة' });
+      if (claims.imp !== undefined) {
+        if (!Number.isInteger(claims.imp) || !(await get("SELECT 1 FROM users WHERE id=? AND role='admin' AND status<>'banned'", claims.imp))) return res.status(401).json({ error: 'انتهت الجلسة، سجّل الدخول مجدداً' });
+        req.impersonatedBy = claims.imp;
+      }
       req.user = u;
     } catch (e) { return next(e); }
     next();

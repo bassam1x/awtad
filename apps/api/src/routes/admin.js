@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { config } from '../config.js';
 import { all, get, run } from '../db.js';
-import { role } from '../security.js';
+import { role, signImpersonation } from '../security.js';
 import { POSTING_SQL, fullUser, getSupport, postingOut } from '../services.js';
 import { bad, emailOk, igHandle, qs, str } from '../utils.js';
 import { getGoogleId } from './auth.js';
@@ -30,6 +30,16 @@ r.get('/users/:id', async (req, res) => {
     out.postings = rows.map((p) => ({ ...p, applicants: Number(p.applicants) }));
   }
   res.json(out);
+});
+/** الدخول بحساب مستخدم أو شركة لمعالجة مشكلة أو مراجعة ما يراه. يُسجَّل في audit_log، ولا يتيح تغيير بيانات الدخول (انظر me.js). */
+r.post('/users/:id/impersonate', async (req, res) => {
+  const id = Number(req.params.id);
+  const t = Number.isInteger(id) ? await get('SELECT id,role,status FROM users WHERE id=?', id) : null;
+  if (!t) return bad(res, 'غير موجود', 404);
+  if (t.role === 'admin') return bad(res, 'لا يمكن الدخول بحساب مدير');
+  if (t.status === 'banned') return bad(res, 'الحساب موقوف: فعّله أولاً');
+  await run('INSERT INTO audit_log(admin_id,action,target_id) VALUES(?,?,?)', req.user.id, 'impersonate', t.id);
+  res.json({ token: await signImpersonation(t.id, req.user.id), user: await fullUser(t.id, { forSelf: true }) });
 });
 r.patch('/users/:id', async (req, res) => {
   const t = await get('SELECT id FROM users WHERE id=?', req.params.id);

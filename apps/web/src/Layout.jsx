@@ -52,7 +52,7 @@ export function LangSwitch({ className = '' }) {
 }
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, imp, exitImpersonation } = useAuth();
   const [open, setOpen] = useState(false);
   const loc = useLocation();
   useEffect(() => { setOpen(false); }, [loc.pathname, loc.search]);
@@ -87,6 +87,12 @@ export default function Layout() {
   return (
     <div className="min-h-full lg:flex">
       {busy && <div className="route-bar" aria-hidden="true" />}
+      {imp && user.role !== 'admin' && (
+        <div role="status" className="card fixed bottom-4 start-1/2 z-[60] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 border-amber-400/60 px-4 py-2 text-sm shadow-card rtl:translate-x-1/2">
+          <span>{t('أنت داخل بحساب')} <b>{user.name}</b> {t('بصلاحية المدير')}</span>
+          <button className="btn btn-p btn-sm" onClick={exitImpersonation}>{t('العودة للإدارة')}</button>
+        </div>
+      )}
       {/* زر القائمة على نفس جهة خروج القائمة: يمين في العربية/الكردية ويسار في الإنكليزية */}
       <div className="sticky top-0 z-30 flex flex-row-reverse items-center justify-between border-b border-line bg-card/60 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Logo size={30} />

@@ -75,12 +75,15 @@ export function prefetch(path) {
 /* ---------- Auth + حسابات محفوظة للتبديل السريع ---------- */
 const AuthCtx = createContext();
 const AK = 'awtad-accounts';
+const IK = 'awtad-imp';   // { adminToken, name } أثناء دخول المدير بحساب مستخدم (في localStorage لتظهر اللافتة في كل التبويبات)
+const readImp = () => { try { const v = JSON.parse(localStorage.getItem(IK) || 'null'); return v?.adminToken ? v : null; } catch { return null; } };
 const readAcc = () => { try { const a = JSON.parse(localStorage.getItem(AK) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
 const writeAcc = (a) => { try { localStorage.setItem(AK, JSON.stringify(a)); } catch { /* ignore */ } };
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
   const [accounts, setAccounts] = useState(readAcc);
+  const [imp, setImp] = useState(readImp);
   const nav = useNavigate();
   const mutate = useCallback((fn) => setAccounts((list) => { const next = fn(list); writeAcc(next); return next; }), []);
   /* يحفظ الحساب (أو يحدّثه) بعد أي دخول ناجح */
@@ -90,7 +93,7 @@ export function AuthProvider({ children }) {
   }), [mutate]);
   const drop = useCallback((id) => mutate((list) => list.filter((a) => a.id !== id)), [mutate]);
   /* خروج: ينهي الجلسة الحالية ويحذف هذا الحساب من القائمة، وتبقى الحسابات الأخرى */
-  const logout = useCallback(() => { const tok = getToken(); mutate((list) => list.filter((a) => a.token !== tok)); setToken(null); clearFetchCache(); setUser(null); }, [mutate]);
+  const logout = useCallback(() => { try { localStorage.removeItem(IK); } catch { /* ignore */ } setImp(null); const tok = getToken(); mutate((list) => list.filter((a) => a.token !== tok)); setToken(null); clearFetchCache(); setUser(null); }, [mutate]);
   /* فصل الجلسة الحالية دون حذفها من القائمة (لإضافة حساب جديد) */
   const detach = useCallback(() => { setToken(null); clearFetchCache(); setUser(null); }, []);
   /* الإقلاع: نتحقق من الجلسة المحفوظة. التوكن لا يُمسح إلا إذا رفضه الخادم فعلاً (401/403)؛
@@ -100,7 +103,7 @@ export function AuthProvider({ children }) {
     if (!getToken()) { setOffline(false); setReady(true); return; }
     try {
       const u = await api.get('/me');
-      setUser(u); save(u, getToken()); setOffline(false); setReady(true);
+      setUser(u); if (!readImp()) save(u, getToken()); setOffline(false); setReady(true);
     } catch (e) {
       if (e.status === 401 || e.status === 403) { setToken(null); setOffline(false); setReady(true); } else setOffline(true);
     }
@@ -123,11 +126,28 @@ export function AuthProvider({ children }) {
       return true;
     } catch { drop(id); return false; }
   }, [nav, save, drop]);
+  /* دخول المدير بحساب مستخدم: نحفظ توكن المدير للعودة، ولا نضيف الحساب لقائمة الحسابات المحفوظة */
+  const impersonate = useCallback(async (id) => {
+    const r = await api.post(`/admin/users/${id}/impersonate`);
+    const info = { adminToken: getToken(), name: r.user.name };
+    try { localStorage.setItem(IK, JSON.stringify(info)); } catch { /* ignore */ }
+    setImp(info); setToken(r.token); clearFetchCache(); setUser(r.user);
+    nav('/app', { replace: true });
+  }, [nav]);
+  const exitImpersonation = useCallback(async () => {
+    const v = readImp(); if (!v) return;
+    try {
+      const u = await api.getAs('/me', v.adminToken);
+      setToken(v.adminToken); clearFetchCache(); setUser(u); save(u, v.adminToken);
+    } catch { setToken(null); setUser(null); }
+    try { localStorage.removeItem(IK); } catch { /* ignore */ }
+    setImp(null); nav('/app/users', { replace: true });
+  }, [nav, save]);
   const value = useMemo(() => ({
-    user, ready, offline, retry: boot, logout, setUser, accounts, switchTo, drop, detach,
+    user, ready, offline, imp, impersonate, exitImpersonation, retry: boot, logout, setUser, accounts, switchTo, drop, detach,
     login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); save(s.user, s.token); },
     refresh: () => api.get('/me').then(setUser),
-  }), [user, ready, offline, boot, logout, accounts, switchTo, drop, detach, save]);
+  }), [user, ready, offline, imp, impersonate, exitImpersonation, boot, logout, accounts, switchTo, drop, detach, save]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 export const useAuth = () => useContext(AuthCtx);

@@ -261,3 +261,28 @@ test('المدير: ملف كامل لأي مستخدم أو شركة، بلا �
   assert.equal((await call('GET', `/api/admin/users/${sara.id}`, undefined, st)).status, 403, 'غير المدير ممنوع');
 });
 
+test('دخول المدير بحساب مستخدم: للمدير فقط، يُسجَّل، ولا يغيّر بيانات الدخول', async () => {
+  const adm = await login('admin@awtad.iq', 'Admin@12345');
+  const sara = ok(await call('GET', '/api/admin/users?role=student', undefined, adm)).find((u) => u.email === 'sara@demo.iq');
+  const st = await login('sara@demo.iq');
+  assert.equal((await call('POST', `/api/admin/users/${sara.id}/impersonate`, {}, st)).status, 403, 'غير المدير ممنوع');
+  const adminRow = ok(await call('GET', '/api/admin/users?role=admin', undefined, adm))[0];
+  assert.equal((await call('POST', `/api/admin/users/${adminRow.id}/impersonate`, {}, adm)).status, 400, 'لا دخول بحساب مدير');
+  assert.equal((await call('POST', '/api/admin/users/999999/impersonate', {}, adm)).status, 404);
+  const r = ok(await call('POST', `/api/admin/users/${sara.id}/impersonate`, {}, adm));
+  assert.equal(r.user.email, 'sara@demo.iq');
+  const me = ok(await call('GET', '/api/me', undefined, r.token)); assert.equal(me.id, sara.id);
+  assert.equal((await call('GET', '/api/admin/users', undefined, r.token)).status, 403, 'التوكن المنتحَل لا يمنح صلاحيات المدير');
+  assert.equal((await call('PUT', '/api/me/password', { current: 'Demo@1234', next: 'Hacked-Pass-1' }, r.token)).status, 403);
+  assert.equal((await call('PUT', '/api/me', { email: 'x@example.com' }, r.token)).status, 403);
+  assert.equal((await call('DELETE', '/api/me', undefined, r.token)).status, 403);
+  assert.equal((await dbm.get("SELECT COUNT(*) c FROM audit_log WHERE action='impersonate' AND target_id=?", sara.id)).c >= 1, true, 'سُجّل الدخول');
+  // إيقاف الحساب يمنع الدخول، وإيقاف المدير يُبطل التوكن
+  await dbm.run("UPDATE users SET status='banned' WHERE id=?", sara.id);
+  assert.equal((await call('POST', `/api/admin/users/${sara.id}/impersonate`, {}, adm)).status, 400);
+  await dbm.run("UPDATE users SET status='active' WHERE id=?", sara.id);
+  await dbm.run("UPDATE users SET status='banned' WHERE id=?", adminRow.id);
+  assert.equal((await call('GET', '/api/me', undefined, r.token)).status, 401, 'توكن منتحَل لمدير موقوف يسقط');
+  await dbm.run("UPDATE users SET status='active' WHERE id=?", adminRow.id);
+});
+

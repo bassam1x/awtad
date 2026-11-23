@@ -11,6 +11,7 @@ const r = Router();
 /** بريد التواصل العلني للشركة: بريد صحيح فقط (وإلا يُفرَّغ) */
 const contactEmail = (v) => { const e = str(v, 120).toLowerCase(); return emailOk(e) ? e : ''; };
 const isDemo = (u) => String(u.email || '').endsWith(DEMO_DOMAIN);
+const impLocked = (req) => { if (req.impersonatedBy) throw new UserError('غير متاح أثناء دخول المدير بحساب المستخدم.', 403); };
 const demoLocked = () => new UserError('هذا حساب تجريبي: لا يمكن تغيير بيانات دخوله أو حذفه.', 403);
 
 /** يتحقق من كلمة المرور الحالية مع تقييد المحاولات الفاشلة (لحساب+عنوان). */
@@ -28,6 +29,7 @@ r.put('/me', wrap(async (req, res) => {
   const b = req.body || {}; const id = req.user.id;
   // تغيير البريد يفتح باب استرجاع الحساب، فيتطلب كلمة المرور الحالية لمن لديه كلمة (يحمي من الاستيلاء بجلسة مسروقة)
   if (b.email !== undefined && str(b.email, 120).toLowerCase() !== String(req.user.email).toLowerCase()) {
+    impLocked(req);
     if (isDemo(req.user)) throw demoLocked();
     const hp = await get('SELECT password_hash FROM users WHERE id=?', id);
     if (hp?.password_hash) await verifyCurrent(req, b.current_password);
@@ -56,6 +58,7 @@ r.put('/me', wrap(async (req, res) => {
 }));
 
 r.put('/me/password', wrap(async (req, res) => {
+  impLocked(req);
   if (isDemo(req.user)) throw demoLocked();
   const u = await get('SELECT password_hash FROM users WHERE id=?', req.user.id);
   const { current, next } = req.body || {};
@@ -66,7 +69,7 @@ r.put('/me/password', wrap(async (req, res) => {
   res.json({ ok: true, token: await signToken(req.user.id) });
 }));
 
-r.delete('/me', role('student', 'company'), wrap(async (req, res) => { if (isDemo(req.user)) throw demoLocked(); await run('DELETE FROM users WHERE id=?', req.user.id); res.json({ ok: true }); }));
+r.delete('/me', role('student', 'company'), wrap(async (req, res) => { impLocked(req); if (isDemo(req.user)) throw demoLocked(); await run('DELETE FROM users WHERE id=?', req.user.id); res.json({ ok: true }); }));
 
 const mine = (req) => fullUser(req.user.id, { forSelf: true });
 r.post('/me/skills', role('student'), async (req, res) => {

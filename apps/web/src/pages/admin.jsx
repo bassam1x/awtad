@@ -44,8 +44,9 @@ export function AdminDashboard() {
 }
 
 export function AdminUsers() {
-  const { user: me } = useAuth();
+  const { user: me, impersonate } = useAuth();
   const toast = useToast();
+  const enter = async (u) => { try { await impersonate(u.id); } catch (e) { toast(e.message, 'err'); } };
   const [q, setQ] = useState('');
   const [sp] = useSearchParams();
   const [role, setRole] = useState(['student', 'company'].includes(sp.get('role')) ? sp.get('role') : '');
@@ -76,6 +77,7 @@ export function AdminUsers() {
                     {u.id !== me.id && (
                       <div className="flex justify-end gap-2">
                         <Link className="btn btn-sm" to={`/app/users/${u.id}`}>{t('الملف')}</Link>
+                        {u.status !== 'banned' && <button className="btn btn-sm btn-p" onClick={() => enter(u)}>{t('دخول بالحساب')}</button>}
                         {u.status === 'banned' ? <button className="btn btn-sm" onClick={() => setStatus(u, 'active')}>{t('تفعيل')}</button> : <button className="btn btn-sm" onClick={() => setStatus(u, 'banned')}><Ban size={13} />{t('إيقاف')}</button>}
                         {confirm === u.id ? <button className="btn btn-d btn-sm" onClick={() => del(u)}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => setConfirm(u.id)}><Trash2 size={13} /></button>}
                       </div>
@@ -246,9 +248,10 @@ const Row = ({ k, children }) => (children === '' || children == null ? null : <
 /** ملف كامل لأي حساب للمدير: التفاصيل الخاصة، المنشورات أو الطلبات، المالية، مع الإيقاف والحذف. */
 export function AdminUserDetail() {
   const { id } = useParams();
-  const { user: me } = useAuth();
+  const { user: me, impersonate } = useAuth();
   const nav = useNavigate();
   const toast = useToast();
+  const enter = async () => { try { await impersonate(id); } catch (e) { toast(e.message, 'err'); } };
   const { data: u, loading, error, reload } = useFetch(`/admin/users/${id}`);
   const [confirm, setConfirm] = useState(false);
   if (loading) return <Spinner />;
@@ -271,6 +274,7 @@ export function AdminUserDetail() {
           <div className="text-sm text-mute" dir="ltr" style={{ textAlign: isRtl ? 'right' : 'left' }}>{u.email}</div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {u.role !== 'admin' && u.status !== 'banned' && <button className="btn btn-sm btn-p" onClick={enter}>{t('دخول بالحساب')}</button>}
           {u.role !== 'admin' && <Link className="btn btn-sm" to={`/app/people/${u.id}`}>{t('الملف العام')}</Link>}
           {!mine && (u.status === 'banned' ? <button className="btn btn-sm" onClick={() => setStatus('active')}>{t('تفعيل')}</button> : <button className="btn btn-sm" onClick={() => setStatus('banned')}><Ban size={13} />{t('إيقاف')}</button>)}
           {!mine && (confirm ? <button className="btn btn-d btn-sm" onClick={del}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" onClick={() => setConfirm(true)}><Trash2 size={13} />{t('حذف')}</button>)}
