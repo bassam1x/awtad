@@ -191,7 +191,7 @@ test('البريد المساعد للشركة: بريد صحيح فقط', async
 test('الدعم الفني: التحقق، المصيدة، حدود السبام، صلاحيات المدير، وضبط القنوات من الإعدادات', async () => {
   const adm = await login(ADMIN.email, ADMIN.password), st = await login('sara@demo.iq');
   // لا قنوات قبل ضبطها
-  const c0 = ok(await call('GET', '/api/config')).support; assert.deepEqual([c0.email, c0.instagram], ['', '']);
+  const c0 = ok(await call('GET', '/api/config')).support; assert.deepEqual([c0.email, c0.instagram], ['', 'awtadiq']);
   // التحقق
   assert.equal((await call('POST', '/api/support', { name: 'أ', email: 'a@example.com', message: 'رسالة طويلة كفاية' })).status, 400, 'اسم قصير');
   assert.equal((await call('POST', '/api/support', { name: 'زائر', email: 'not-an-email', message: 'رسالة طويلة كفاية' })).status, 400, 'بريد خاطئ');
