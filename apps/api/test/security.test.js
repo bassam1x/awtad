@@ -237,6 +237,10 @@ test('التخصصات: قائمة موسّعة، و«أخرى» تحفظ تخص
   assert.equal(me.spec, 'تصوير ومونتاج'); assert.equal(me.spec_other, '', 'يُمسح النص المكتوب عند اختيار تخصص آخر');
   ok(await call('PUT', '/api/me', { spec: 'أخرى', spec_other: 'x'.repeat(100) }, tok));
   assert.equal(ok(await call('GET', '/api/me', undefined, tok)).spec_other.length, 40, 'حدّ 40 حرفاً');
+  ok(await call('PUT', '/api/me', { student_status: 'مبدع' }, tok));
+  assert.equal(ok(await call('GET', '/api/me', undefined, tok)).student_status, 'مبدع');
+  const cr = ok(await call('POST', '/api/auth/register', { role: 'student', name: 'م', email: 'creator-status@example.com', password: 'Pass-Word-1', student_status: 'مبدع' }));
+  assert.equal(cr.user.student_status, 'مبدع');
   const bad = ok(await call('POST', '/api/auth/register', { role: 'student', name: 'ب', email: 'bad-spec@example.com', password: 'Pass-Word-1', spec: 'ليس تخصصاً' }));
   assert.equal(bad.user.spec, 'برمجة');
 });

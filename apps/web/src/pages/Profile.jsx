@@ -60,7 +60,7 @@ export default function Profile() {
               <>
                 <Field label={t('التخصص')}><select id="pf-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
                 {f.spec === 'أخرى' && <Field label={t('اكتب تخصصك')}><input id="pf-spec-other" className="inp" maxLength={40} value={f.spec_other} onChange={(e) => set('spec_other', e.target.value)} placeholder={t('مثال: تدقيق لغوي')} /></Field>}
-                <Field label={t('الحالة')}><select id="pf-status" className="inp" value={f.student_status} onChange={(e) => set('student_status', e.target.value)}><option value="طالب">{t('طالب')}</option><option value="خريج جديد">{t('خريج جديد')}</option></select></Field>
+                <Field label={t('الحالة')}><select id="pf-status" className="inp" value={f.student_status} onChange={(e) => set('student_status', e.target.value)}><option value="طالب">{t('طالب')}</option><option value="خريج جديد">{t('خريج جديد')}</option><option value="مبدع">{t('مبدع')}</option></select></Field>
               </>
             )}
             {isC && (

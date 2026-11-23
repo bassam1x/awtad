@@ -62,7 +62,7 @@ export async function createUser({ role, name, email, password, googleId, linked
     if (role === 'student') {
       const spec = SPECS.includes(extra.spec) ? extra.spec : 'برمجة';
       await run('INSERT INTO student_profiles(user_id,spec,spec_other,status) VALUES(?,?,?,?)', id, spec,
-        spec === 'أخرى' ? str(extra.spec_other, 40) : '', extra.student_status === 'خريج جديد' ? 'خريج جديد' : 'طالب');
+        spec === 'أخرى' ? str(extra.spec_other, 40) : '', ['خريج جديد', 'مبدع'].includes(extra.student_status) ? extra.student_status : 'طالب');
       for (const s of String(extra.skills || '').split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 15))
         await run('INSERT INTO skills(user_id,name) VALUES(?,?)', id, s.slice(0, 40));
     } else if (role === 'company') {
