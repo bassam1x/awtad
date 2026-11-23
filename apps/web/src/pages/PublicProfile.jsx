@@ -3,7 +3,7 @@ import { Tr } from '../translate.jsx';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, ExternalLink, MapPin, Mail } from '../icons.jsx';
 import { useFetch } from '../context.jsx';
-import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel, MapLinks } from '../ui.jsx';
+import { Avatar, ErrorBox, Spinner, Stars, fmt , curLabel, MapLinks, specText } from '../ui.jsx';
 
 export function ProfileBody({ p }) {
   if (p.role === 'company') {
@@ -23,7 +23,7 @@ export function ProfileBody({ p }) {
         <Avatar u={p} size={72} />
         <div className="min-w-0">
           <h2 className="text-xl font-bold">{p.name}</h2>
-          <div className="text-mute">{t(p.spec)} · {t(p.student_status)}</div>
+          <div className="text-mute">{specText(p)} · {t(p.student_status)}</div>
           {p.works?.length > 0 && <div className="flex items-center gap-2"><Stars v={p.avg} /><span className="text-sm">{p.avg} {t('من')} {p.works.length} {t('أعمال')}</span></div>}
         </div>
       </div>

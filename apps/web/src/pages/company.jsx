@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Briefcase, DotsThree, FolderKanban, Paperclip, PackageCheck, Plus, Trash2, Users, Wallet as WalletIcon, Zap, Pencil, Send, X } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
-import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, SUITABLE, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel } from '../ui.jsx';
+import { Avatar, Banner, BarList, CURRENCIES, Empty, JOB_TYPES, SUITABLE, ErrorBox, Field, MapKindHint, Modal, MoneyInput, PageHeader, Spinner, SPECS, StatCard, StatusChip, Stars, fmt, curLabel, specText } from '../ui.jsx';
 import { ProfileBody } from './PublicProfile.jsx';
 
 /* ---------- Dashboard ---------- */
@@ -250,7 +250,7 @@ export function Applicants() {
                 <Avatar u={{ id: a.student_id, name: a.student_name, avatar: a.student_avatar }} size={52} />
                 <div className="min-w-0 flex-1">
                   <button className="text-lg font-bold text-brand" onClick={() => setView(a.student_id)}>{a.student_name}</button>
-                  <div className="text-sm text-mute">{t(a.spec)} · {t(a.student_status)} {t('· تقدّم على:')} <Tr>{a.title}</Tr></div>
+                  <div className="text-sm text-mute">{specText(a)} · {t(a.student_status)} {t('· تقدّم على:')} <Tr>{a.title}</Tr></div>
                   <div className="my-2 flex flex-wrap gap-1.5">{a.skills.map((k) => <span key={k.name} className="chip chip-b"><Tr>{k.name}</Tr></span>)}</div>
                   <p className="mb-2 text-sm">«<Tr>{t(a.message)}</Tr>»</p>
                   <div className="flex flex-wrap gap-1.5">{a.projects.map((p) => <span key={p} className="chip"><Paperclip size={12} />{p}</span>)}</div>
@@ -321,7 +321,7 @@ export function Talent() {
             <div key={s.id} className="card flex flex-col gap-3 p-4">
               <div className="flex items-center gap-3">
                 <Avatar u={s} size={52} />
-                <div className="min-w-0"><div className="font-bold">{s.name}</div><div className="text-sm text-mute">{t(s.spec)} · {t(s.student_status)}</div>{s.works.length > 0 && <div className="flex items-center gap-1"><Stars v={s.avg} size={13} /><span className="text-xs">({s.works.length})</span></div>}</div>
+                <div className="min-w-0"><div className="font-bold">{s.name}</div><div className="text-sm text-mute">{specText(s)} · {t(s.student_status)}</div>{s.works.length > 0 && <div className="flex items-center gap-1"><Stars v={s.avg} size={13} /><span className="text-xs">({s.works.length})</span></div>}</div>
               </div>
               <div className="flex flex-wrap gap-1.5">{s.skills.slice(0, 4).map((k) => <span key={k.id} className="chip chip-b"><Tr>{k.name}</Tr></span>)}</div>
               <div className="flex flex-wrap gap-1.5">{s.badges.slice(0, 2).map((b) => <span key={b} className="chip chip-g">{t(b)}</span>)}</div>

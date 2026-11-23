@@ -208,7 +208,7 @@ export function RegisterPage() {
   const toast = useToast();
   const nav = useNavigate();
   const [role, setRole] = useState('student');
-  const [f, setF] = useState({ name: '', email: '', password: '', avatar: null, spec: 'برمجة', student_status: 'طالب', skills: '', sector: '', city: '', about: '' });
+  const [f, setF] = useState({ name: '', email: '', password: '', avatar: null, spec: 'برمجة', spec_other: '', student_status: 'طالب', skills: '', sector: '', city: '', about: '' });
   const [busy, setBusy] = useState(false);
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const submit = async (e) => {
@@ -235,6 +235,7 @@ export function RegisterPage() {
           <>
             <div className="grid grid-cols-2 gap-3">
               <Field label={t('التخصص')}><select id="reg-spec" className="inp" value={f.spec} onChange={(e) => set('spec', e.target.value)}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></Field>
+              {f.spec === 'أخرى' && <Field label={t('اكتب تخصصك')}><input id="reg-spec-other" className="inp" maxLength={40} value={f.spec_other} onChange={(e) => set('spec_other', e.target.value)} placeholder={t('مثال: تدقيق لغوي')} /></Field>}
               <Field label={t('الحالة')}><select id="reg-status" className="inp" value={f.student_status} onChange={(e) => set('student_status', e.target.value)}><option value="طالب">{t('طالب')}</option><option value="خريج جديد">{t('خريج جديد')}</option></select></Field>
             </div>
             <Field label={t('المهارات الأساسية')} hint={t('افصل بينها بفاصلة')}><input id="reg-skills" className="inp" value={f.skills} onChange={(e) => set('skills', e.target.value)} placeholder="React, Figma, AutoCAD" /></Field>

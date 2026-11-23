@@ -19,7 +19,7 @@ export async function fullUser(id, { forSelf = false } = {}) {
   if (!u) return null;
   if (!forSelf) { delete u.email; delete u.phone; delete u.has_password; delete u.has_google; }
   if (u.role === 'student') {
-    Object.assign(u, await get('SELECT spec,status AS student_status,bio FROM student_profiles WHERE user_id=?', id));
+    Object.assign(u, await get('SELECT spec,spec_other,status AS student_status,bio FROM student_profiles WHERE user_id=?', id));
     u.skills = await all('SELECT id,name,level FROM skills WHERE user_id=?', id);
     u.portfolio = await all('SELECT id,title,url FROM portfolio WHERE user_id=?', id);
     u.works = await all('SELECT id,title,rating,comment,company_name,amount,cur,created_at FROM works WHERE student_id=? ORDER BY id DESC', id);
@@ -60,8 +60,9 @@ export async function createUser({ role, name, email, password, googleId, linked
       email, ph, googleId || null, linkedinId || null, role, name, avatar || null, googleId || linkedinId ? 1 : 0);
     const id = Number(info.lastInsertRowid);
     if (role === 'student') {
-      await run('INSERT INTO student_profiles(user_id,spec,status) VALUES(?,?,?)', id,
-        SPECS.includes(extra.spec) ? extra.spec : 'برمجة', extra.student_status === 'خريج جديد' ? 'خريج جديد' : 'طالب');
+      const spec = SPECS.includes(extra.spec) ? extra.spec : 'برمجة';
+      await run('INSERT INTO student_profiles(user_id,spec,spec_other,status) VALUES(?,?,?,?)', id, spec,
+        spec === 'أخرى' ? str(extra.spec_other, 40) : '', extra.student_status === 'خريج جديد' ? 'خريج جديد' : 'طالب');
       for (const s of String(extra.skills || '').split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 15))
         await run('INSERT INTO skills(user_id,name) VALUES(?,?)', id, s.slice(0, 40));
     } else if (role === 'company') {

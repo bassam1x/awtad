@@ -43,7 +43,7 @@ r.put('/me', wrap(async (req, res) => {
     if (b.phone !== undefined) await run('UPDATE users SET phone=? WHERE id=?', str(b.phone, 30), id);
     if (b.avatar !== undefined) await run('UPDATE users SET avatar=? WHERE id=?', safeAvatar(b.avatar), id);
     if (req.user.role === 'student') {
-      if (SPECS.includes(b.spec)) await run('UPDATE student_profiles SET spec=? WHERE user_id=?', b.spec, id);
+      if (SPECS.includes(b.spec)) await run('UPDATE student_profiles SET spec=?, spec_other=? WHERE user_id=?', b.spec, b.spec === 'أخرى' ? str(b.spec_other, 40) : '', id);
       if (['طالب', 'خريج جديد'].includes(b.student_status)) await run('UPDATE student_profiles SET status=? WHERE user_id=?', b.student_status, id);
       if (b.bio !== undefined) await run('UPDATE student_profiles SET bio=? WHERE user_id=?', str(b.bio, 1000), id);
     }

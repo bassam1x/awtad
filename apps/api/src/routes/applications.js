@@ -16,7 +16,7 @@ r.get('/applications', async (req, res) => {
       FROM applications a JOIN postings p ON p.id=a.posting_id JOIN users c ON c.id=p.company_id WHERE a.student_id=? ORDER BY a.id DESC`, u.id);
   } else if (u.role === 'company') {
     const posting = qs(req.query.posting);
-    rows = await all(`SELECT a.*, p.title, p.kind, p.pay, p.cur, p.company_id, s.name AS student_name, s.avatar AS student_avatar, sp.spec, sp.status AS student_status
+    rows = await all(`SELECT a.*, p.title, p.kind, p.pay, p.cur, p.company_id, s.name AS student_name, s.avatar AS student_avatar, sp.spec, sp.spec_other, sp.status AS student_status
       FROM applications a JOIN postings p ON p.id=a.posting_id JOIN users s ON s.id=a.student_id LEFT JOIN student_profiles sp ON sp.user_id=s.id
       WHERE p.company_id=? ${posting ? 'AND a.posting_id=?' : ''} ORDER BY a.id DESC`, u.id, ...(posting ? [posting] : []));
     for (const x of rows) x.skills = await all('SELECT name,level FROM skills WHERE user_id=? LIMIT 6', x.student_id);

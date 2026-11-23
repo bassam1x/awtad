@@ -227,3 +227,16 @@ test('الدعم الفني: التحقق، المصيدة، حدود السبا
   ok(await call('PUT', '/api/admin/settings', { supportEmail: '', supportInstagram: '' }, adm));
   assert.equal(ok(await call('GET', '/api/config')).support.email, 'iqawtad@gmail.com', 'بعد المسح يعود البريد الافتراضي');
 });
+test('التخصصات: قائمة موسّعة، و«أخرى» تحفظ تخصصاً مكتوباً ويظهر عند الآخرين', async () => {
+  const email = 'custom-spec@example.com';
+  const reg = ok(await call('POST', '/api/auth/register', { role: 'student', name: 'مدققة', email, password: 'Pass-Word-1', spec: 'أخرى', spec_other: '  تدقيق لغوي  ', student_status: 'طالب' }));
+  assert.equal(reg.user.spec, 'أخرى'); assert.equal(reg.user.spec_other, 'تدقيق لغوي');
+  const tok = reg.token;
+  ok(await call('PUT', '/api/me', { spec: 'تصوير ومونتاج', spec_other: 'يجب أن يُمسح' }, tok));
+  const me = ok(await call('GET', '/api/me', undefined, tok));
+  assert.equal(me.spec, 'تصوير ومونتاج'); assert.equal(me.spec_other, '', 'يُمسح النص المكتوب عند اختيار تخصص آخر');
+  ok(await call('PUT', '/api/me', { spec: 'أخرى', spec_other: 'x'.repeat(100) }, tok));
+  assert.equal(ok(await call('GET', '/api/me', undefined, tok)).spec_other.length, 40, 'حدّ 40 حرفاً');
+  const bad = ok(await call('POST', '/api/auth/register', { role: 'student', name: 'ب', email: 'bad-spec@example.com', password: 'Pass-Word-1', spec: 'ليس تخصصاً' }));
+  assert.equal(bad.user.spec, 'برمجة');
+});

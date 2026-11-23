@@ -142,6 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_msg_app ON messages(application_id);
 /* ترحيل العملة: الدينار «د.ع» ← IQD، والريال السعودي «ر.س» ← دولار أمريكي USD (بسعر 3.75). يُنفَّذ عند كل إقلاع وهو آمن للتكرار. */
 export const MIGRATE = `
 ALTER TABLE users ADD COLUMN IF NOT EXISTS linkedin_id TEXT;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS spec_other TEXT NOT NULL DEFAULT '';
 CREATE UNIQUE INDEX IF NOT EXISTS users_linkedin_id_key ON users(linkedin_id);
 /* «مناسب لـ»: كان شارة ثابتة على كل فرصة. للقواعد القديمة تحتفظ الصفوف الموجودة بالشارة السابقة، وتبدأ الجديدة فارغة. */
 ALTER TABLE postings ADD COLUMN IF NOT EXISTS suitable_for TEXT NOT NULL DEFAULT 'مناسب للخريجين الجدد';
