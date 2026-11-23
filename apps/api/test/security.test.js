@@ -183,7 +183,7 @@ test('البريد المساعد للشركة: بريد صحيح فقط', async
 test('الدعم الفني: التحقق، المصيدة، حدود السبام، صلاحيات المدير، وضبط القنوات من الإعدادات', async () => {
   const adm = await login(ADMIN.email, ADMIN.password), st = await login('sara@demo.iq');
   // لا قنوات قبل ضبطها
-  const c0 = ok(await call('GET', '/api/config')).support; assert.deepEqual([c0.email, c0.instagram], ['', 'awtadiq']);
+  const c0 = ok(await call('GET', '/api/config')).support; assert.deepEqual([c0.email, c0.instagram], ['iqawtad@gmail.com', 'awtadiq']);
   // التحقق
   assert.equal((await call('POST', '/api/support', { name: 'أ', email: 'a@example.com', message: 'رسالة طويلة كفاية' })).status, 400, 'اسم قصير');
   assert.equal((await call('POST', '/api/support', { name: 'زائر', email: 'not-an-email', message: 'رسالة طويلة كفاية' })).status, 400, 'بريد خاطئ');
@@ -225,5 +225,5 @@ test('الدعم الفني: التحقق، المصيدة، حدود السبا
   assert.equal(mails.length, 1); assert.equal(mails[0].to, 'help@awtad.iq');
   assert.ok(!/[\r\n]/.test(mails[0].subject), 'لا أسطر جديدة في العنوان');
   ok(await call('PUT', '/api/admin/settings', { supportEmail: '', supportInstagram: '' }, adm));
-  assert.equal(ok(await call('GET', '/api/config')).support.email, '');
+  assert.equal(ok(await call('GET', '/api/config')).support.email, 'iqawtad@gmail.com', 'بعد المسح يعود البريد الافتراضي');
 });

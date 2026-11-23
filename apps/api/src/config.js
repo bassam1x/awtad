@@ -30,7 +30,7 @@ export const config = {
   mailScriptSecret: process.env.MAIL_SCRIPT_SECRET || '',
   mailFromName: process.env.MAIL_FROM_NAME || 'أوتاد',
   // قنوات الدعم (تُضبط من لوحة المدير أيضاً؛ ما في لوحة المدير يغلب هذه القيم)
-  supportEmail: process.env.SUPPORT_EMAIL || '',
+  supportEmail: process.env.SUPPORT_EMAIL || 'iqawtad@gmail.com',
   supportInstagram: process.env.SUPPORT_INSTAGRAM || 'awtadiq',
   // أصول الواجهة المسموح لها باستدعاء الـ API من متصفح آخر (CloudFront مثلاً)، مفصولة بفاصلة
   corsOrigins: list(process.env.CORS_ORIGINS),
