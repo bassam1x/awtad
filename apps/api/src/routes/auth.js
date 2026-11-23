@@ -5,7 +5,6 @@ import { all, get, run, tx } from '../db.js';
 import crypto from 'node:crypto';
 import { checkPasswordAsync, hashPasswordAsync, loginGuard, passwordOk, rateLimit, signTicket, verifyTicket } from '../security.js';
 import { exchangeLinkedinCode, linkedinEnabled, linkedinRedirect } from '../linkedin.js';
-import { mailEnabled, resetEmail, sendMail } from '../mailer.js';
 import { createUser, getSupport, session } from '../services.js';
 import { ADMIN, DEMO_DOMAIN, DEMO_PASSWORD, demoEnabled } from '../seed.js';
 import { UserError, bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
@@ -28,7 +27,6 @@ const demoAccounts = async () => {
 r.get('/config', async (_req, res) => res.json({
   googleClientId: await getGoogleId(), demo: await demoAccounts(),
   linkedinClientId: linkedinEnabled() ? config.linkedinClientId : '', linkedinRedirect: linkedinRedirect(),
-  mailEnabled: mailEnabled() || config.env !== 'production',
   support: await getSupport(),
 }));
 r.post('/auth/register', limit, wrap(async (req, res) => {
@@ -109,49 +107,5 @@ r.post('/auth/linkedin', limit, wrap(async (req, res) => {
   res.json(await session(await createUser({ role, name: p.name || p.email.split('@')[0], email: p.email, linkedinId: p.sub })));
 }));
 
-/* ---------- استرجاع كلمة المرور عبر البريد ----------
-   forgot: نردّ دائماً بنفس الجواب سواء وُجد الحساب أم لا (منعاً لتخمين البريدات المسجّلة).
-   الرابط صالح 30 دقيقة ولمرة واحدة، ونخزّن بصمته (sha256) لا الرمز نفسه. */
-const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
-/* الحد حسب العنوان فقط واسع (يشترك كثيرون بعنوان واحد)، والحماية الفعلية من الإغراق بطلب واحد في الدقيقة لكل حساب أدناه */
-const mailLimit = rateLimit({ max: 40 });
-const RESET_TTL_MS = 30 * 60 * 1000, RESET_COOLDOWN_MS = 60 * 1000;
-
-r.post('/auth/forgot', mailLimit, wrap(async (req, res) => {
-  if (!mailEnabled() && config.env === 'production') return bad(res, 'استرجاع كلمة المرور بالبريد غير مفعّل بعد.', 503);
-  const email = str(req.body?.email, 120).toLowerCase();
-  const lang = ['ar', 'en', 'ku'].includes(req.body?.lang) ? req.body.lang : 'ar';
-  const u = emailOk(email) ? await get("SELECT id,name,status FROM users WHERE email=? AND status<>'banned'", email) : null;
-  // لا نرسل أكثر من رسالة في الدقيقة للحساب الواحد (يمنع إغراق بريد الضحية بطلبات متكررة) مع بقاء الرد نفسه
-  const recent = u ? await get('SELECT expires_at FROM password_resets WHERE user_id=? AND used=0 ORDER BY id DESC LIMIT 1', u.id) : null;
-  if (u && !email.endsWith(DEMO_DOMAIN) && !(recent && recent.expires_at > Date.now() + RESET_TTL_MS - RESET_COOLDOWN_MS)) {
-    const raw = crypto.randomBytes(32).toString('base64url');
-    await run('DELETE FROM password_resets WHERE user_id=? AND used=0', u.id);
-    await run('INSERT INTO password_resets(user_id,token_hash,expires_at) VALUES(?,?,?)', u.id, sha(raw), Date.now() + RESET_TTL_MS);
-    const link = `${config.appUrl}/reset-password?token=${raw}`;
-    // لا ننتظر الإرسال: يتساوى زمن الرد سواء وُجد الحساب أم لا
-    sendMail({ to: email, ...resetEmail({ name: u.name, link, lang }) }).catch((e) => {
-      console.error('تعذّر إرسال بريد الاسترجاع:', e.message);
-      if (config.env !== 'production') console.log(`[dev] رابط الاسترجاع: ${link}`);
-    });
-  }
-  res.json({ ok: true });
-}));
-
-r.post('/auth/reset', mailLimit, wrap(async (req, res) => {
-  const password = String(req.body?.password || '');
-  if (!passwordOk(password)) return bad(res, 'كلمة المرور بين 8 و128 حرفاً');
-  const row = await get('SELECT id,user_id,expires_at,used FROM password_resets WHERE token_hash=?', sha(String(req.body?.token || '')));
-  if (!row || row.used || row.expires_at < Date.now()) return bad(res, 'الرابط غير صالح أو منتهي. اطلب رابطاً جديداً.', 400);
-  const ph = await hashPasswordAsync(password);
-  await tx(async () => {
-    // استهلاك ذرّي: لو وصل طلبان بنفس الرابط معاً ينجح أحدهما فقط
-    if (!(await run('UPDATE password_resets SET used=1 WHERE id=? AND used=0', row.id)).changes) throw new UserError('الرابط غير صالح أو منتهي. اطلب رابطاً جديداً.', 400);
-    // رفع نسخة التوكن يُبطل كل الجلسات القديمة؛ ووصول المستخدم للبريد يثبت ملكيته
-    await run('UPDATE users SET password_hash=?, token_version=token_version+1, email_verified=1 WHERE id=?', ph, row.user_id);
-    await run('DELETE FROM password_resets WHERE user_id=? AND used=0', row.user_id);
-  });
-  res.json({ ok: true });
-}));
 
 export default r;

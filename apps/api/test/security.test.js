@@ -164,14 +164,6 @@ test('حماية الدخول: تقييد المحاولات الفاشلة لك
   assert.equal((await call('POST', '/api/auth/login', { email: 'sara@demo.iq', password: 'Demo@1234' })).status, 200, 'حساب آخر من نفس العنوان غير متأثر');
 });
 
-test('استرجاع كلمة المرور: لا إغراق بريد الضحية (طلب واحد في الدقيقة لكل حساب)', async () => {
-  ok(await call('POST', '/api/auth/register', { role: 'student', name: 'إغراق', email: 'flood@example.com', password: 'Pass-Word-1' }));
-  mails.length = 0;
-  for (let i = 0; i < 5; i++) ok(await call('POST', '/api/auth/forgot', { email: 'flood@example.com' }));
-  await settle();
-  assert.equal(mails.length, 1, `أُرسلت ${mails.length} رسائل`);
-});
-
 test('الحسابات التجريبية: لا تغيير لبيانات الدخول ولا حذف (حتى لا يقفلها أي زائر)', async () => {
   const st = await login('sara@demo.iq');
   assert.equal((await call('PUT', '/api/me/password', { current: 'Demo@1234', next: 'Hacked-Pass-1' }, st)).status, 403);

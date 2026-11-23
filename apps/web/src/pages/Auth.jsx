@@ -104,61 +104,6 @@ export function LinkedInCallback() {
   );
 }
 
-/* ---------- نسيت كلمة المرور / تعيين كلمة جديدة ---------- */
-export function ForgotPage() {
-  const toast = useToast();
-  const [email, setEmail] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault(); setBusy(true);
-    try { await api.post('/auth/forgot', { email, lang }); setSent(true); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
-  };
-  return (
-    <Shell title={t('نسيت كلمة المرور؟')} sub={t('اكتب بريدك الإلكتروني وسنرسل لك رابطاً لاختيار كلمة مرور جديدة.')}>
-      {sent ? (
-        <div role="status" className="rounded-xl border border-good/40 bg-goodsoft p-4 text-sm">
-          <b className="block text-good">{t('تحقق من بريدك')}</b>
-          {t('إن كان هذا البريد مسجلاً لدينا فقد أرسلنا إليه رابط إعادة التعيين، وهو صالح 30 دقيقة. تفقد صندوق الرسائل غير المرغوبة أيضاً.')}
-        </div>
-      ) : (
-        <form onSubmit={submit}>
-          <Field label={t('البريد الإلكتروني')}><input id="forgot-email" type="email" autoComplete="email" dir="ltr" className="inp text-left" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus /></Field>
-          <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الإرسال…') : t('أرسل رابط إعادة التعيين')}</button>
-        </form>
-      )}
-      <p className="mt-5 text-center text-sm"><Link className="font-semibold text-brand" to="/login">{t('العودة لتسجيل الدخول')}</Link></p>
-    </Shell>
-  );
-}
-
-export function ResetPage() {
-  const toast = useToast();
-  const nav = useNavigate();
-  const token = new URLSearchParams(location.search).get('token') || '';
-  const [f, setF] = useState({ password: '', again: '' });
-  const [busy, setBusy] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault();
-    if (f.password !== f.again) return toast(t('كلمتا المرور غير متطابقتين'), 'err');
-    setBusy(true);
-    try { await api.post('/auth/reset', { token, password: f.password }); toast(t('تم تعيين كلمة المرور. سجّل الدخول بها.')); nav('/login', { replace: true }); } catch (err) { toast(err.message, 'err'); } finally { setBusy(false); }
-  };
-  return (
-    <Shell title={t('كلمة مرور جديدة')} sub={t('اختر كلمة مرور لا تقل عن 8 أحرف.')}>
-      {!token ? (
-        <p className="text-bad">{t('الرابط غير صالح. اطلب رابطاً جديداً.')} <Link className="font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></p>
-      ) : (
-        <form onSubmit={submit}>
-          <Field label={t('كلمة المرور الجديدة')} hint={t('8 أحرف على الأقل')}><input id="reset-pass" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} maxLength={128} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required autoFocus /></Field>
-          <Field label={t('أعد كتابة كلمة المرور')}><input id="reset-again" type="password" autoComplete="new-password" dir="ltr" className="inp text-left" minLength={8} value={f.again} onChange={(e) => setF({ ...f, again: e.target.value })} required /></Field>
-          <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الحفظ…') : t('حفظ كلمة المرور')}</button>
-        </form>
-      )}
-    </Shell>
-  );
-}
-
 /* ---------- Login form (used on Welcome and /login) ---------- */
 export function LoginForm() {
   const { login } = useAuth();
@@ -201,7 +146,7 @@ export function LoginForm() {
       <form onSubmit={submit}>
         <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="next" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
         <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" enterKeyHint="go" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
-        {cfg?.mailEnabled && <div className="-mt-1 mb-3 text-sm"><Link className="auth-link font-semibold text-brand" to="/forgot">{t('نسيت كلمة المرور؟')}</Link></div>}
+        <div className="-mt-1 mb-3 text-sm"><Link className="auth-link font-semibold text-brand" to="/support">{t('فقدت كلمة المرور؟ تواصل مع الدعم')}</Link></div>
         <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الدخول…') : t('تسجيل الدخول')}</button>
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>

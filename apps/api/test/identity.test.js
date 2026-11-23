@@ -52,7 +52,6 @@ test('/config: LinkedIn مفعّل ويعيد عنوان العودة، والب
   const c = (await call('GET', '/api/config')).json;
   assert.equal(c.linkedinClientId, 'li-client');
   assert.equal(c.linkedinRedirect, 'https://app.example.com/auth/linkedin/callback');
-  assert.equal(c.mailEnabled, true);
   assert.ok(!JSON.stringify(c).includes('li-secret'), 'السر لا يظهر أبداً');
 });
 
@@ -92,44 +91,10 @@ test('LinkedIn: ربط حساب موجود بنفس البريد، وإلغاء 
   assert.equal((await call('POST', '/api/auth/linkedin', { code: 'banned' })).status, 403);
 });
 
-test('استرجاع كلمة المرور: رابط لمرة واحدة، ينتهي، يُبطل الجلسات، ولا يكشف وجود الحساب', async () => {
-  mails.length = 0;
-  const reg = await call('POST', '/api/auth/register', { role: 'student', name: 'نسيان', email: 'forgot@example.com', password: 'Old-Password-1' });
-  const same = await call('POST', '/api/auth/forgot', { email: 'nobody-here@example.com' });
-  const real = await call('POST', '/api/auth/forgot', { email: 'Forgot@Example.com', lang: 'en' });
-  await settle();
-  assert.deepEqual(same.json, real.json); assert.equal(same.status, real.status);       // نفس الجواب
-  assert.equal(mails.length, 1); assert.equal(mails[0].to, 'forgot@example.com');
-  assert.match(mails[0].subject, /Reset your Awtad password/);
-  const link = mails[0].text.match(/https:\/\/app\.example\.com\/reset-password\?token=([\w-]+)/);
-  assert.ok(link, mails[0].text); const token = link[1];
-  assert.ok(mails[0].html.includes(link[0]));
-  // الرمز الخام غير مخزّن
-  assert.equal((await dbm.get('SELECT COUNT(*) c FROM password_resets WHERE token_hash=?', token)).c, 0);
-
-  assert.equal((await call('POST', '/api/auth/reset', { token: 'garbage', password: 'New-Password-1' })).status, 400);
-  assert.equal((await call('POST', '/api/auth/reset', { token, password: 'short' })).status, 400);
-  assert.equal((await call('POST', '/api/auth/reset', { token, password: 'New-Password-1' })).status, 200);
-  assert.equal((await call('POST', '/api/auth/reset', { token, password: 'Another-Pass-2' })).status, 400, 'لا يُستخدم مرتين');
-  assert.equal((await call('POST', '/api/auth/login', { email: 'forgot@example.com', password: 'Old-Password-1' })).status, 401);
-  assert.equal((await call('POST', '/api/auth/login', { email: 'forgot@example.com', password: 'New-Password-1' })).status, 200);
-  assert.equal((await call('GET', '/api/me', null, reg.json.token)).status, 401, 'الجلسة القديمة أُبطلت');
-});
-
-test('استرجاع كلمة المرور: رابط جديد يُبطل القديم، والمنتهي مرفوض، والموقوف والتجريبي لا يستلمان', async () => {
-  mails.length = 0;
-  await call('POST', '/api/auth/register', { role: 'company', name: 'شركة', email: 'two@example.com', password: 'Old-Password-1' });
-  await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();
-  await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();   // خلال الدقيقة: يُتجاهل (حماية من إغراق البريد)
-  assert.equal(mails.length, 1, 'طلب ثانٍ خلال دقيقة لا يرسل رسالة جديدة');
-  await dbm.run('UPDATE password_resets SET expires_at=expires_at-?', 2 * 60 * 1000);   // نحاكي مرور دقيقتين
-  await call('POST', '/api/auth/forgot', { email: 'two@example.com' }); await settle();
-  const tokens = mails.map((m) => m.text.match(/token=([\w-]+)/)[1]);
-  assert.equal(tokens.length, 2);
-  assert.equal((await call('POST', '/api/auth/reset', { token: tokens[0], password: 'New-Password-1' })).status, 400, 'القديم أُبطل');
-  await dbm.run('UPDATE password_resets SET expires_at=? WHERE used=0', Date.now() - 1000);
-  assert.equal((await call('POST', '/api/auth/reset', { token: tokens[1], password: 'New-Password-1' })).status, 400, 'المنتهي');
-  mails.length = 0;
-  await call('POST', '/api/auth/forgot', { email: 'sara@demo.iq' }); await call('POST', '/api/auth/forgot', { email: 'not an email' }); await settle();
-  assert.equal(mails.length, 0);
+test('خدمة نسيان كلمة المرور محذوفة: لا مسارات ولا رسائل', async () => {
+  for (const [path, body] of [['/api/auth/forgot', { email: 'a@example.com' }], ['/api/auth/reset', { token: 'x', password: 'New-Password-1' }]]) {
+    const r = await call('POST', path, body);
+    assert.ok([401, 404].includes(r.status), `${path} يجب ألا يعمل (${r.status})`);
+    assert.notEqual(r.json?.ok, true);
+  }
 });
