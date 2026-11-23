@@ -244,3 +244,20 @@ test('التخصصات: قائمة موسّعة، و«أخرى» تحفظ تخص
   const bad = ok(await call('POST', '/api/auth/register', { role: 'student', name: 'ب', email: 'bad-spec@example.com', password: 'Pass-Word-1', spec: 'ليس تخصصاً' }));
   assert.equal(bad.user.spec, 'برمجة');
 });
+
+test('المدير: ملف كامل لأي مستخدم أو شركة، بلا أي أسرار، وبصلاحية المدير فقط', async () => {
+  const adm = await login('admin@awtad.iq', 'Admin@12345');
+  const users = ok(await call('GET', '/api/admin/users?role=student', undefined, adm));
+  const sara = users.find((u) => u.email === 'sara@demo.iq');
+  const d = ok(await call('GET', `/api/admin/users/${sara.id}`, undefined, adm));
+  assert.equal(d.email, 'sara@demo.iq'); assert.equal(d.role, 'student'); assert.ok(Array.isArray(d.applications) && Array.isArray(d.transactions));
+  assert.ok(!('password_hash' in d) && !JSON.stringify(d).includes('scrypt'), 'لا أسرار');
+  const cos = ok(await call('GET', '/api/admin/users?role=company', undefined, adm));
+  const c = ok(await call('GET', `/api/admin/users/${cos[0].id}`, undefined, adm));
+  assert.equal(c.role, 'company'); assert.ok(Array.isArray(c.postings)); assert.equal(typeof c.postings[0]?.applicants ?? 0, 'number');
+  assert.equal((await call('GET', '/api/admin/users/999999', undefined, adm)).status, 404);
+  assert.equal((await call('GET', '/api/admin/users/abc', undefined, adm)).status, 404);
+  const st = await login('sara@demo.iq');
+  assert.equal((await call('GET', `/api/admin/users/${sara.id}`, undefined, st)).status, 403, 'غير المدير ممنوع');
+});
+

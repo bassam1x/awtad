@@ -1,7 +1,7 @@
 import { isRtl, t } from '../i18n/index.js';
 import { Tr } from '../translate.jsx';
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Ban, Save, Briefcase, CheckCircle2, ClipboardList, Mail, Search, ShieldCheck, Trash2, Users, Wallet as WalletIcon, Building2, GraduationCap } from '../icons.jsx';
 import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
@@ -36,7 +36,7 @@ export function AdminDashboard() {
       <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-bold">{t('أحدث المسجلين')}</h2><Link to="/app/users" className="text-sm font-semibold text-brand">{t('إدارة المستخدمين')}</Link></div>
       <div className="grid gap-3 sm:grid-cols-2">
         {s.recent.map((u) => (
-          <div key={u.id} className="card flex items-center gap-3 p-3"><Avatar u={u} size={40} square={u.role === 'company'} /><div className="min-w-0 flex-1"><div className="truncate font-semibold">{u.name}</div><div className="text-xs text-mute">{ROLE[u.role]} · {dateAr(u.created_at)}</div></div></div>
+          <Link key={u.id} to={`/app/users/${u.id}`} className="card flex items-center gap-3 p-3"><Avatar u={u} size={40} square={u.role === 'company'} /><div className="min-w-0 flex-1"><div className="truncate font-semibold">{u.name}</div><div className="text-xs text-mute">{ROLE[u.role]} · {dateAr(u.created_at)}</div></div></Link>
         ))}
       </div>
     </div>
@@ -68,13 +68,14 @@ export function AdminUsers() {
             <tbody>
               {data.map((u) => (
                 <tr key={u.id} className="border-b border-line last:border-0">
-                  <td className="p-3"><div className="flex items-center gap-3"><Avatar u={u} size={36} square={u.role === 'company'} /><div className="min-w-0"><div className="font-semibold">{u.name}</div><div className="text-xs text-mute" dir="ltr" style={{ textAlign: isRtl ? 'right' : 'left' }}>{u.email}</div></div></div></td>
+                  <td className="p-3"><div className="flex items-center gap-3"><Avatar u={u} size={36} square={u.role === 'company'} /><div className="min-w-0"><Link to={`/app/users/${u.id}`} className="font-semibold hover:text-brand">{u.name}</Link><div className="text-xs text-mute" dir="ltr" style={{ textAlign: isRtl ? 'right' : 'left' }}>{u.email}</div></div></div></td>
                   <td className="p-3">{ROLE[u.role]}</td>
                   <td className="p-3">{u.status === 'banned' ? <span className="chip chip-r">{t('موقوف')}</span> : <span className="chip chip-g"><CheckCircle2 size={12} />{t('نشط')}</span>}</td>
                   <td className="p-3 text-mute">{dateAr(u.created_at)}</td>
                   <td className="p-3">
                     {u.id !== me.id && (
                       <div className="flex justify-end gap-2">
+                        <Link className="btn btn-sm" to={`/app/users/${u.id}`}>{t('الملف')}</Link>
                         {u.status === 'banned' ? <button className="btn btn-sm" onClick={() => setStatus(u, 'active')}>{t('تفعيل')}</button> : <button className="btn btn-sm" onClick={() => setStatus(u, 'banned')}><Ban size={13} />{t('إيقاف')}</button>}
                         {confirm === u.id ? <button className="btn btn-d btn-sm" onClick={() => del(u)}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" aria-label={t('حذف')} data-tip={t('حذف')} onClick={() => setConfirm(u.id)}><Trash2 size={13} /></button>}
                       </div>
@@ -238,3 +239,113 @@ export function AdminSupport() {
     </div>
   );
 }
+
+const APP_ST = { pending: ['قيد المراجعة', 'chip-w'], accepted: ['مقبول', 'chip-g'], rejected: ['مرفوض', 'chip-r'] };
+const Row = ({ k, children }) => (children === '' || children == null ? null : <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line py-2 last:border-0"><span className="text-sm text-mute">{k}</span><span className="min-w-0 break-words text-end font-semibold">{children}</span></div>);
+
+/** ملف كامل لأي حساب للمدير: التفاصيل الخاصة، المنشورات أو الطلبات، المالية، مع الإيقاف والحذف. */
+export function AdminUserDetail() {
+  const { id } = useParams();
+  const { user: me } = useAuth();
+  const nav = useNavigate();
+  const toast = useToast();
+  const { data: u, loading, error, reload } = useFetch(`/admin/users/${id}`);
+  const [confirm, setConfirm] = useState(false);
+  if (loading) return <Spinner />;
+  if (error || !u) return <ErrorBox>{error || t('غير موجود')}</ErrorBox>;
+  const isS = u.role === 'student', isC = u.role === 'company', mine = u.id === me.id;
+  const setStatus = async (status) => { try { await api.patch(`/admin/users/${u.id}`, { status }); toast(status === 'banned' ? t('تم إيقاف الحساب') : t('أُعيد تفعيل الحساب')); reload(); } catch (e) { toast(e.message, 'err'); } };
+  const del = async () => { try { await api.del(`/admin/users/${u.id}`); toast(t('حُذف المستخدم')); nav('/app/users', { replace: true }); } catch (e) { toast(e.message, 'err'); } };
+  const methods = [u.has_password && t('كلمة مرور'), u.has_google && 'Google', u.has_linkedin && 'LinkedIn'].filter(Boolean).join(' · ');
+  return (
+    <div>
+      <PageHeader title={u.name} sub={`${ROLE[u.role]} · ${t('انضم')} ${dateAr(u.created_at)}`} />
+      <div className="card mb-5 flex flex-wrap items-center gap-4 p-4">
+        <Avatar u={u} size={64} square={isC} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-lg font-bold">{u.name}</span>
+            {u.status === 'banned' ? <span className="chip chip-r">{t('موقوف')}</span> : <span className="chip chip-g"><CheckCircle2 size={12} />{t('نشط')}</span>}
+            <span className="chip">{ROLE[u.role]}</span>
+          </div>
+          <div className="text-sm text-mute" dir="ltr" style={{ textAlign: isRtl ? 'right' : 'left' }}>{u.email}</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {u.role !== 'admin' && <Link className="btn btn-sm" to={`/app/people/${u.id}`}>{t('الملف العام')}</Link>}
+          {!mine && (u.status === 'banned' ? <button className="btn btn-sm" onClick={() => setStatus('active')}>{t('تفعيل')}</button> : <button className="btn btn-sm" onClick={() => setStatus('banned')}><Ban size={13} />{t('إيقاف')}</button>)}
+          {!mine && (confirm ? <button className="btn btn-d btn-sm" onClick={del}>{t('تأكيد الحذف')}</button> : <button className="btn btn-d btn-sm" onClick={() => setConfirm(true)}><Trash2 size={13} />{t('حذف')}</button>)}
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <section className="card p-5">
+          <h2 className="mb-2 font-bold">{t('بيانات الحساب')}</h2>
+          <Row k={t('البريد الإلكتروني')}><span dir="ltr">{u.email}</span></Row>
+          <Row k={t('رقم الهاتف')}>{u.phone ? <span dir="ltr">{u.phone}</span> : ''}</Row>
+          <Row k={t('طرق الدخول')}>{methods}</Row>
+          <Row k={t('البريد موثّق')}>{u.email_verified ? t('نعم') : t('لا')}</Row>
+          <Row k={t('تاريخ التسجيل')}>{dateAr(u.created_at)}</Row>
+          <Row k={t('رقم الحساب')}><span dir="ltr">#{u.id}</span></Row>
+        </section>
+
+        {isS && (
+          <section className="card p-5">
+            <h2 className="mb-2 font-bold">{t('الملف المهني')}</h2>
+            <Row k={t('التخصص')}>{u.spec === 'أخرى' && u.spec_other ? u.spec_other : t(u.spec)}</Row>
+            <Row k={t('الحالة')}>{t(u.student_status)}</Row>
+            <Row k={t('التقييم')}>{u.works?.length ? `${(Number(u.avg) || 0).toFixed(1)} (${u.works.length})` : ''}</Row>
+            {u.bio && <p className="mt-3 whitespace-pre-wrap text-sm text-mute"><Tr>{u.bio}</Tr></p>}
+            {u.skills?.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{u.skills.map((s) => <span key={s.id} className="chip">{s.name}</span>)}</div>}
+            {u.portfolio?.length > 0 && <div className="mt-3 grid gap-1 text-sm">{u.portfolio.map((p) => <a key={p.id} className="truncate text-brand hover:underline" href={p.url} target="_blank" rel="noopener noreferrer">{p.title}</a>)}</div>}
+          </section>
+        )}
+
+        {isC && (
+          <section className="card p-5">
+            <h2 className="mb-2 font-bold">{t('ملف الشركة')}</h2>
+            <Row k={t('قطاع العمل')}>{u.sector}</Row>
+            <Row k={t('المدينة')}>{u.city}</Row>
+            <Row k={t('العنوان')}>{u.address}</Row>
+            <Row k={t('بريد التواصل')}>{u.contact_email ? <span dir="ltr">{u.contact_email}</span> : ''}</Row>
+            {u.map_url && <Row k={t('الموقع على الخريطة')}><a className="text-brand hover:underline" href={u.map_url} target="_blank" rel="noopener noreferrer">{t('فتح')}</a></Row>}
+            {u.about && <p className="mt-3 whitespace-pre-wrap text-sm text-mute"><Tr>{u.about}</Tr></p>}
+          </section>
+        )}
+      </div>
+
+      {isS && (
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <section className="card p-5">
+            <h2 className="mb-2 font-bold">{t('طلبات التقديم')} ({u.applications.length})</h2>
+            {u.applications.length ? u.applications.map((a) => (
+              <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2 last:border-0">
+                <Link className="min-w-0 hover:text-brand" to={`/app/opportunity/${a.posting_id}`}><span className="font-semibold"><Tr>{a.title}</Tr></span><span className="block text-xs text-mute"><Tr>{a.company_name}</Tr> · {dateAr(a.created_at)}</span></Link>
+                <span className={`chip ${(APP_ST[a.status] || APP_ST.pending)[1]}`}>{t((APP_ST[a.status] || APP_ST.pending)[0])}</span>
+              </div>
+            )) : <p className="text-sm text-mute">{t('لا توجد طلبات.')}</p>}
+          </section>
+          <section className="card p-5">
+            <h2 className="mb-2 font-bold">{t('المحفظة')}</h2>
+            {u.wallet?.length > 0 && <div className="mb-3 flex flex-wrap gap-2">{u.wallet.map((w) => <span key={w.cur} className="chip chip-g money">{fmt(w.total)} {curLabel(w.cur)}</span>)}</div>}
+            {u.transactions.length ? u.transactions.map((x) => (
+              <div key={x.id} className="flex items-center justify-between gap-2 border-b border-line py-2 text-sm last:border-0"><span className="min-w-0"><Tr>{x.title}</Tr><span className="block text-xs text-mute">{dateAr(x.created_at)}</span></span><span className="money font-semibold">{fmt(x.amount)} {curLabel(x.cur)}</span></div>
+            )) : <p className="text-sm text-mute">{t('لا توجد حركات مالية.')}</p>}
+          </section>
+        </div>
+      )}
+
+      {isC && (
+        <section className="card mt-5 p-5">
+          <h2 className="mb-2 font-bold">{t('الفرص المنشورة')} ({u.postings.length})</h2>
+          {u.postings.length ? u.postings.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2 last:border-0">
+              <Link className="min-w-0 hover:text-brand" to={`/app/opportunity/${p.id}`}><span className="font-semibold"><Tr>{p.title}</Tr></span><span className="block text-xs text-mute">{p.kind === 'job' ? t('وظيفة') : t('مشروع')} · {fmt(p.pay)} {curLabel(p.cur)} · {dateAr(p.created_at)}</span></Link>
+              <span className="flex items-center gap-2"><span className="chip">{p.applicants} {t('متقدم')}</span><span className={`chip ${p.status === 'open' ? 'chip-g' : ''}`}>{p.status === 'open' ? t('مفتوحة') : t('مغلقة')}</span></span>
+            </div>
+          )) : <p className="text-sm text-mute">{t('لم ينشر أي فرصة بعد.')}</p>}
+        </section>
+      )}
+    </div>
+  );
+}
+

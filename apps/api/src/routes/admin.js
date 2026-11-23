@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { config } from '../config.js';
 import { all, get, run } from '../db.js';
 import { role } from '../security.js';
-import { POSTING_SQL, getSupport, postingOut } from '../services.js';
+import { POSTING_SQL, fullUser, getSupport, postingOut } from '../services.js';
 import { bad, emailOk, igHandle, qs, str } from '../utils.js';
 import { getGoogleId } from './auth.js';
 
@@ -13,6 +13,23 @@ r.get('/users', async (req, res) => {
   const q = `%${str(req.query.q, 60)}%`;
   const rl = ['student', 'company', 'admin'].includes(qs(req.query.role)) ? req.query.role : '';
   res.json(await all(`SELECT id,name,email,role,avatar,status,created_at FROM users WHERE (name ILIKE ? OR email ILIKE ?) ${rl ? 'AND role=?' : ''} ORDER BY id DESC`, q, q, ...(rl ? [rl] : [])));
+});
+/** ملف كامل لأي حساب للمدير: بيانات الدخول (دون كلمة المرور)، التفاصيل، المنشورات أو الطلبات، والحركات المالية. */
+r.get('/users/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return bad(res, 'غير موجود', 404);
+  const u = await fullUser(id, { forSelf: true });
+  if (!u) return bad(res, 'غير موجود', 404);
+  const x = await get('SELECT email_verified,(google_id IS NOT NULL) AS has_google,(linkedin_id IS NOT NULL) AS has_linkedin FROM users WHERE id=?', id);
+  const out = { ...u, email_verified: !!x.email_verified, has_google: !!x.has_google, has_linkedin: !!x.has_linkedin, has_password: !!u.has_password };
+  if (u.role === 'student') {
+    out.applications = await all(`SELECT a.id,a.status,a.stage,a.created_at,p.id AS posting_id,p.title,p.kind,c.name AS company_name FROM applications a JOIN postings p ON p.id=a.posting_id JOIN users c ON c.id=p.company_id WHERE a.student_id=? ORDER BY a.id DESC LIMIT 100`, id);
+    out.transactions = await all('SELECT id,title,amount,cur,created_at FROM wallet_tx WHERE user_id=? ORDER BY id DESC LIMIT 50', id);
+  } else if (u.role === 'company') {
+    const rows = await all(`SELECT p.id,p.title,p.kind,p.status,p.pay,p.cur,p.created_at,(SELECT COUNT(*) FROM applications a WHERE a.posting_id=p.id) AS applicants FROM postings p WHERE p.company_id=? ORDER BY p.id DESC LIMIT 100`, id);
+    out.postings = rows.map((p) => ({ ...p, applicants: Number(p.applicants) }));
+  }
+  res.json(out);
 });
 r.patch('/users/:id', async (req, res) => {
   const t = await get('SELECT id FROM users WHERE id=?', req.params.id);

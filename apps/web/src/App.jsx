@@ -33,6 +33,7 @@ const AdminTransactions = page(() => import('./pages/admin.jsx'), 'AdminTransact
 const AdminApplications = page(() => import('./pages/admin.jsx'), 'AdminApplications');
 const AdminSettings = page(() => import('./pages/admin.jsx'), 'AdminSettings');
 const AdminSupport = page(() => import('./pages/admin.jsx'), 'AdminSupport');
+const AdminUserDetail = page(() => import('./pages/admin.jsx'), 'AdminUserDetail');
 
 function Gate({ children }) {
   const { user, ready } = useAuth();
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="talent" element={<Role roles={C}><Talent /></Role>} />
           {/* مدير */}
           <Route path="users" element={<Role roles={A}><AdminUsers /></Role>} />
+          <Route path="users/:id" element={<Role roles={A}><AdminUserDetail /></Role>} />
           <Route path="all-postings" element={<Role roles={A}><AdminPostings /></Role>} />
           <Route path="all-applications" element={<Role roles={A}><AdminApplications /></Role>} />
           <Route path="settings" element={<Role roles={A}><AdminSettings /></Role>} />
