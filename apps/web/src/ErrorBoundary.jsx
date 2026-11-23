@@ -1,10 +1,11 @@
 import { t } from './i18n/index.js';
 import { Component } from 'react';
+import { reloadOnceIfStale } from './staleReload.js';
 
 export default class ErrorBoundary extends Component {
   state = { error: null };
   static getDerivedStateFromError(error) { return { error }; }
-  componentDidCatch(error) { console.error(error); }
+  componentDidCatch(error) { console.error(error); reloadOnceIfStale(error); }
   render() {
     if (!this.state.error) return this.props.children;
     return (

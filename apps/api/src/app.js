@@ -91,7 +91,9 @@ export function createApp() {
   // تقديم الواجهة من نفس الخادم (اختياري)
   if (config.serveWeb && fs.existsSync(config.webDist)) {
     app.use(express.static(config.webDist));
-    app.get(/^\/(?!api).*/, (_req, res) => res.sendFile(path.join(config.webDist, 'index.html')));
+    // ملف أصول ناقص (جزء واجهة قديم بعد نشر جديد) يُرجع 404 صريحاً بدل صفحة HTML، حتى تعرف الواجهة أنها قديمة وتُحدّث نفسها
+app.get(/^\/(assets|fonts)\/.*/, (_req, res) => res.status(404).type('text/plain').send('Not found'));
+app.get(/^\/(?!api).*/, (_req, res) => res.sendFile(path.join(config.webDist, 'index.html')));
   }
 
   // معالج الأخطاء: دائماً JSON

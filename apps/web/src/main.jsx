@@ -7,6 +7,9 @@ import Splash from './Splash.jsx';
 import { AuthProvider, ThemeProvider, ToastProvider } from './context.jsx';
 import './fonts.css';
 import './index.css';
+import { armStaleReload } from './staleReload.js';
+
+armStaleReload();
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
