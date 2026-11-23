@@ -146,7 +146,6 @@ export function LoginForm() {
       <form onSubmit={submit}>
         <Field label={t('البريد الإلكتروني')}><input id="login-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="next" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
         <Field label={t('كلمة المرور')}><input id="login-pass" type="password" autoComplete="current-password" enterKeyHint="go" dir="ltr" className="inp text-left" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
-        <div className="-mt-1 mb-3 text-sm"><Link className="auth-link font-semibold text-brand" to="/support">{t('فقدت كلمة المرور؟ تواصل مع الدعم')}</Link></div>
         <button className="btn btn-p w-full py-2.5" disabled={busy}>{busy ? t('جارٍ الدخول…') : t('تسجيل الدخول')}</button>
       </form>
       <div className="my-4 flex items-center gap-3 text-xs text-mute"><span className="h-px flex-1 bg-line" />{t('أو')}<span className="h-px flex-1 bg-line" /></div>

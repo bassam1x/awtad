@@ -15,10 +15,12 @@ export const demoEnabled = () => config.env !== 'production';
 /** إن عُيّن ADMIN_PASSWORD فهو مرجع كلمة مرور المدير: يُطبَّق عند كل إقلاع إن اختلف عن المخزّنة، وتُبطَل الجلسات القديمة.
     (لتغييرها من لوحة الاستضافة: عدّل المتغير وأعد النشر.) */
 export async function syncAdminPassword(pw = process.env.ADMIN_PASSWORD) {
-  if (!pw) return false;
+  if (typeof pw === 'string') pw = pw.trim();   // مسافة أو سطر جديد زائد عند اللصق في لوحة الاستضافة يفسد الكلمة
+  if (!pw) { if (config.env === 'production') console.warn('ADMIN_PASSWORD غير مضبوط: كلمة مرور المدير هي المخزّنة سابقاً. اضبطه في لوحة الاستضافة وأعد النشر.'); return false; }
   if (pw.length < 8) { console.warn('ADMIN_PASSWORD أقصر من 8 أحرف: تم تجاهله.'); return false; }
   const a = await get("SELECT id, password_hash FROM users WHERE email=? AND role='admin'", ADMIN.email);
-  if (!a || checkPassword(pw, a.password_hash)) return false;
+  if (!a) { console.warn(`حساب المدير ${ADMIN.email} غير موجود في القاعدة.`); return false; }
+  if (checkPassword(pw, a.password_hash)) { console.log(`ADMIN_PASSWORD مطابقة لكلمة مرور المدير (${ADMIN.email}).`); return false; }
   await run('UPDATE users SET password_hash=?, token_version=token_version+1 WHERE id=?', hashPassword(pw), a.id);
   console.log('تم تحديث كلمة مرور المدير من ADMIN_PASSWORD.');
   return true;
