@@ -9,8 +9,8 @@ export const DEMO_PASSWORD = 'Demo@1234';
 export const DEMO_DOMAIN = '@demo.iq';
 const map = (q) => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 
-/** وضع التجربة: بيانات وحسابات تجريبية. دائماً في التطوير، وفي الإنتاج فقط عند DEMO_MODE=true. */
-export const demoEnabled = () => config.env !== 'production' || process.env.DEMO_MODE === 'true';
+/** وضع التجربة: بيانات وحسابات تجريبية للتطوير والاختبار فقط. في الإنتاج معطّل دائماً (ويتجاهل DEMO_MODE) وتُحذف أي بيانات تجريبية موجودة عند الإقلاع. */
+export const demoEnabled = () => config.env !== 'production';
 
 /** إن عُيّن ADMIN_PASSWORD فهو مرجع كلمة مرور المدير: يُطبَّق عند كل إقلاع إن اختلف عن المخزّنة، وتُبطَل الجلسات القديمة.
     (لتغييرها من لوحة الاستضافة: عدّل المتغير وأعد النشر.) */
@@ -24,10 +24,10 @@ export async function syncAdminPassword(pw = process.env.ADMIN_PASSWORD) {
   return true;
 }
 
-/** يحذف كل الحسابات التجريبية وما يتبعها (للإنتاج عند إيقاف DEMO_MODE، فكلمة مرورها معروفة) */
+/** يحذف كل الحسابات التجريبية وما يتبعها (في الإنتاج عند كل إقلاع، فكلمة مرورها معروفة للجميع) */
 export async function purgeDemo() {
   const r = await run('DELETE FROM users WHERE email LIKE ?', `%${DEMO_DOMAIN}`);
-  if (r.changes) console.log(`حُذفت ${r.changes} حساباً تجريبياً (DEMO_MODE غير مفعّل).`);
+  if (r.changes) console.log(`حُذفت ${r.changes} حساباً تجريبياً (وضع التجربة معطّل في الإنتاج).`);
   return r.changes;
 }
 

@@ -16,7 +16,7 @@ const clientFor = (id) => { if (!id) return null; if (!clients.has(id)) clients.
 const r = Router();
 const limit = rateLimit();
 
-/* حسابات التجربة للتبديل السريع: في التطوير دائماً (مع حساب المدير التجريبي)، وفي الإنتاج فقط عند DEMO_MODE=true
+/* حسابات التجربة للتبديل السريع: في التطوير دائماً (مع حساب المدير التجريبي)، وفي الإنتاج معطّلة
    (طلاب وشركات فقط، ولا يُعرض حساب المدير أبداً). */
 const demoAccounts = async () => {
   if (!demoEnabled()) return undefined;
