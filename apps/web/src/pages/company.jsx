@@ -255,7 +255,8 @@ export function Applicants() {
                   <p className="mb-2 text-sm">«<Tr>{t(a.message)}</Tr>»</p>
                   <div className="flex flex-wrap gap-1.5">{a.projects.map((p) => <span key={p} className="chip"><Paperclip size={12} />{p}</span>)}</div>
                 </div>
-                <div className="flex flex-col items-stretch gap-2">
+                {/* على الهاتف تنزل الأزرار تحت البيانات بعرض كامل بدل أن تضغط النص في عمود ضيق */}
+                <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto">
                   {a.status === 'pending' ? (
                     <>
                       <button className="btn btn-g" onClick={() => act(a.id, 'accept')}>{t('قبول وبدء المحادثة')}</button>
