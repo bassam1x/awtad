@@ -40,7 +40,9 @@ export const config = {
   // مسار مجلد الواجهة المبنية لتقديمها من نفس الخادم (اختياري)
   webDist: process.env.WEB_DIST || path.join(ROOT, '..', 'web', 'dist'),
   serveWeb: process.env.SERVE_WEB !== 'false',
-  rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 20,
+  // محاولات الدخول والتسجيل لكل (عنوان + مسار) كل ربع ساعة. واسع لأن كثيرين في العراق يشتركون بعنوان واحد عبر شبكات الجوال؛
+  // تخمين كلمات المرور محمي بحد منفصل لكل (بريد + عنوان) في loginGuard.
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 100,
   // حدود الطلبات في الدقيقة: لكل عنوان (واسع) ولكل مستخدم مسجّل
   ipRateMax: Number(process.env.IP_RATE_MAX) || 1500,
   userRateMax: Number(process.env.USER_RATE_MAX) || 600,
