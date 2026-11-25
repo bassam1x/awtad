@@ -32,7 +32,8 @@ export function buildCsp() {
     "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com",
     `frame-src https://${config.firebaseProjectId}.firebaseapp.com`,
     "frame-ancestors 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'",
-    ...(config.env === 'production' ? ['upgrade-insecure-requests'] : []),
+    // لا نفرض https حين يُضبط عنوان المنصة صراحةً على http (تجربة الخادم على عنوان IP قبل ربط الدومين) وإلا ظهرت صفحة فارغة
+    ...(config.env === 'production' && !/^http:\/\//i.test(process.env.APP_URL || '') ? ['upgrade-insecure-requests'] : []),
   ].join('; ');
 }
 /** صفحة المعاينة الداخلية (phone.html) تحتاج سكربتاً مضمّناً، فلها سياسة خاصة (لا تُحمّل شيئاً من الخارج). */

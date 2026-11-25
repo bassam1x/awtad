@@ -11,7 +11,11 @@ if (config.env === 'production' && db.kind !== 'postgres') {
 }
 await seedIfEmpty();
 await syncAdminPassword();
-const server = createApp().listen(config.port, () => console.log(`أوتاد API تعمل على http://localhost:${config.port} (قاعدة: ${db.kind})`));
+// في Express 5 يُستدعى المعالج عند فشل الاستماع أيضاً (منفذ مشغول مثلاً): نخرج بخطأ ليعيد مدير الخدمة التشغيل
+const server = createApp().listen(config.port, config.bindHost || undefined, (err) => {
+  if (err) { console.error(`تعذّر تشغيل الخادم على المنفذ ${config.port}:`, err.message); process.exit(1); }
+  console.log(`أوتاد API تعمل على http://localhost:${config.port} (قاعدة: ${db.kind})`);
+});
 
 startKeepAlive();
 

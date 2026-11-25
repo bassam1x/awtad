@@ -1,0 +1,20 @@
+name: Server setup
+# يثبّت المنصة على Ubuntu نظيف بسكربت deploy/aws/setup.sh ويختبر النسخ والاستعادة والاستيراد والتحديث.
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/**', '.github/workflows/server-setup.yml']
+  workflow_dispatch:
+jobs:
+  ubuntu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install on a clean server
+        run: sudo bash deploy/aws/setup.sh
+      - name: Test the server commands
+        run: sudo CI=true bash deploy/aws/test.sh
+      - name: Logs on failure
+        if: failure()
+        run: sudo journalctl -u awtad -u caddy -n 80 --no-pager

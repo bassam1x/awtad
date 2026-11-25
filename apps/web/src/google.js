@@ -4,7 +4,7 @@
 let ready;
 /** يجهّز المكتبة ويعيد دالة تفتح نافذة Google وترجع رمز الهوية. يُستدعى مبكراً حتى تُفتح النافذة فور الضغط (وإلا منعها المتصفح). */
 export function loadGoogle(cfg, language = 'ar') {
-  ready ||= Promise.all([import('firebase/app'), import('firebase/auth')]).then(([A, F]) => {
+  ready ||= Promise.all([import('@firebase/app'), import('@firebase/auth')]).then(([A, F]) => {
     const app = A.getApps()[0] || A.initializeApp(cfg);
     // لا نحفظ جلسة Firebase في المتصفح: يكفينا الرمز لمرة واحدة
     const auth = F.initializeAuth(app, { persistence: F.inMemoryPersistence, popupRedirectResolver: F.browserPopupRedirectResolver });

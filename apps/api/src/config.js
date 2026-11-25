@@ -10,6 +10,8 @@ const list = (v) => String(v || '').split(',').map((s) => s.trim()).filter(Boole
 export const config = {
   env: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 4000,
+  // خلف وسيط على الخادم نفسه (Caddy) نستمع على 127.0.0.1 فقط؛ فارغ = كل العناوين
+  bindHost: process.env.BIND_HOST || '',
   // PostgreSQL: DATABASE_URL (الإنتاج، مثل Neon). بدونه تُستخدم PGlite محلياً في مجلد بجانب DB_FILE.
   databaseUrl: process.env.DATABASE_URL || '',
   dbFile: process.env.DB_FILE || path.join(ROOT, 'data', 'awtad.db'),

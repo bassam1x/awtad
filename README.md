@@ -42,7 +42,9 @@ npm start          # http://localhost:4000
 
 ## النشر على AWS
 
-الواجهة على S3 خلف CloudFront (الدلو خاص، والوصول عبر OAC، ومسارات React Router تُوجَّه إلى index.html):
+**الطريقة المستحسنة:** خادم Lightsail واحد عليه كل شيء (المنصة وقاعدة البيانات وhttps والنسخ الاحتياطي) بسكربت جاهز. الدليل خطوة بخطوة: [deploy/aws/README.md](deploy/aws/README.md).
+
+**بديل للواجهة وحدها:** على S3 خلف CloudFront (الدلو خاص، والوصول عبر OAC، ومسارات React Router تُوجَّه إلى index.html):
 
 ```powershell
 .\infra\deploy-web.ps1 -StackName awtad-web -BucketName <اسم-فريد> -ApiUrl https://api.example.com -Region eu-central-1
