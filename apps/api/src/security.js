@@ -56,10 +56,24 @@ export async function checkPasswordAsync(pw, stored) {
   return crypto.timingSafeEqual(got, expected) && real;
 }
 
-export const signToken = async (userId) => {
-  const v = (await get('SELECT token_version v FROM users WHERE id=?', userId))?.v || 0;
-  return jwt.sign({ id: userId, v }, SECRET, { expiresIn: '14d', algorithm: 'HS256' });
+/* جلسة متجددة: تبقى 90 يوماً من آخر استعمال (30 للمدير) وتتجدد عند فتح المنصة، فلا يعيد المستخدم النشط تسجيل دخوله.
+   السقف سنة من لحظة الدخول (at). تغيير كلمة المرور أو الإيقاف يبطلها فوراً عبر token_version. */
+const DAY = 86400;
+const SESSION_DAYS = 90, ADMIN_SESSION_DAYS = 30, MAX_SESSION_DAYS = 365;
+
+export const signToken = async (userId, since) => {
+  const u = await get('SELECT token_version v, role FROM users WHERE id=?', userId);
+  const now = Math.floor(Date.now() / 1000), at = since || now;
+  const exp = Math.min(now + (u?.role === 'admin' ? ADMIN_SESSION_DAYS : SESSION_DAYS) * DAY, at + MAX_SESSION_DAYS * DAY);
+  return jwt.sign({ id: userId, v: u?.v || 0, at, exp }, SECRET, { algorithm: 'HS256' });
 };
+
+/** توكن جديد لجلسة سليمة مضى على إصدار توكنها يوم أو أكثر، وإلا null. جلسات «دخول المدير بالحساب» لا تتجدد. */
+export async function renewToken(claims) {
+  const now = Math.floor(Date.now() / 1000), at = claims.at || claims.iat;
+  if (claims.imp !== undefined || !at || now - claims.iat < DAY || now >= at + MAX_SESSION_DAYS * DAY) return null;
+  return signToken(claims.id, at);
+}
 
 /** دخول المدير بحساب مستخدم: توكن قصير (ساعتان) يحمل رقم المدير imp، ويُتحقق من أن المدير ما زال مديراً فعالاً عند كل طلب. */
 export const signImpersonation = async (userId, adminId) => {
@@ -85,6 +99,7 @@ export function auth() {
         req.impersonatedBy = claims.imp;
       }
       req.user = u;
+      req.claims = claims;
     } catch (e) { return next(e); }
     next();
   };

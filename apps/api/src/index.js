@@ -1,4 +1,5 @@
 import { config } from './config.js';
+import { startKeepAlive } from './keepalive.js';
 
 /* القاعدة (PostgreSQL) تُفتح عند أول استيراد لـ db.js: DATABASE_URL في الإنتاج، وPGlite محلياً. */
 const { seedIfEmpty, syncAdminPassword } = await import('./seed.js');
@@ -11,6 +12,8 @@ if (config.env === 'production' && db.kind !== 'postgres') {
 await seedIfEmpty();
 await syncAdminPassword();
 const server = createApp().listen(config.port, () => console.log(`أوتاد API تعمل على http://localhost:${config.port} (قاعدة: ${db.kind})`));
+
+startKeepAlive();
 
 /* إغلاق نظيف عند إيقاف الخدمة */
 let closing = false;

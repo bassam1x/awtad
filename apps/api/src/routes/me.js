@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { all, get, run, tx } from '../db.js';
-import { checkPasswordAsync, hashPasswordAsync, loginGuard, passwordOk, role, signToken } from '../security.js';
+import { checkPasswordAsync, hashPasswordAsync, loginGuard, passwordOk, renewToken, role, signToken } from '../security.js';
 import { fullUser } from '../services.js';
 import { SPECS, UserError, bad, emailOk, qs, safeAvatar, safeUrl, str, wrap } from '../utils.js';
 import { DEMO_DOMAIN } from '../seed.js';
@@ -23,7 +23,11 @@ async function verifyCurrent(req, current) {
   loginGuard.ok(gk);
 }
 
-r.get('/me', async (req, res) => res.json(await fullUser(req.user.id, { forSelf: true })));
+// تطلبه الواجهة عند كل فتح، فهو موضع تجديد الجلسة
+r.get('/me', wrap(async (req, res) => {
+  const renewedToken = await renewToken(req.claims);
+  res.json({ ...(await fullUser(req.user.id, { forSelf: true })), ...(renewedToken ? { renewedToken } : {}) });
+}));
 
 r.put('/me', wrap(async (req, res) => {
   const b = req.body || {}; const id = req.user.id;

@@ -79,6 +79,11 @@ const IK = 'awtad-imp';   // { adminToken, name } أثناء دخول المدي
 const readImp = () => { try { const v = JSON.parse(localStorage.getItem(IK) || 'null'); return v?.adminToken ? v : null; } catch { return null; } };
 const readAcc = () => { try { const a = JSON.parse(localStorage.getItem(AK) || '[]'); return Array.isArray(a) ? a : []; } catch { return []; } };
 const writeAcc = (a) => { try { localStorage.setItem(AK, JSON.stringify(a)); } catch { /* ignore */ } };
+/* /me قد يعيد توكناً مجدَّداً (جلسة متجددة): نأخذه ونعيد المستخدم بدونه */
+const readMe = async (token) => {
+  const { renewedToken, ...user } = await (token ? api.getAs('/me', token) : api.get('/me'));
+  return { user, renewedToken };
+};
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
@@ -100,9 +105,11 @@ export function AuthProvider({ children }) {
      أما انقطاع الشبكة أو تعثّر الخادم فيبقيه، ونعيد المحاولة تلقائياً وتعرض شاشة البداية حالة الاتصال. */
   const [offline, setOffline] = useState(false);
   const boot = useCallback(async () => {
-    if (!getToken()) { setOffline(false); setReady(true); return; }
+    const used = getToken();
+    if (!used) { setOffline(false); setReady(true); return; }
     try {
-      const u = await api.get('/me');
+      const { user: u, renewedToken } = await readMe();
+      if (renewedToken && getToken() === used) setToken(renewedToken);   // لا نكتب فوق دخول جديد حدث أثناء الطلب
       setUser(u); if (!readImp()) save(u, getToken()); setOffline(false); setReady(true);
     } catch (e) {
       if (e.status === 401 || e.status === 403) { setToken(null); setOffline(false); setReady(true); } else setOffline(true);
@@ -120,8 +127,9 @@ export function AuthProvider({ children }) {
     const a = readAcc().find((x) => x.id === id);
     if (!a) return false;
     try {
-      const u = await api.getAs('/me', a.token);
-      setToken(a.token); clearFetchCache(); setUser(u); save(u, a.token);
+      const { user: u, renewedToken } = await readMe(a.token);
+      const token = renewedToken || a.token;
+      setToken(token); clearFetchCache(); setUser(u); save(u, token);
       nav('/app', { replace: true });
       return true;
     } catch { drop(id); return false; }
@@ -137,8 +145,9 @@ export function AuthProvider({ children }) {
   const exitImpersonation = useCallback(async () => {
     const v = readImp(); if (!v) return;
     try {
-      const u = await api.getAs('/me', v.adminToken);
-      setToken(v.adminToken); clearFetchCache(); setUser(u); save(u, v.adminToken);
+      const { user: u, renewedToken } = await readMe(v.adminToken);
+      const token = renewedToken || v.adminToken;
+      setToken(token); clearFetchCache(); setUser(u); save(u, token);
     } catch { setToken(null); setUser(null); }
     try { localStorage.removeItem(IK); } catch { /* ignore */ }
     setImp(null); nav('/app/users', { replace: true });
@@ -146,7 +155,7 @@ export function AuthProvider({ children }) {
   const value = useMemo(() => ({
     user, ready, offline, imp, impersonate, exitImpersonation, retry: boot, logout, setUser, accounts, switchTo, drop, detach,
     login: (s) => { clearFetchCache(); setToken(s.token); setUser(s.user); save(s.user, s.token); },
-    refresh: () => api.get('/me').then(setUser),
+    refresh: () => readMe().then((r) => setUser(r.user)),
   }), [user, ready, offline, imp, impersonate, exitImpersonation, boot, logout, accounts, switchTo, drop, detach, save]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
