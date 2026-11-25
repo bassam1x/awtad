@@ -51,7 +51,7 @@ export function StudentDashboard() {
           <h2 className="mb-3 flex items-center gap-2 font-bold"><Award size={18} />{t('شاراتك')}</h2>
           <div className="flex flex-wrap gap-2">{s.badges.map((b) => <span key={b} className="chip chip-g">{t(b)}</span>)}{!s.badges.length && <span className="text-mute">{t('أنجز أول مشروع لتحصل على شارتك الأولى.')}</span>}</div>
         </div>
-        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('رصيد المحفظة')}</div><div className="money mt-1 text-2xl">{bal}</div><Link to="/app/wallet" className="mt-2 inline-block text-sm font-semibold text-brand">{t('عرض التفاصيل')}</Link></div>
+        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('مجموع أرباحك')}</div><div className="money mt-1 text-2xl">{bal}</div><Link to="/app/wallet" className="mt-2 inline-block text-sm font-semibold text-brand">{t('عرض التفاصيل')}</Link></div>
       </div>
       <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-bold">{t('وظائف جديدة')}</h2><Link to="/app/jobs" className="text-sm font-semibold text-brand">{t('عرض الكل')}</Link></div>
       <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{jobs?.slice(0, 3).map((p) => <PostingCard key={p.id} p={p} />)}</div>
@@ -71,7 +71,7 @@ export function Browse({ kind }) {
   return (
     <div>
       <div className="mb-5"><SegTabs active={kind === 'job' ? '/app/jobs' : '/app/projects'} items={[{ to: '/app/jobs', label: t('الوظائف الشاغرة'), icon: Briefcase, pre: '/postings?kind=job' }, { to: '/app/projects', label: t('المشاريع والتعاونات'), icon: FolderKanban, pre: '/postings?kind=project' }]} /></div>
-      <PageHeader title={kind === 'job' ? t('الوظائف الشاغرة') : t('المشاريع والتعاونات')} sub={kind === 'job' ? t('وظائف برواتب وأوقات وعناوين واضحة، بلا شرط سنوات خبرة.') : t('مشاريع بمبالغ واضحة، تُحوَّل لمحفظتك عند اعتماد التسليم.')} />
+      <PageHeader title={kind === 'job' ? t('الوظائف الشاغرة') : t('المشاريع والتعاونات')} sub={kind === 'job' ? t('وظائف برواتب وأوقات وعناوين واضحة، بلا شرط سنوات خبرة.') : t('مشاريع بمبالغ واضحة، تدفعها الشركة لك عبر الماستر كارد عند اعتماد التسليم.')} />
       <div className="card mb-5 flex flex-wrap items-center gap-3 p-3">
         <span className="flex items-center gap-2 font-semibold"><SlidersHorizontal size={16} />{t('فلاتر')}</span>
         <select aria-label={t('التخصص')} className="inp !w-auto" value={f.spec} onChange={(e) => set('spec', e.target.value)}><option value="">{t('كل التخصصات')}</option>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select>
@@ -138,11 +138,11 @@ export function Wallet() {
   if (loading) return <Spinner />;
   return (
     <div>
-      <PageHeader title={t('المحفظة')} sub={t('أرباحك من المشاريع المعتمدة.')} />
+      <PageHeader title={t('المحفظة')} sub={t('سجلّ أرباحك من المشاريع المعتمدة. الدفع يتم مباشرة عبر الماستر كارد.')} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
         {data.balances.length ? data.balances.map((b) => (
-          <div key={b.cur} className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('الرصيد')} ({curLabel(b.cur)})</div><div className="money text-3xl">{fmt(b.total)}</div></div>
-        )) : <div className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('الرصيد')}</div><div className="money text-3xl">0</div></div>}
+          <div key={b.cur} className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('مجموع الأرباح')} ({curLabel(b.cur)})</div><div className="money text-3xl">{fmt(b.total)}</div></div>
+        )) : <div className="card bg-goodsoft p-5"><div className="text-sm text-mute">{t('مجموع الأرباح')}</div><div className="money text-3xl">0</div></div>}
       </div>
       <h2 className="mb-3 font-bold">{t('سجل العمليات')}</h2>
       {data.tx.length ? (

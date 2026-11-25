@@ -7,7 +7,7 @@ import { api } from '../api.js';
 import { useAuth, useFetch, useToast } from '../context.jsx';
 import { Avatar, Empty, Field, Modal, PageHeader, Spinner, Stars, fmt , curLabel } from '../ui.jsx';
 
-const STEPS = [t('قيد التنفيذ'), t('تم التسليم'), t('تم استلام المبلغ')];
+const STEPS = [t('قيد التنفيذ'), t('تم التسليم'), t('تم الدفع')];
 
 export default function Workspace() {
   const { user } = useAuth();
@@ -76,8 +76,9 @@ function Chat({ id }) {
           {a.stage === 'progress' && isS && <button className="btn btn-p" onClick={deliver}><PackageCheck size={16} />{t('تسليم العمل')}</button>}
           {a.stage === 'progress' && !isS && <span className="chip">{t('بانتظار تسليم المبدع')}</span>}
           {a.stage === 'delivered' && isS && <span className="chip chip-w">{t('بانتظار اعتماد الشركة')}</span>}
-          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />{t('اعتماد التسليم وتحويل')} {fmt(a.pay)} {curLabel(a.cur)}</button>}
-          {a.stage === 'paid' && <span className="chip chip-g">{t('اكتمل المشروع وحُوّل المبلغ إلى المحفظة')}</span>}
+          {a.stage === 'delivered' && !isS && <button className="btn btn-g" onClick={() => setApprove(true)}><BadgeDollarSign size={16} />{t('اعتماد التسليم والدفع')} {fmt(a.pay)} {curLabel(a.cur)}</button>}
+          {a.stage === 'paid' && <span className="chip chip-g">{t('اكتمل المشروع وسُجّلت الدفعة')}</span>}
+          {a.stage !== 'paid' && <p className="mt-3 rounded-xl border border-line bg-soft px-3 py-2 text-xs text-mute">{t('الدفع يتم مباشرة بين الشركة والمبدع عبر الماستر كارد. يكفي رقم البطاقة للاستلام، فلا تشارك الرقم السري أو رمز CVV أو رمز التحقق مع أي طرف.')}</p>}
         </div>
       )}
       <div ref={box} className="grid max-h-[380px] flex-1 content-start gap-2 overflow-y-auto pb-2">
@@ -108,15 +109,18 @@ function Approve({ a, onClose, done }) {
   const toast = useToast();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [paid, setPaid] = useState(false);   // لا يُسجَّل المبلغ كمدفوع إلا بعد تأكيد الشركة أنها دفعته فعلاً
   const go = async () => {
-    try { await api.post(`/applications/${a.id}/approve`, { rating, comment }); toast(t('تم تحويل المبلغ إلى المحفظة')); done(); } catch (e) { toast(e.message, 'err'); }
+    try { await api.post(`/applications/${a.id}/approve`, { rating, comment }); toast(t('تم اعتماد العمل وتسجيل الدفعة')); done(); } catch (e) { toast(e.message, 'err'); }
   };
   return (
     <Modal title={t('اعتماد التسليم والدفع')} onClose={onClose}>
-      <p className="mb-3">{t('سيُحوَّل')} <b className="money">{fmt(a.pay)} {curLabel(a.cur)}</b> {t('إلى محفظة المبدع ويُضاف العمل مع تقييمك إلى ملفه.')}</p>
+      <p className="mb-2">{t('ادفع للمبدع عبر الماستر كارد مبلغ')} <b className="money">{fmt(a.pay)} {curLabel(a.cur)}</b>{t('، ثم أكّد. يُسجَّل المبلغ في محفظته ويُضاف العمل مع تقييمك إلى ملفه.')}</p>
+      <p className="mb-3 text-xs text-mute">{t('المنصة تسجّل الدفعة فقط ولا تحوّل الأموال. لا تطلب من المبدع الرقم السري أو رمز CVV أو رمز التحقق.')}</p>
       <Field label={t('التقييم')}><Stars v={rating} onChange={setRating} size={26} /></Field>
       <Field label={t('تعليقك')}><textarea id="ap-comment" rows="3" className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder={t('كيف كان التعامل والتسليم؟')} /></Field>
-      <button className="btn btn-g w-full" onClick={go}>{t('اعتماد وتحويل المبلغ')}</button>
+      <label className="mb-3 flex items-start gap-2 text-sm font-semibold"><input id="ap-paid" type="checkbox" className="mt-1 h-4 w-4 shrink-0" checked={paid} onChange={(e) => setPaid(e.target.checked)} />{t('أؤكد أني دفعت المبلغ للمبدع عبر الماستر كارد')}</label>
+      <button className="btn btn-g w-full disabled:opacity-50" onClick={go} disabled={!paid}>{t('اعتماد العمل وتسجيل الدفعة')}</button>
     </Modal>
   );
 }

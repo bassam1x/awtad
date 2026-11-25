@@ -172,7 +172,7 @@ export function PostingForm() {
   if (id && exLoading) return <Spinner />;
   return (
     <div>
-      <PageHeader title={id ? t('تعديل المنشور') : isJob ? t('وظيفة شاغرة جديدة') : t('مشروع / تعاون جديد')} sub={isJob ? t('كل التفاصيل واضحة للمتقدمين: الراتب والأوقات والموقع.') : t('حدّد المبلغ ومدة التسليم، ويُحوَّل المبلغ عند اعتمادك للتسليم.')} />
+      <PageHeader title={id ? t('تعديل المنشور') : isJob ? t('وظيفة شاغرة جديدة') : t('مشروع / تعاون جديد')} sub={isJob ? t('كل التفاصيل واضحة للمتقدمين: الراتب والأوقات والموقع.') : t('حدّد المبلغ ومدة التسليم، وتدفعه للمبدع عبر الماستر كارد عند اعتمادك للتسليم.')} />
       <form onSubmit={submit} className="card max-w-3xl p-5">
         {!id && (
           <div className="mb-4">

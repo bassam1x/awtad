@@ -74,7 +74,7 @@ r.post('/applications/:id/approve', role('company'), wrap(async (req, res) => {
     if (!(await run("UPDATE applications SET stage='paid' WHERE id=? AND stage='delivered'", a.id)).changes) throw already();
     await run('INSERT INTO wallet_tx(user_id,title,amount,cur) VALUES(?,?,?,?)', a.student_id, a.posting_title, a.pay, a.cur);
     await run('INSERT INTO works(student_id,title,rating,comment,company_name,amount,cur) VALUES(?,?,?,?,?,?,?)', a.student_id, a.posting_title, rating, comment, co.name, a.pay, a.cur);
-    await addMsg(a.id, null, 'اعتُمد التسليم وحُوّل المبلغ إلى محفظة المبدع.');
+    await addMsg(a.id, null, 'اعتمدت الشركة التسليم وأكّدت دفع المبلغ عبر الماستر كارد.');
   });
   res.json({ ok: true });
 }));

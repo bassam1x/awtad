@@ -158,7 +158,7 @@ export async function seedDemo() {
     // معتمد ومدفوع (يظهر في الأعمال والمحفظة)
     const a7 = await app(p7, s3, 'أرفقت مخططاً مشابهاً أنجزته مسبقاً.', ['مخطط أرضي لمنزل سكني'], 'accepted', 'paid');
     await say(a7, null, 'تم قبول الطلب. يمكنكما بدء المحادثة الآن.');
-    await say(a7, null, 'اعتُمد التسليم وحُوّل المبلغ إلى محفظة المبدع.');
+    await say(a7, null, 'اعتمدت الشركة التسليم وأكّدت دفع المبلغ عبر الماستر كارد.');
     await run('INSERT INTO works(student_id,title,rating,comment,company_name,amount) VALUES(?,?,?,?,?,?)', s3, 'مخطط وكميات لفيلا سكنية', 5, 'تسليم متقن وجدول كميات دقيق.', 'الرافدين للاستشارات الهندسية', 500000);
     await run('INSERT INTO wallet_tx(user_id,title,amount) VALUES(?,?,?)', s3, 'مخطط وكميات لفيلا سكنية', 500000);
 

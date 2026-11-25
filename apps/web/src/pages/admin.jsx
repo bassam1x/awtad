@@ -24,7 +24,7 @@ export function AdminDashboard() {
         <StatCard icon={ClipboardList} label={t('طلبات تقديم')} value={s.applications} tone="w" to="/app/all-applications" hint={<div className="text-xs text-mute">{s.accepted} {t('مقبولة')}</div>} />
       </div>
       <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي المبالغ المحوّلة للمبدعين')}</div><div className="money mt-1 text-2xl">{s.volume.length ? s.volume.map((v) => `${fmt(v.total)} ${curLabel(v.cur)}`).join(' + ') : '0'}</div></div>
+        <div className="card bg-goodsoft p-5"><div className="flex items-center gap-2 text-sm text-mute"><WalletIcon size={16} />{t('إجمالي الدفعات المسجّلة للمبدعين')}</div><div className="money mt-1 text-2xl">{s.volume.length ? s.volume.map((v) => `${fmt(v.total)} ${curLabel(v.cur)}`).join(' + ') : '0'}</div></div>
         <div className="card p-5"><div className="flex items-center gap-2 text-sm text-mute"><Ban size={16} />{t('حسابات موقوفة')}</div><div className="mt-1 text-2xl font-bold">{s.banned}</div></div>
       </div>
       {ch && (
@@ -126,7 +126,7 @@ export function AdminTransactions() {
   if (error) return <ErrorBox>{error}</ErrorBox>;
   return (
     <div>
-      <PageHeader title={t('التعاملات المالية')} sub={t('كل المبالغ المحوّلة إلى محافظ المبدعين.')} />
+      <PageHeader title={t('التعاملات المالية')} sub={t('كل الدفعات التي أكّدت الشركات دفعها للمبدعين.')} />
       {data.length ? (
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">

@@ -63,7 +63,7 @@ export default function Opportunity() {
         </div>
         <aside className="card h-fit p-5 lg:sticky lg:top-6">
           <div className="money text-3xl">{fmt(p.pay)} <span className="text-base">{curLabel(p.cur)}</span></div>
-          <div className="mb-4 text-mute">{p.kind === 'job' ? t('راتب شهري ثابت') : t('مبلغ المشروع يُحوَّل لمحفظتك عند الاعتماد')}</div>
+          <div className="mb-4 text-mute">{p.kind === 'job' ? t('راتب شهري ثابت') : t('تدفعه الشركة لك عبر الماستر كارد عند الاعتماد')}</div>
           <div className="mb-5 grid gap-3 text-sm">
             {p.kind === 'job' ? (
               <>
