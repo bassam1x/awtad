@@ -15,7 +15,7 @@ function loadGsi() {
     gsiPromise = new Promise((res, rej) => {
       const s = document.createElement('script');
       s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
-      s.onload = res; s.onerror = () => rej(new Error('gsi'));
+      s.onload = res; s.onerror = () => { gsiPromise = undefined; s.remove(); rej(new Error('gsi')); };   // نسمح بإعادة المحاولة بعد انقطاع
       document.head.appendChild(s);
     });
   }
@@ -26,13 +26,22 @@ export function GoogleButton({ onCredential }) {
   const ref = useRef();
   const toast = useToast();
   useEffect(() => { api.get('/config').then((c) => setCid(c.googleClientId || '')).catch(() => setCid('')); }, []);
+  // المعالج يتغيّر مع كل رسم (ويتبع نوع الحساب المختار)، فنحفظ أحدث نسخة منه ونرسم الزر مرة واحدة فقط
+  const cb = useRef(onCredential);
+  cb.current = onCredential;
   useEffect(() => {
-    if (!cid || !ref.current) return;
+    if (!cid) return undefined;
+    let live = true;
     loadGsi().then(() => {
-      window.google.accounts.id.initialize({ client_id: cid, callback: (r) => onCredential(r.credential), ux_mode: 'popup' });
-      window.google.accounts.id.renderButton(ref.current, { theme: 'outline', size: 'large', text: 'continue_with', locale: 'ar', width: ref.current.offsetWidth || 320 });
-    }).catch(() => toast(t('تعذّر تحميل خدمة Google'), 'err'));
-  }, [cid, onCredential, toast]);
+      if (!live || !ref.current) return;
+      window.google.accounts.id.initialize({ client_id: cid, callback: (r) => cb.current(r.credential), ux_mode: 'popup' });
+      // عرض زر Google محدود بين 200 و400 بكسل
+      const width = Math.min(400, Math.max(200, ref.current.offsetWidth || 320));
+      ref.current.replaceChildren();
+      window.google.accounts.id.renderButton(ref.current, { theme: 'outline', size: 'large', text: 'continue_with', locale: lang === 'en' ? 'en' : 'ar', width });
+    }).catch(() => { if (live) toast(t('تعذّر تحميل خدمة Google'), 'err'); });
+    return () => { live = false; };
+  }, [cid, toast]);
   if (cid === null) return <div className="h-11" />;
   if (!cid) {
     return (
