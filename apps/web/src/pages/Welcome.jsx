@@ -23,9 +23,10 @@ export default function Welcome() {
   const why = t('ليش نختار {name}؟').split('{name}');
   return (
     <div className="page-in min-h-full">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+      {/* على الشاشات الضيقة تنتقل الأزرار لسطر ثانٍ بدل أن توسّع الصفحة (كانت تُصغّر الصفحة كلها على الهاتف) */}
+      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
         <Logo size={38} />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 whitespace-nowrap">
           <ThemeButton />
           <LangSwitch />
           {/* على الجوال يقع نموذج الدخول أسفل الصفحة، فنضع رابطاً ظاهراً في الأعلى */}
