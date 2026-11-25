@@ -14,7 +14,6 @@ process.env.SERVE_WEB = 'false';
 
 const { createApp } = await import('../src/app.js');
 const { seedIfEmpty, ADMIN } = await import('../src/seed.js');
-const { startKeepAlive } = await import('../src/keepalive.js');
 const dbm = await import('../src/db.js');
 
 let server, base;
@@ -60,14 +59,4 @@ test('السقف سنة، وجلسة المدير المنتحِلة والمن�
   assert.equal((await call('GET', '/api/me', undefined, jwt.sign({ id, v: 0, iat: now() - 3 * DAY, exp: now() - DAY }, 'test-secret'))).status, 401);
   await dbm.run('UPDATE users SET token_version=token_version+1 WHERE id=?', id);
   assert.equal((await call('GET', '/api/me', undefined, old(id))).status, 401);
-});
-
-test('إبقاء الخدمة مستيقظة: يعمل على Render فقط، ويطلب /api/ping', async () => {
-  assert.equal(startKeepAlive({ url: '' }), null);
-  assert.equal(startKeepAlive({ url: 'https://x.example', enabled: false }), null);
-  const seen = [];
-  const timer = startKeepAlive({ url: 'https://x.example/', enabled: true, every: 5, fetcher: async (u) => { seen.push(u); throw new Error('انقطاع'); } });
-  await new Promise((r) => setTimeout(r, 60));
-  clearInterval(timer);
-  assert.ok(seen.length >= 2); assert.equal(seen[0], 'https://x.example/api/ping');
 });

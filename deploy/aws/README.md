@@ -77,8 +77,7 @@ sudo awtad config LINKEDIN_CLIENT_SECRET
 بعد أن تتأكد أن الموقع الجديد يعمل وبياناتك فيه:
 
 1. في Render ← الخدمة ← **Settings → Suspend service** (يمكن التراجع). احذفها لاحقاً بعد أسبوع مثلاً.
-2. عطّل مهمة GitHub: **Actions → Keep alive → Disable workflow**.
-3. أبقِ قاعدة Neon أسبوعاً كنسخة أمان قبل حذفها.
+2. أبقِ قاعدة Neon أسبوعاً كنسخة أمان قبل حذفها.
 
 ## الأوامر اليومية
 
