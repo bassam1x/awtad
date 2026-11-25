@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { OAuth2Client } from 'google-auth-library';
 import { config } from '../config.js';
+import { verifyFirebaseToken } from '../firebase.js';
 import { all, get, run, tx } from '../db.js';
 import crypto from 'node:crypto';
 import { checkPasswordAsync, hashPasswordAsync, loginGuard, passwordOk, rateLimit, signTicket, verifyTicket } from '../security.js';
@@ -9,9 +9,9 @@ import { createUser, getSupport, session } from '../services.js';
 import { ADMIN, DEMO_DOMAIN, DEMO_PASSWORD, demoEnabled } from '../seed.js';
 import { UserError, bad, emailOk, safeAvatar, str, wrap } from '../utils.js';
 
-export const getGoogleId = async () => (await get("SELECT value FROM settings WHERE key='google_client_id'"))?.value || config.googleClientId;
-const clients = new Map();
-const clientFor = (id) => { if (!id) return null; if (!clients.has(id)) clients.set(id, new OAuth2Client(id)); return clients.get(id); };
+/** الدخول عبر Google مفعّل ما دامت مفاتيح Firebase موجودة ولم يعطّله المدير من الإعدادات. */
+export const googleEnabled = async () => !!config.firebaseApiKey && (await get("SELECT value FROM settings WHERE key='google_signin'"))?.value !== 'off';
+const firebaseWeb = () => ({ apiKey: config.firebaseApiKey, projectId: config.firebaseProjectId, authDomain: `${config.firebaseProjectId}.firebaseapp.com` });
 
 const r = Router();
 const limit = rateLimit();
@@ -25,7 +25,7 @@ const demoAccounts = async () => {
   return config.env === 'production' ? list : [{ role: 'admin', email: ADMIN.email, name: 'مدير المنصة', password: ADMIN.password }, ...list];
 };
 r.get('/config', async (_req, res) => res.json({
-  googleClientId: await getGoogleId(), demo: await demoAccounts(),
+  google: (await googleEnabled()) ? firebaseWeb() : null, demo: await demoAccounts(),
   linkedinClientId: linkedinEnabled() ? config.linkedinClientId : '', linkedinRedirect: linkedinRedirect(),
   support: await getSupport(),
 }));
@@ -56,27 +56,29 @@ r.post('/auth/login', limit, wrap(async (req, res) => {
 }));
 
 r.post('/auth/google', limit, wrap(async (req, res) => {
-  const gid = await getGoogleId(); const client = clientFor(gid);
-  if (!client) return bad(res, 'تسجيل الدخول عبر Google غير مفعّل بعد. يفعّله مدير المنصة من صفحة الإعدادات.', 503);
+  if (!(await googleEnabled())) return bad(res, 'تسجيل الدخول عبر Google غير مفعّل بعد. يفعّله مدير المنصة من صفحة الإعدادات.', 503);
   let p;
-  try { p = (await client.verifyIdToken({ idToken: String(req.body?.credential || ''), audience: gid })).getPayload(); }
-  catch { return bad(res, 'تعذّر التحقق من حساب Google', 401); }
-  if (!p?.email || !p.email_verified) return bad(res, 'بريد Google غير موثّق', 401);
-  const email = p.email.toLowerCase();
-  const u = await get('SELECT id,status,google_id,email_verified,password_hash FROM users WHERE google_id=? OR email=?', p.sub, email);
+  try { p = await verifyFirebaseToken(req.body?.credential); }
+  catch { return bad(res, 'تعذّر الاتصال بخدمة Google، حاول بعد قليل', 503); }
+  // نقبل رموز مزوّد Google فقط: أي مزوّد آخر في Firebase لا يثبت ملكية البريد
+  const sub = p?.firebase?.identities?.['google.com']?.[0];
+  if (!sub || p.firebase.sign_in_provider !== 'google.com') return bad(res, 'تعذّر التحقق من حساب Google', 401);
+  if (!p.email || p.email_verified !== true) return bad(res, 'بريد Google غير موثّق', 401);
+  const email = p.email.toLowerCase(), name = str(p.name, 80);
+  const u = await get('SELECT id,status,google_id,email_verified,password_hash FROM users WHERE google_id=? OR email=? ORDER BY CASE WHEN google_id=? THEN 0 ELSE 1 END', sub, email, sub);
   if (u) {
     if (u.status === 'banned') return bad(res, 'هذا الحساب موقوف من الإدارة', 403);
     if (!u.google_id) {
       // حساب بكلمة مرور لم يُتحقق من بريده قد يكون مُنشأً من منتحل قبل صاحب البريد؛
       // Google أثبتت الملكية، فنُلغي كلمة المرور القديمة ونُبطل الجلسات السابقة.
       if (u.password_hash && !u.email_verified) await run('UPDATE users SET password_hash=NULL, token_version=token_version+1 WHERE id=?', u.id);
-      await run('UPDATE users SET google_id=?, email_verified=1 WHERE id=?', p.sub, u.id);
+      await run('UPDATE users SET google_id=?, email_verified=1 WHERE id=?', sub, u.id);
     }
     return res.json(await session(u.id));
   }
   const role = req.body?.role;
-  if (!['student', 'company'].includes(role)) return res.status(202).json({ needsRole: true, name: p.name, email });
-  res.json(await session(await createUser({ role, name: p.name || email.split('@')[0], email, googleId: p.sub })));
+  if (!['student', 'company'].includes(role)) return res.status(202).json({ needsRole: true, name: name || email.split('@')[0], email });
+  res.json(await session(await createUser({ role, name: name || email.split('@')[0], email, googleId: sub })));
 }));
 
 /* ---------- LinkedIn (OpenID Connect) ----------

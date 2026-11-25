@@ -4,7 +4,7 @@ import { all, get, run } from '../db.js';
 import { role, signImpersonation } from '../security.js';
 import { POSTING_SQL, fullUser, getSupport, postingOut } from '../services.js';
 import { bad, emailOk, igHandle, qs, str } from '../utils.js';
-import { getGoogleId } from './auth.js';
+import { googleEnabled } from './auth.js';
 
 const r = Router();
 r.use(role('admin'));
@@ -62,16 +62,15 @@ r.get('/postings', async (_req, res) => {
 });
 r.get('/settings', async (_req, res) => {
   const sp = await getSupport();
-  res.json({ googleClientId: await getGoogleId(), fromEnv: !!config.googleClientId && !await get("SELECT 1 FROM settings WHERE key='google_client_id'"), supportEmail: sp.email, supportInstagram: sp.instagram });
+  res.json({ googleSignIn: await googleEnabled(), googleConfigured: !!config.firebaseApiKey, supportEmail: sp.email, supportInstagram: sp.instagram });
 });
 const putSetting = (k, v) => (v ? run('INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', k, v) : run('DELETE FROM settings WHERE key=?', k));
 r.put('/settings', async (req, res) => {
   const b = req.body || {};
   // كل حقل يُحدَّث فقط إن أُرسل (حتى لا يمسح حفظ قنوات الدعم إعداد Google أو العكس)
-  if ('googleClientId' in b) {
-    const id = str(b.googleClientId, 200);
-    if (id && !/\.apps\.googleusercontent\.com$/.test(id)) return bad(res, 'المعرّف يجب أن ينتهي بـ .apps.googleusercontent.com');
-    await putSetting('google_client_id', id);
+  if ('googleSignIn' in b) {
+    if (typeof b.googleSignIn !== 'boolean') return bad(res, 'قيمة غير صالحة');
+    await putSetting('google_signin', b.googleSignIn ? '' : 'off');
   }
   if ('supportEmail' in b) {
     const e = str(b.supportEmail, 120).toLowerCase();
@@ -84,7 +83,7 @@ r.put('/settings', async (req, res) => {
     await putSetting('support_instagram', h);
   }
   const sp = await getSupport();
-  res.json({ googleClientId: await getGoogleId(), supportEmail: sp.email, supportInstagram: sp.instagram });
+  res.json({ googleSignIn: await googleEnabled(), googleConfigured: !!config.firebaseApiKey, supportEmail: sp.email, supportInstagram: sp.instagram });
 });
 
 /* ---- رسائل الدعم الفني ---- */

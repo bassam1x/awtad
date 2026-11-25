@@ -64,7 +64,7 @@ test('الصلاحيات: المدير للمدير فقط، وقوائم الط
   assert.equal((await call('GET', '/api/students', undefined, st)).status, 403);
   assert.equal((await call('GET', '/api/wallet', undefined, co)).status, 403);
   assert.equal((await call('POST', '/api/postings', { kind: 'job', title: 'x', pay: 1 }, st)).status, 403, 'الطالب لا ينشر');
-  assert.equal((await call('PUT', '/api/admin/settings', { googleClientId: 'x.apps.googleusercontent.com' }, co)).status, 403);
+  assert.equal((await call('PUT', '/api/admin/settings', { googleSignIn: false }, co)).status, 403);
 });
 
 test('الخصوصية وIDOR: لا بريد ولا هاتف للآخرين، ولا وصول لطلبات ومحادثات غيرك', async () => {
@@ -211,13 +211,13 @@ test('الدعم الفني: التحقق، المصيدة، حدود السبا
   ok(await call('DELETE', `/api/admin/support/${t2.id}`, undefined, adm));
   assert.equal((await call('DELETE', `/api/admin/support/${t2.id}`, undefined, adm)).status, 404);
   // ضبط القنوات: بريد صحيح وإنستغرام من رابط، وحفظها لا يمسح إعداد Google
-  ok(await call('PUT', '/api/admin/settings', { googleClientId: '123.apps.googleusercontent.com' }, adm));
+  ok(await call('PUT', '/api/admin/settings', { googleSignIn: false }, adm));
   assert.equal((await call('PUT', '/api/admin/settings', { supportEmail: 'bad' }, adm)).status, 400);
   assert.equal((await call('PUT', '/api/admin/settings', { supportInstagram: 'javascript:alert(1)' }, adm)).status, 400, 'لا روابط مخادعة');
   ok(await call('PUT', '/api/admin/settings', { supportEmail: 'Help@Awtad.iq', supportInstagram: 'https://www.instagram.com/awtad.iq/?hl=en' }, adm));
   const c1 = ok(await call('GET', '/api/config')).support;
   assert.equal(c1.email, 'help@awtad.iq'); assert.equal(c1.instagram, 'awtad.iq'); assert.equal(c1.instagramUrl, 'https://www.instagram.com/awtad.iq/');
-  assert.equal(ok(await call('GET', '/api/admin/settings', undefined, adm)).googleClientId, '123.apps.googleusercontent.com', 'إعداد Google سليم');
+  assert.equal(ok(await call('GET', '/api/admin/settings', undefined, adm)).googleSignIn, false, 'إعداد Google سليم');
   // إشعار البريد: يصل لبريد الدعم، ولا يمكن حقن رؤوس عبر الاسم
   mails.length = 0;
   ok(await call('POST', '/api/support', { name: 'محقن\r\nBcc: x@evil.com', email: 'notify@example.com', topic: 'report', message: 'بلاغ عن إعلان مخالف وسبب البلاغ' }));

@@ -14,7 +14,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import adminRoutes from './routes/admin.js';
 import supportRoutes from './routes/support.js';
 
-/** سياسة أمان المحتوى (CSP). السكربتات: من نفس الأصل فقط + بصمات السكربتات المضمّنة في index.html (تُحسب عند الإقلاع) + Google Identity.
+/** سياسة أمان المحتوى (CSP). السكربتات: من نفس الأصل فقط + بصمات السكربتات المضمّنة في index.html (تُحسب عند الإقلاع) + apis.google.com (يحتاجها Firebase Auth).
  *  الأنماط تسمح بـ inline لأن الواجهة تستعمل style="" كثيراً (لا يُنفَّذ بها كود). */
 function inlineScriptHashes() {
   try {
@@ -25,12 +25,12 @@ function inlineScriptHashes() {
 export function buildCsp() {
   return [
     "default-src 'self'",
-    `script-src 'self' ${inlineScriptHashes().join(' ')} https://accounts.google.com/gsi/client`.replace(/\s+/g, ' '),
-    "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
+    `script-src 'self' ${inlineScriptHashes().join(' ')} https://apis.google.com`.replace(/\s+/g, ' '),
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "connect-src 'self' https://accounts.google.com",
-    'frame-src https://accounts.google.com',
+    "connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com",
+    `frame-src https://${config.firebaseProjectId}.firebaseapp.com`,
     "frame-ancestors 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'",
     ...(config.env === 'production' ? ['upgrade-insecure-requests'] : []),
   ].join('; ');

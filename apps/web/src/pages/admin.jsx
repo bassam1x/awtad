@@ -162,14 +162,13 @@ export function AdminApplications() {
 export function AdminSettings() {
   const toast = useToast();
   const { data, loading } = useFetch('/admin/settings');
-  const [id, setId] = useState(null);
+  const [google, setGoogle] = useState(null);
   const [sup, setSup] = useState(null); // { email, instagram } قيد التعديل
   if (loading) return <Spinner />;
-  const val = id ?? data.googleClientId;
+  const googleOn = google ?? data.googleSignIn;
   const supVal = sup ?? { email: data.supportEmail || '', instagram: data.supportInstagram || '' };
-  const save = async (e) => {
-    e.preventDefault();
-    try { await api.put('/admin/settings', { googleClientId: val }); toast(val ? t('فُعّل تسجيل الدخول عبر Google') : t('عُطّل تسجيل الدخول عبر Google')); } catch (err) { toast(err.message, 'err'); }
+  const toggleGoogle = async () => {
+    try { const r = await api.put('/admin/settings', { googleSignIn: !googleOn }); setGoogle(r.googleSignIn); toast(r.googleSignIn ? t('فُعّل تسجيل الدخول عبر Google') : t('عُطّل تسجيل الدخول عبر Google')); } catch (err) { toast(err.message, 'err'); }
   };
   const saveSupport = async (e) => {
     e.preventDefault();
@@ -188,18 +187,16 @@ export function AdminSettings() {
         <p className="mb-4 text-xs text-mute">{t('للإنستغرام اكتب اسم الحساب فقط (مثل awtad.iq) أو الصق رابطه.')}</p>
         <button className="btn btn-p"><Save size={16} />{t('حفظ')}</button>
       </form>
-      <form onSubmit={save} className="card max-w-2xl p-5">
-        <h2 className="mb-1 font-bold">Google Sign-In</h2>
-        <p className="mb-4 text-sm text-mute">{t('الصق معرّف العميل (OAuth Client ID) من Google Cloud Console. اتركه فارغاً لتعطيل الخدمة.')}</p>
-        <label className="lbl" htmlFor="gid">Client ID</label>
-        <input id="gid" dir="ltr" className="inp text-left" placeholder="1234567890-abc.apps.googleusercontent.com" value={val} onChange={(e) => setId(e.target.value)} />
-        <ol className="mb-4 mt-4 list-inside list-decimal space-y-1 text-sm text-mute">
-          <li>{t('في Google Cloud Console أنشئ OAuth client ID من نوع Web application.')}</li>
-          <li>{t('أضف عنوان موقعك (مثل http://localhost:4000) إلى Authorized JavaScript origins.')}</li>
-          <li>{t('انسخ المعرّف إلى الحقل أعلاه واضغط حفظ.')}</li>
-        </ol>
-        <button className="btn btn-p"><Save size={16} />{t('حفظ')}</button>
-      </form>
+      <div className="card max-w-2xl p-5">
+        <h2 className="mb-1 font-bold">{t('تسجيل الدخول عبر Google')}</h2>
+        <p className="mb-4 text-sm text-mute">{t('يعمل عبر Firebase Authentication. عند تعطيله يختفي زر Google من صفحتي الدخول وإنشاء الحساب.')}</p>
+        {data.googleConfigured ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`chip ${googleOn ? 'chip-g' : ''}`}>{googleOn ? t('مفعّل') : t('معطّل')}</span>
+            <button type="button" className={`btn ${googleOn ? '' : 'btn-p'}`} onClick={toggleGoogle}>{googleOn ? t('تعطيل') : t('تفعيل')}</button>
+          </div>
+        ) : <p className="text-sm text-mute">{t('مفاتيح Firebase غير مضبوطة على الخادم.')}</p>}
+      </div>
     </div>
   );
 }

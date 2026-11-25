@@ -16,7 +16,10 @@ export const config = {
   pgliteDir: (process.env.DB_FILE || path.join(ROOT, 'data', 'awtad.db')) + '.pgdata',
   secretFile: path.join(ROOT, 'data', '.jwt-secret'),
   jwtSecret: process.env.JWT_SECRET || '',
-  googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+  // تسجيل الدخول عبر Google من خلال Firebase Authentication. هذه القيم علنية بطبيعتها (تصل لكل متصفح)، والحماية
+  // بالنطاقات المصرّحة في Firebase وبالتحقق من الرمز في الخادم. اجعل FIREBASE_API_KEY فارغاً لإلغاء الخدمة.
+  firebaseApiKey: process.env.FIREBASE_API_KEY ?? 'AIzaSyCE4sleI3Osot5kcHhT_YLjNDOKFQyLZeA',
+  firebaseProjectId: process.env.FIREBASE_PROJECT_ID || 'awtad-5aeb2',
   // تسجيل الدخول عبر LinkedIn (OpenID Connect): معرّف التطبيق علني، والسر يبقى في الخادم
   linkedinClientId: process.env.LINKEDIN_CLIENT_ID || '',
   linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',

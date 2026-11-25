@@ -63,11 +63,11 @@ test('مسارات المدير: مستخدمون (بحث بلا حساسية ل
   assert.ok(posts.length >= 8 && posts.every((p) => typeof p.applicants === 'number'));
   const tx = ok(await call('GET', '/api/admin/transactions', null, adm));
   assert.ok(tx.length > 0 && tx[0].user_name);
-  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleClientId, '');
-  ok(await call('PUT', '/api/admin/settings', { googleClientId: '123.apps.googleusercontent.com' }, adm));
-  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleClientId, '123.apps.googleusercontent.com');
-  ok(await call('PUT', '/api/admin/settings', { googleClientId: '' }, adm));
-  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleClientId, '');
+  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleSignIn, true);
+  ok(await call('PUT', '/api/admin/settings', { googleSignIn: false }, adm));
+  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleSignIn, false);
+  ok(await call('PUT', '/api/admin/settings', { googleSignIn: true }, adm));
+  assert.equal(ok(await call('GET', '/api/admin/settings', null, adm)).googleSignIn, true);
   const users = ok(await call('GET', '/api/admin/users?q=ali@', null, adm));
   const id = users[0].id;
   ok(await call('PATCH', `/api/admin/users/${id}`, { status: 'banned' }, adm));

@@ -62,6 +62,12 @@ npm start          # http://localhost:4000
 - **التطوير والاختبارات:** بدون `DATABASE_URL` تُستخدم [PGlite](https://pglite.dev) (PostgreSQL حقيقي داخل العملية، يُحفظ في `data/awtad.db.pgdata`) فلا حاجة لتثبيت شيء.
 - فحص الصحة `GET /api/health` يلمس القاعدة ويعيد `db: "postgres"` أو `"pglite"`؛ وعند تعطلها يعيد 503.
 - في الإنتاج بدون `DATABASE_URL` يطبع الخادم تحذيراً لأن البيانات تُفقد على الخدمات المجانية ذات القرص المؤقت.
+## تسجيل الدخول عبر Google
+
+- يعمل عبر **Firebase Authentication** (مشروع `awtad-5aeb2`): نافذة Google في المتصفح تعيد رمز هوية، ويتحقق الخادم من توقيعه ومشروعه وأن مصدره Google وبريده موثّق (`apps/api/src/firebase.js`)، ثم يفتح جلسة المنصة المعتادة. المستخدم الجديد يختار نوع حسابه، والحساب الموجود بنفس البريد يُربط به.
+- المطلوب في Firebase Console: تفعيل مزوّد Google، وإضافة نطاق المنصة إلى Authentication ← Settings ← Authorized domains (مضاف: `awtad.onrender.com`). عند تغيير النطاق أضف الجديد هناك.
+- يمكن للمدير تعطيله من «إعدادات المنصة». متصفحات التطبيقات المضمّنة (إنستغرام وغيره) ترفضها Google، فتظهر رسالة تطلب فتح المنصة في Chrome أو Safari.
+
 ## تسجيل الدخول عبر LinkedIn واسترجاع كلمة المرور
 
 - **LinkedIn:** أنشئ تطبيقاً في [LinkedIn Developers](https://www.linkedin.com/developers/apps) (يتطلب صفحة شركة مجانية)، وفعّل المنتج «Sign In with LinkedIn using OpenID Connect»، وأضف عنوان العودة `{APP_URL}/auth/linkedin/callback`، ثم عيّن `LINKEDIN_CLIENT_ID` و`LINKEDIN_CLIENT_SECRET`. المستخدم الجديد يختار نوع حسابه (مبدع/شركة) بعد الدخول، والحساب الموجود بنفس البريد يُربط به (LinkedIn تثبت ملكية البريد).
