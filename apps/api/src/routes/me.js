@@ -56,6 +56,8 @@ r.put('/me', wrap(async (req, res) => {
     if (req.user.role === 'company') {
       for (const [k, max] of [['sector', 80], ['city', 80], ['about', 1000], ['address', 250], ['map_url', 600], ['contact_email', 120]])
         if (b[k] !== undefined) await run(`UPDATE company_profiles SET ${k}=? WHERE user_id=?`, k === 'map_url' ? safeUrl(b[k], max) : k === 'contact_email' ? contactEmail(b[k]) : str(b[k], max), id);
+      // بريد تسجيل الدخول لا يظهر للآخرين أبداً، حتى لو كُتب في خانة التواصل أو صار هو البريد الجديد
+      await run("UPDATE company_profiles SET contact_email='' WHERE user_id=? AND LOWER(contact_email)=(SELECT LOWER(email) FROM users WHERE id=?)", id, id);
     }
   });
   res.json(await fullUser(id, { forSelf: true }));

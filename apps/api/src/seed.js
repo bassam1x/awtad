@@ -41,7 +41,7 @@ export async function seedDemo() {
 
     const company = async (name, email, sector, city, about, address) => {
       const id = await mk('company', name, email);
-      await run('INSERT INTO company_profiles(user_id,sector,city,about,address,map_url,contact_email) VALUES(?,?,?,?,?,?,?)', id, sector, city, about, address, map(address), email);
+      await run('INSERT INTO company_profiles(user_id,sector,city,about,address,map_url) VALUES(?,?,?,?,?,?)', id, sector, city, about, address, map(address));
       return id;
     };
     const c1 = await company('مطعم دجلة الذهبي', 'dijla@demo.iq', 'مطاعم وضيافة', 'بغداد', 'مطعم عائلي في الكرادة يقدم المشاويات العراقية، ونعمل على رقمنة خدماتنا بسواعد شابة.', 'الكرادة، شارع 62، قرب ساحة الواثق، بغداد');

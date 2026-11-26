@@ -68,7 +68,7 @@ export default function Profile() {
               <>
                 <Field label={t('قطاع العمل')}><input id="pf-sector" className="inp" value={f.sector} onChange={(e) => set('sector', e.target.value)} /></Field>
                 <Field label={t('المدينة')}><input id="pf-city" className="inp" value={f.city} onChange={(e) => set('city', e.target.value)} /></Field>
-                <Field label={t('البريد الرسمي للتواصل')}><input id="pf-cemail" type="email" dir="ltr" className="inp text-left" value={f.contact_email} onChange={(e) => set('contact_email', e.target.value)} /></Field>
+                <Field label={t('البريد الرسمي للتواصل')} hint={t('اختياري: يظهر للمستخدمين في ملف الشركة. بريد تسجيل الدخول لا يظهر أبداً.')}><input id="pf-cemail" type="email" dir="ltr" className="inp text-left" value={f.contact_email} onChange={(e) => set('contact_email', e.target.value)} /></Field>
               </>
             )}
           </div>

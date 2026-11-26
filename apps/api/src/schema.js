@@ -160,4 +160,9 @@ UPDATE wallet_tx SET cur='IQD' WHERE cur='د.ع';
 UPDATE postings SET pay=GREATEST(1, ROUND(pay / 3.75)::int), cur='USD' WHERE cur='ر.س';
 UPDATE works SET amount=ROUND(amount / 3.75)::int, cur='USD' WHERE cur='ر.س';
 UPDATE wallet_tx SET amount=ROUND(amount / 3.75)::int, cur='USD' WHERE cur='ر.س';
+/* بريد تسجيل الدخول لا يظهر للمستخدمين: كان يُنسخ تلقائياً إلى «بريد التواصل» العلني للشركة.
+   نمسح تلك النسخ مرة واحدة (البريد نفسه باقٍ في users، ومن أدخل بريد تواصل مختلفاً يبقى). */
+UPDATE company_profiles SET contact_email='' WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key='hide_login_email_v1')
+  AND LOWER(contact_email)=(SELECT LOWER(email) FROM users WHERE users.id=company_profiles.user_id);
+INSERT INTO settings(key,value) VALUES('hide_login_email_v1','1') ON CONFLICT(key) DO NOTHING;
 `;

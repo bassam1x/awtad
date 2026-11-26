@@ -220,7 +220,7 @@ export function RegisterPage() {
           <AvatarUpload value={f.avatar} onChange={(v) => set('avatar', v)} label={role === 'student' ? t('رفع صورة') : t('رفع الشعار')} name={f.name || t('؟')} square={role === 'company'} />
         </Field>
         <Field label={role === 'student' ? t('الاسم الكامل') : t('اسم الشركة')}><input id="reg-name" className="inp" value={f.name} onChange={(e) => set('name', e.target.value)} required /></Field>
-        <Field label={role === 'company' ? t('البريد الرسمي') : t('البريد الإلكتروني')}><input id="reg-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
+        <Field label={role === 'company' ? t('البريد الرسمي') : t('البريد الإلكتروني')} hint={role === 'company' ? t('لتسجيل الدخول فقط، ولا يظهر للمستخدمين.') : undefined}><input id="reg-email" type="email" dir="ltr" className="inp text-left" value={f.email} onChange={(e) => set('email', e.target.value)} required /></Field>
         <Field label={t('كلمة المرور')} hint={t('8 أحرف على الأقل')}><input id="reg-pass" type="password" dir="ltr" autoComplete="new-password" className="inp text-left" value={f.password} onChange={(e) => set('password', e.target.value)} minLength={8} maxLength={128} required /></Field>
         {role === 'student' ? (
           <>

@@ -826,5 +826,7 @@ export default {
   "معطّل": "Disabled",
   "تعطيل": "Disable",
   "مفاتيح Firebase غير مضبوطة على الخادم.": "Firebase keys are not configured on the server.",
-  "قيمة غير صالحة": "Invalid value"
+  "قيمة غير صالحة": "Invalid value",
+  "لتسجيل الدخول فقط، ولا يظهر للمستخدمين.": "For signing in only. Other users never see it.",
+  "اختياري: يظهر للمستخدمين في ملف الشركة. بريد تسجيل الدخول لا يظهر أبداً.": "Optional: shown to users on the company profile. Your sign-in email is never shown."
 };

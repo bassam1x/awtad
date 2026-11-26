@@ -66,8 +66,9 @@ export async function createUser({ role, name, email, password, googleId, linked
       for (const s of String(extra.skills || '').split(/[,،]/).map((x) => x.trim()).filter(Boolean).slice(0, 15))
         await run('INSERT INTO skills(user_id,name) VALUES(?,?)', id, s.slice(0, 40));
     } else if (role === 'company') {
-      await run('INSERT INTO company_profiles(user_id,sector,city,about,contact_email,address,map_url) VALUES(?,?,?,?,?,?,?)', id,
-        str(extra.sector, 80), str(extra.city, 80), str(extra.about, 800), email, str(extra.city, 80),
+      // «بريد التواصل» علني فيبدأ فارغاً: بريد تسجيل الدخول لا يُنسخ إليه
+      await run('INSERT INTO company_profiles(user_id,sector,city,about,address,map_url) VALUES(?,?,?,?,?,?)', id,
+        str(extra.sector, 80), str(extra.city, 80), str(extra.about, 800), str(extra.city, 80),
         'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ' ' + str(extra.city, 80)));
     }
     return id;
