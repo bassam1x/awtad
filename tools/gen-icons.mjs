@@ -6,7 +6,7 @@ const MAP = `AlertCircle:WarningCircle AlertTriangle:Warning ArrowRight:ArrowRig
 CalendarDays:CalendarBlank Check:Check CheckCircle2:CheckCircle CheckSquare:CheckSquare ChevronDown:CaretDown ChevronLeft:CaretLeft ChevronsUpDown:CaretUpDown ClipboardCheck:ClipboardText
 ClipboardList:ClipboardText Clock:Clock Crop:Crop ExternalLink:ArrowSquareOut FileText:FileText FlaskConical:Flask FolderKanban:Kanban FolderPlus:FolderPlus GraduationCap:GraduationCap
 Handshake:Handshake Inbox:Tray KeyRound:Key Languages:Translate Laptop:Laptop DotsThree:DotsThree Headset:Headset Instagram:InstagramLogo Layers:Stack LayoutDashboard:SquaresFour Link2:LinkSimple ListChecks:ListChecks Loader2:CircleNotch LogIn:SignIn LogOut:SignOut
-Mail:EnvelopeSimple Map:MapTrifold MapPin:MapPin Menu:List MessagesSquare:ChatsCircle Moon:Moon Navigation:NavigationArrow PackageCheck:Package Paperclip:Paperclip Pencil:PencilSimple
+Mail:EnvelopeSimple Map:MapTrifold MapPin:MapPin Menu:List MessagesSquare:ChatsCircle Moon:Moon Navigation:NavigationArrow PackageCheck:Package Palette:Palette Paperclip:Paperclip Pencil:PencilSimple
 Plus:Plus PlusCircle:PlusCircle Receipt:Receipt RefreshCw:ArrowsClockwise RotateCcw:ArrowCounterClockwise RotateCw:ArrowClockwise Save:FloppyDisk Search:MagnifyingGlass Send:PaperPlaneTilt
 ServerCrash:HardDrives Settings:GearSix ShieldCheck:ShieldCheck SlidersHorizontal:SlidersHorizontal Sprout:Plant Square:Square Star:Star Sun:Sun Trash2:Trash Upload:UploadSimple
 UserCog:UserGear UserPlus:UserPlus UserRound:User Users:Users Wallet:Wallet WifiOff:WifiSlash X:X XCircle:XCircle Zap:Lightning ZoomIn:MagnifyingGlassPlus ZoomOut:MagnifyingGlassMinus`

@@ -5,11 +5,12 @@ import { Save, KeyRound, Trash2, Link2 } from '../icons.jsx';
 import { api, setToken } from '../api.js';
 import { useAuth, useFetch, useToast, useTheme } from '../context.jsx';
 import { AvatarUpload, Field, MapKindHint, PageHeader, SPECS } from '../ui.jsx';
+import { AccentGrid } from '../Accent.jsx';
 
 export default function Profile() {
   const { user, setUser, logout } = useAuth();
   const toast = useToast();
-  const { mode, set: setMode, accent, setAccent } = useTheme();
+  const { mode, set: setMode } = useTheme();
   const nav = useNavigate();
   const isS = user.role === 'student', isC = user.role === 'company';
   const [f, setF] = useState({
@@ -97,13 +98,7 @@ export default function Profile() {
               {[['light', t('نهاري')], ['dark', t('ليلي')], ['system', t('تلقائي')]].map(([k, l]) => <button key={k} type="button" className={`btn ${mode === k ? 'btn-p' : ''}`} onClick={() => setMode(k)}>{l}</button>)}
             </div>
             <h3 className="mb-2 mt-4 text-sm font-semibold text-mute">{t('ألوان المنصة')}</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[['aurora', t('الأزرق'), '#1e40af,#93b0ff,#8dd3c7'], ['sunset', t('الغروب'), '#c2410c,#fab27d,#f5a0be'], ['emerald', t('الزمرد'), '#047857,#78cdaa,#82c3d7'], ['royal', t('الملكي'), '#5b21b6,#b9a5f5,#919bf0'], ['rose', t('الوردي'), '#be185d,#f5a0b4,#f096be'], ['gold', t('الذهبي'), '#a16207,#f0c878,#ebaf78']].map(([k, l, g]) => (
-                <button key={k} type="button" aria-pressed={accent === k} className={`btn flex-col !gap-1.5 ${accent === k ? 'ring-2 ring-brand' : ''}`} onClick={() => setAccent(k)}>
-                  <span className="h-5 w-full rounded-lg" style={{ background: `linear-gradient(90deg, ${g})` }} />{l}
-                </button>
-              ))}
-            </div>
+            <AccentGrid />
           </div>
 
           {user.role !== 'admin' && (

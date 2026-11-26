@@ -10,6 +10,7 @@ import { onActivity } from './api.js';
 import { PREFETCH, routeIcon } from './routeIcons.js';
 import { Avatar, Logo, Spinner } from './ui.jsx';
 import AccountSwitcher from './AccountSwitcher.jsx';
+import { AccentButton } from './Accent.jsx';
 
 const NAV = {
   student: [
@@ -123,8 +124,9 @@ export default function Layout() {
           <AccountSwitcher />
           </div>
           <LangSwitch className="mt-2 w-full" />
-          <div className="mt-2 flex gap-2">
+          <div className="relative mt-2 flex gap-2">
             <ThemeButton />
+            <AccentButton />
             <button className="btn flex-1" onClick={logout}><LogOut size={16} />{t('خروج')}</button>
           </div>
         </div>
