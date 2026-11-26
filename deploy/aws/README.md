@@ -72,6 +72,17 @@ sudo awtad config LINKEDIN_CLIENT_SECRET
 
 بدون دومين يعمل الموقع على http للتجربة فقط: لا تنشره للناس بهذه الحالة.
 
+## الحماية من هجمات DDoS (Cloudflare المجانية)
+
+1. أنشئ حساباً على <https://dash.cloudflare.com>، وأضف الدومين واختر الخطة **Free**.
+2. تأكد من السجلين: **A** للدومين إلى العنوان الثابت، و**CNAME** لـ`www` إلى الدومين، وكلاهما **Proxied** (الغيمة برتقالية).
+3. **SSL/TLS → Overview**: اختر **Full (strict)**. اترك **Always Use HTTPS** مطفأ (الخادم يحوّل إلى https بنفسه، وهذا يبقي تجديد الشهادة يعمل).
+4. عند مسجّل الدومين غيّر الـ **Nameservers** إلى الاثنين اللذين يعطيهما Cloudflare، وانتظر حتى يصير الدومين **Active**.
+5. على الخادم: `sudo awtad web` ثم `sudo awtad cloudflare on` (يرفض القفل إن لم يكن الموقع يمر عبر Cloudflare).
+
+للتراجع: `sudo awtad cloudflare off`. أثناء هجوم فعّل **Under Attack Mode** من صفحة الدومين في Cloudflare.
+إن انقطع الموقع بعد القفل بزمن طويل فقد تكون Cloudflare أضافت عناوين جديدة: قارن `CLOUDFLARE_IPS` في `awtad.sh` مع صفحة العناوين المنشورة.
+
 ## 7. إيقاف Render (آخر خطوة)
 
 بعد أن تتأكد أن الموقع الجديد يعمل وبياناتك فيه:
@@ -88,6 +99,8 @@ sudo awtad config LINKEDIN_CLIENT_SECRET
 | `sudo awtad logs` | سجل التطبيق |
 | `sudo awtad backup` | نسخة احتياطية الآن (آخر 14 في `/var/backups/awtad`) |
 | `sudo awtad restore <ملف>` | استعادة نسخة |
+| `sudo awtad web` | إعادة كتابة إعداد خادم الويب |
+| `sudo awtad cloudflare on` / `off` | قبول الزوار عبر Cloudflare فقط، أو من الجميع |
 
 النشر لم يعد تلقائياً كما في Render: بعد أي تعديل على GitHub شغّل `sudo awtad update`.
 

@@ -26,6 +26,24 @@ password=$(awtad password --raw); [ "${#password}" -ge 16 ] || fail "generated p
 expect 200 "$(login admin@awtad.iq "$password")" "admin login"
 expect 401 "$(login admin@awtad.iq Admin@12345)" "default password rejected"
 
+step "visitor address behind Cloudflare"
+tmp=$(mktemp -d)
+/usr/local/lib/awtad-node/bin/node -e 'require("http").createServer((q, s) => s.end(String(q.headers["x-forwarded-for"]))).listen(4999, "127.0.0.1")' &
+echo_pid=$!
+sed -e 's/127\.0\.0\.1:4000/127.0.0.1:4999/' -e 's/^:80 {/:8089 {/' -e 's/^{$/{\n\tadmin off/' /etc/caddy/Caddyfile > "$tmp/outsider"
+sed 's#trusted_proxies static #trusted_proxies static 127.0.0.1/32 #' "$tmp/outsider" > "$tmp/proxy"
+seen_by_app() {   # <ملف الإعداد>: العنوان الذي يصل للتطبيق حين يرسل الطالب ترويسات عنوان من عنده
+  local pid out
+  caddy run --config "$1" --adapter caddyfile >"$tmp/caddy.log" 2>&1 &
+  pid=$!
+  out=$(curl -sS -m 5 --retry 20 --retry-delay 1 --retry-connrefused -H 'CF-Connecting-IP: 203.0.113.7' -H 'X-Forwarded-For: 198.51.100.9' http://127.0.0.1:8089/) || { cat "$tmp/caddy.log" >&2; out=error; }
+  kill "$pid"; wait "$pid" 2>/dev/null || true
+  echo "$out"
+}
+expect 203.0.113.7 "$(seen_by_app "$tmp/proxy")" "visitor address taken from a trusted proxy"
+expect 127.0.0.1 "$(seen_by_app "$tmp/outsider")" "address headers from anyone else are ignored"
+kill "$echo_pid"; rm -rf "$tmp"
+
 step "backup and restore"
 expect 200 "$(register keep@example.com)" "register"
 awtad backup
@@ -72,6 +90,22 @@ if awtad domain not-here.example.com; then fail "domain pointing elsewhere accep
 awtad domain awtad.example.com --force
 [[ "$(awtad status)" == *https://awtad.example.com* ]] || fail "domain saved"
 caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null
+
+step "web ports limited to Cloudflare"
+web_open() { grep -qE '^(80|443)/tcp +ALLOW +Anywhere' <<<"$(ufw status)"; }
+if awtad cloudflare on; then fail "locked although the domain is not behind Cloudflare"; fi
+web_open || fail "refused lock changed the firewall"
+awtad cloudflare on --force
+if web_open; then fail "web ports still open to everyone"; fi
+[[ "$(ufw status)" == *173.245.48.0/20* ]] || fail "Cloudflare range not allowed"
+grep -qE '^22/tcp +ALLOW +Anywhere' <<<"$(ufw status)" || fail "ssh must stay open"
+bash "$HERE/setup.sh"
+if web_open; then fail "running setup again reopened the web ports"; fi
+[[ "$(awtad status)" == *"Cloudflare only"* ]] || fail "status shows the lock"
+awtad cloudflare off
+web_open || fail "web ports not reopened"
+if [[ "$(ufw status)" == *173.245.48.0/20* ]]; then fail "Cloudflare rules left behind"; fi
+echo "ok - firewall lock and unlock"
 
 step "update and restart"
 awtad update

@@ -12,9 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install on a clean server
-        run: sudo bash deploy/aws/setup.sh
+        # يثبّت من نفس الفرع الذي يُختبر
+        run: sudo AWTAD_BRANCH="$GITHUB_REF_NAME" bash deploy/aws/setup.sh
       - name: Test the server commands
-        run: sudo CI=true bash deploy/aws/test.sh
+        run: sudo CI=true AWTAD_BRANCH="$GITHUB_REF_NAME" bash deploy/aws/test.sh
       - name: Logs on failure
         if: failure()
         run: sudo journalctl -u awtad -u caddy -n 80 --no-pager

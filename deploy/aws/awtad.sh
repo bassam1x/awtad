@@ -7,6 +7,9 @@ CONF=/etc/awtad/server.conf
 APP=/opt/awtad/app
 NODE_DIR=/usr/local/lib/awtad-node
 BACKUPS=/var/backups/awtad
+LOCK=/etc/awtad/cloudflare-only   # وجوده يعني: منفذا الموقع مفتوحان لعناوين Cloudflare فقط
+# عناوين Cloudflare المنشورة في https://www.cloudflare.com/ips/
+CLOUDFLARE_IPS="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32"
 ADMIN_EMAIL=admin@awtad.iq
 SETTABLE="ADMIN_PASSWORD JWT_SECRET LINKEDIN_CLIENT_ID LINKEDIN_CLIENT_SECRET MAIL_SCRIPT_URL MAIL_SCRIPT_SECRET BREVO_API_KEY MAIL_FROM SUPPORT_EMAIL SUPPORT_INSTAGRAM RATE_LIMIT_MAX FIREBASE_API_KEY FIREBASE_PROJECT_ID TRANSLATE_PROVIDER"
 LAST_BACKUP=
@@ -19,6 +22,8 @@ sudo awtad <command>
   password               show the platform admin email and password
   config <KEY>           set a setting or secret (typed hidden), e.g. ADMIN_PASSWORD, LINKEDIN_CLIENT_SECRET
   domain <example.com>   connect a domain and turn on https
+  web                    rewrite the web server settings
+  cloudflare on|off      accept website visitors through Cloudflare only (DDoS protection)
   update                 install the latest version from GitHub (backs up first)
   backup                 back up the database now (a daily backup runs automatically)
   restore <file.sql.gz>  restore a backup
@@ -54,13 +59,21 @@ build_app() { as_app bash -c "cd '$APP' && npm ci --include=dev --no-audit --no-
 public_ip() { curl -fsS -m 10 https://checkip.amazonaws.com 2>/dev/null | tr -d '[:space:]' || true; }
 points_here() { local found; found=" $(getent ahostsv4 "$1" | awk '{print $1}' | sort -u | tr '\n' ' ') "; [[ "$found" == *" $2 "* ]]; }
 
+behind_cloudflare() { local headers; headers=$(curl -sSI -m 15 "http://$1/" 2>/dev/null) || return 1; grep -qi '^cf-ray:' <<<"$headers"; }
+
 write_caddy() {   # بلا وسيط: http على عنوان IP للتجربة. مع دومين: https تلقائي
-  local domain=${1:-} ip=${2:-}
+  local domain=${1:-} ip=${2:-} tmp
+  tmp=$(mktemp)
   {
-    printf '%s {\n\tencode zstd gzip\n\treverse_proxy 127.0.0.1:4000\n}\n' "${domain:-:80}"
-    if [ -n "$domain" ] && points_here "www.$domain" "$ip"; then printf 'www.%s {\n\tredir https://%s{uri} permanent\n}\n' "$domain" "$domain"; fi
-  } > /etc/caddy/Caddyfile
-  caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1 || die "invalid web server configuration"
+    # خلف Cloudflare يصل الطلب من عناوينهم وعنوان الزائر في CF-Connecting-IP، ولا يُصدَّق هذا الترويس من غيرهم.
+    # التطبيق يستلم عنواناً واحداً هو عنوان الزائر، فتبقى حدود الطلبات لكل زائر على حدة.
+    printf '{\n\tservers {\n\t\ttrusted_proxies static %s\n\t\tclient_ip_headers CF-Connecting-IP\n\t}\n}\n' "$CLOUDFLARE_IPS"
+    printf '%s {\n\tencode zstd gzip\n\treverse_proxy 127.0.0.1:4000 {\n\t\theader_up X-Forwarded-For {client_ip}\n\t}\n}\n' "${domain:-:80}"
+    if [ -n "$domain" ] && { points_here "www.$domain" "$ip" || behind_cloudflare "www.$domain"; }; then printf 'www.%s {\n\tredir https://%s{uri} permanent\n}\n' "$domain" "$domain"; fi
+  } > "$tmp"
+  caddy validate --config "$tmp" --adapter caddyfile >/dev/null 2>&1 || { rm -f "$tmp"; die "invalid web server configuration"; }
+  install -m 644 "$tmp" /etc/caddy/Caddyfile   # لا نستبدل الإعداد العامل إلا بإعداد سليم
+  rm -f "$tmp"
 }
 
 write_units() {
@@ -191,7 +204,7 @@ cmd_domain() {
   domain=${domain,,}
   [[ "$domain" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$ ]] || die "usage: sudo awtad domain example.com"
   ip=$(public_ip)
-  if ! points_here "$domain" "$ip" && [ "${2:-}" != --force ]; then
+  if ! points_here "$domain" "$ip" && ! behind_cloudflare "$domain" && [ "${2:-}" != --force ]; then
     die "$domain does not point to this server ($ip) yet. Add an A record for it, wait a few minutes, then retry."
   fi
   write_caddy "$domain" "$ip"
@@ -207,6 +220,40 @@ Remember:
 EOF
 }
 
+cmd_web() {   # يعيد كتابة إعداد خادم الويب من العنوان المحفوظ
+  local url
+  url=$(env_get APP_URL)
+  if [[ "$url" == https://* ]]; then url=${url#https://}; write_caddy "${url%%/*}" "$(public_ip)"; else write_caddy; fi
+  systemctl restart caddy
+  echo "Web server settings updated."
+}
+
+open_web_ports() { ufw allow 80/tcp >/dev/null && ufw allow 443/tcp >/dev/null; }
+cmd_cloudflare() {
+  local domain net
+  case "${1:-}" in
+    on)   # نتأكد أولاً أن الموقع يصل فعلاً عبر Cloudflare حتى لا ينقطع عن الزوار
+      domain=$(env_get APP_URL); domain=${domain#*://}; domain=${domain%%/*}
+      if [ "${2:-}" != --force ]; then
+        behind_cloudflare "$domain" || die "$domain is not going through Cloudflare yet; nothing changed"
+        curl -fsS -m 20 "https://$domain/api/health" >/dev/null || die "the site does not answer through Cloudflare; nothing changed"
+      fi
+      for net in $CLOUDFLARE_IPS; do ufw allow proto tcp from "$net" to any port 80,443 >/dev/null; done
+      ufw delete allow 80/tcp >/dev/null || true
+      ufw delete allow 443/tcp >/dev/null || true
+      touch "$LOCK"
+      echo "Done: only Cloudflare can reach the website now. To undo: sudo awtad cloudflare off"
+      ;;
+    off)
+      open_web_ports
+      for net in $CLOUDFLARE_IPS; do ufw delete allow proto tcp from "$net" to any port 80,443 >/dev/null 2>&1 || true; done
+      rm -f "$LOCK"
+      echo "Done: the website accepts direct visitors again."
+      ;;
+    *) die "usage: sudo awtad cloudflare on|off" ;;
+  esac
+}
+
 cmd_update() {
   local old
   cmd_backup
@@ -216,6 +263,7 @@ cmd_update() {
   if build_app && restart_app; then
     install -m 755 "$APP/deploy/aws/awtad.sh" /usr/local/bin/awtad
     echo "Updated to $(as_app git -C "$APP" log -1 --format='%h %s')"
+    /usr/local/bin/awtad web || echo "WARNING: web server settings were not refreshed. Run: sudo awtad web"
   else
     echo "The new version failed, going back..."
     as_app git -C "$APP" reset --quiet --hard "$old"
@@ -237,6 +285,7 @@ cmd_status() {
   for s in awtad caddy "postgresql@$DB_PG-main" awtad-backup.timer; do printf '%-24s %s\n' "$s" "$(systemctl is-active "$s" || true)"; done
   printf '%-24s %s\n' "health" "$(curl -fsS -m 10 http://127.0.0.1:4000/api/health || echo DOWN)"
   printf '%-24s %s\n' "address" "$(env_get APP_URL)"
+  printf '%-24s %s\n' "web access" "$([ -f "$LOCK" ] && echo 'Cloudflare only' || echo 'everyone')"
   printf '%-24s %s\n' "latest backup" "$(ls -1t "$BACKUPS"/awtad-*.sql.gz 2>/dev/null | sed -n 1p)"
   df -h / | tail -n 1 | awk '{print "disk used                " $5 " of " $2}'
 }
@@ -265,7 +314,8 @@ cmd_init() {   # يستدعيه setup.sh فقط
   write_units
 
   echo "==> Firewall and automatic security updates"
-  ufw allow 22/tcp >/dev/null && ufw allow 80/tcp >/dev/null && ufw allow 443/tcp >/dev/null
+  ufw allow 22/tcp >/dev/null
+  [ -f "$LOCK" ] || open_web_ports
   ufw --force enable >/dev/null
   printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "1";\n' > /etc/apt/apt.conf.d/20auto-upgrades
 
@@ -300,6 +350,8 @@ main() {
     password) cmd_password "$@" ;;
     config) cmd_config "$@" ;;
     domain) cmd_domain "$@" ;;
+    web) cmd_web ;;
+    cloudflare) cmd_cloudflare "$@" ;;
     update) cmd_update ;;
     backup) cmd_backup ;;
     restore) cmd_restore "$@" ;;
