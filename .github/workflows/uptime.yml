@@ -1,0 +1,22 @@
+name: Uptime
+# يفحص الموقع مرتين كل ساعة. إذا فشل يرسل GitHub إشعاراً لصاحب المستودع.
+# ملاحظة: GitHub يوقف المهام المجدولة بعد 60 يوماً بلا أي تعديل على المستودع (يُعاد تفعيلها من صفحة Actions).
+on:
+  schedule:
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check awtadiq.com
+        run: |
+          for attempt in 1 2 3; do
+            if body=$(curl -fsS -m 30 https://awtadiq.com/api/health) && [[ "$body" == *'"ok":true'* ]]; then echo "up: $body"; exit 0; fi
+            echo "attempt $attempt failed"
+            [ "$attempt" = 3 ] || sleep 60
+          done
+          echo "::error::awtadiq.com is not answering"
+          exit 1
